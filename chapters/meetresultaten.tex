@@ -1,0 +1,77 @@
+\chapter{Meetresultaten en oplossingen}
+
+\section{Testmethode}
+
+\subsection{CPU}
+Hoe CPU metingen uitvoeren? Beperking: slechts een meting per seconde.
+
+\subsection{Uitvoeringstijd}
+Hoe uitvoeringstijd meten? Beperking: nauwkeurigheid.
+
+\subsection{RAM?}
+Hoe RAM meten? Is dit nodig? Tot zover nog geen problematische RAM-vereisten opgemerkt.
+
+\subsection{Bruikbare OID's}
+\todo[]{Betere titel?}
+\todo[caption=Bruikbare-OIDs]{Dit kan hier uitgelegd worden als het invloed heeft op de testresultaten. Zoniet kan dit evt elders uitgelegd worden.}
+Niet alle OID's die opgevraagd zijn, zijn nuttig. Bij een SNMP walk heb je altijd een OID meer dan nodig.
+Ook bij GETBULK requests heb je overtollige OID's.
+
+
+\section{Beginsituatie}
+
+\subsection{Problemen kolombreedte}
+Zie problemen met te lange OID's.
+
+\section{Specifieke oplossing}
+Een voorbeeld van een voorstel voor een oplossing met de puntjes die daarbij aan bod moeten komen.
+
+\subsection{Beschrijving}
+Beschrijving idee, redenering/denkpiste, hypothese.
+
+\subsection{Implementatie}
+Code, uitleg.
+
+\subsection{Resultaten}
+Meetresultaten.
+
+\subsection{Conclusies}
+Goede oplossing of niet?
+
+
+\section[GETBULK-operatie]{Gebruik van GETBULK-operatie}
+Een eerste voorstel voor een oplossing is alvast het gebruik van de GETBULK-operatie.
+
+
+\section{Vervanging loggingframework}
+\label{vervanging-loggingframework}
+
+\todo[inline,caption=Vervanging-loggingframework]{De retriever maakte gebruik van een logging framework dat in-house was ontwikkeld. Bij het profilen van de applicatie
+bleek echter dat er performantieproblemen waren bij dat framework, specifiek door de "count objecten". Het framework is dan vervangen
+geweest door een bestaande, open-source alternatief na analyse van de performantie en features. (log4net - gebaseerd op log4j, beiden
+te vinden op de Apache Foundation.)}
+
+
+\section{Beter beheer van threads}
+Wanner max \# taken/threads bereikt, wordt er gewacht op de eerste thread om af te ronden.
+Als de eerste thread vastzit, zit je met een probleem. Mss beter om alle threads te overlopen en te kijken welke vrij is. \\
+Hergebruik van threads mbv threadpool?
+
+De winst hiervan kan groot zijn, maar enkel in uitzonderlijke omstandigheden. Onder normale omstandigheden zal dit wss geen probleem vormen.
+
+\todo[inline]{Dit is in de loop van de thesis geïmplementeerd geweest door NetworkMining (Leo).}
+
+
+\section{Optimalisatie databankverkeer}
+\todo[inline,caption=DB-interacties]{
+Worden resultaten gecachet alvorens ze worden weggeschreven in de DB? Of worden ze een voor een weggeschreven? \\
+Moet nog eens  gecontroleerd worden maar de devices tabel leek bij vlug overzicht te worden ingelezen uit het XML bestand,
+werd dan naar DB weggeschreven en dan weer opnieuw uit DB uitgelezen.
+
+Dit is onderzocht en alhoewel de DB-interacties verre van efficient zijn, is de impact op de totale uitvoeringstijd verwaarloosbaar.
+
+Alhoewel! Dit bleek een probleem te zijn. Niet opgemerkt vanwege SSD.}
+
+\section{Verbeterde integratie MIB-bestanden}
+Gegevens worden gekoppeld aan datatype mbv naam en niet OID. Vervelend voor tabellen vermits de namen voor kolommen dan niet getoond worden.
+Is meer een verbetering op vlak van usability, en niet op performance. Valt buiten de scope van de masterproef maar kan als aanbeveling dienen naar NetworkMining toe.

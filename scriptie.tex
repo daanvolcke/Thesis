@@ -1,0 +1,203 @@
+\documentclass[a4paper]{report}
+
+% Font encoding. Support for < and > characters, for example.
+% Note that the default font doesn't work with T1. You'll need lmodern or cm-super as well.
+\usepackage[T1]{fontenc}
+% UTF-8 file input encoding. Support for tons of accents like äëöü and more.
+\usepackage[utf8]{inputenc}
+% Latin Modern font. Required for T1 font encoding.
+\usepackage{lmodern}
+\usepackage[dutch]{babel}
+\usepackage{a4wide} % Obsolete & buggy (supposedly). See alternatives below.
+% \usepackage{fullpage}
+% \usepackage[a4paper,margin=1cm,footskip=.5cm]{geometry}
+% Fancy headers
+\usepackage{fancyhdr}
+% Alternative to fancyhdr
+% \usepackage{titleps}
+% Support for importing images.
+\usepackage{graphicx}
+% All kinds of references become clickable hyperlinks in PDF.
+\usepackage{hyperref}
+% Fix links to figures from hyperref
+\usepackage[hypcap]{caption}
+% Afkortingen worden apart afgedrukt
+% Gebruik nomain om enkel afkortingen te gebruiken
+\usepackage[acronym]{glossaries}
+% Voegt bibliografie/referenties, inhoudstafel en figurenlijst toe aan inhoudstafel.
+%\usepackage{tocbibind}
+\usepackage[backend=biber]{biblatex}
+% Code listings/samples
+\usepackage{listings}
+% Extra colors for the todonotes package (or in general)
+\usepackage[dvipsnames]{xcolor}
+% Todo notes.
+%TODO: Add the disable option for todo notes for final release.
+\usepackage[color=YellowGreen]{todonotes}
+% Replace new paragraph indentation with whitespace.
+\usepackage[parfill]{parskip}
+% Easy inserting of external PDF files.
+\usepackage{pdfpages}
+% More configuration options for working with appendices.
+\usepackage[toc]{appendix}
+% Additional commands to enhance the quality of tables in LaTeX.
+\usepackage{booktabs}
+
+
+% Configuration
+
+% Don't uppercase titles in page headers.
+\lhead{\nouppercase{\rightmark}}
+\rhead{\nouppercase{\leftmark}}
+
+% Vervang de meervoud suffix voor afkortingen van de glossaries package door 's
+\renewcommand{\acrpluralsuffix}{'s}
+
+% Change listings settings.
+\lstset{
+	tabsize=4,		% Change tabsize from 8 spaces to 4 for listings.
+	captionpos=b,	% Change the caption position from top to bottom.
+	frame=single,	% Adds a frame around code listings.
+	breaklines=true	% Activates automatic line breaking of long lines.
+}
+% Change the caption label for listings.
+\renewcommand{\lstlistingname}{Codefragment}
+% Change the header name for the list of listings.
+\renewcommand{\lstlistlistingname}{Codefragmenten}
+% To make sure code doesn't split over a page break use the float option, optionally with the =h parameter.
+% Or alternatively with a minipage, see: https://tex.stackexchange.com/questions/18492/how-can-i-ensure-that-a-listing-is-not-going-to-be-split
+
+% Figuurnaam en listingnaam voor gebruik in zinnen.
+\newcommand{\lstlistingnamesentence}{\MakeLowercase{\lstlistingname}}
+\newcommand{\figurenamesentence}{\MakeLowercase{\figurename}}
+\newcommand{\tablenamesentence}{\MakeLowercase{\tablename}}
+
+% Hernoem de naam voor bijlagen in de inhoudstafel. Standaard: Appendices.
+\renewcommand{\appendixtocname}{Bijlagen}
+
+
+% Load .bib files / referenties inladen
+\addbibresource{referenties.bib}
+
+% Geen paginanummering en hoofding.
+\pagestyle{empty}
+
+% Generate the glossary
+\makeglossaries
+
+% Include wordt afgeraden voor glossaries! Bovendien werken includes toch niet in de preamble.
+\input{glossary}
+
+
+% % % % % %
+% Eerste keer dat een ~vreemd~ woord wordt gebruikt -> cursief, daarna normaal.
+% % % % % %
+
+
+\begin{document}
+
+% List of todo's (added as the first page)
+\listoftodos
+
+% Bedrukte kaft met titel (licht karton)
+\includepdf{titelblad.pdf}
+
+% Blanco blad
+\newpage
+\null
+\thispagestyle{empty}
+\newpage
+
+% Titelblad. Moest de kaft vervagen, bevat deze alle belangrijke info net als de kaft.
+\includepdf{titelblad.pdf}
+
+% Woord vooraf
+% Dankbetuigingen
+% Sahel, my saving knight met zijn LXC opstelling op de Virtual Wall
+% Bart voor zijn tripjes naar Oostende met de was en lege DVD's :D
+\newpage
+\noindent \textbf{\huge Woord vooraf}
+
+% Abstract Nederlands (facultatief) - Abstract Engels (facultatief)
+% ~paper: kernwoorden, samenvatting
+\include{abstract}
+
+% Inhoudsopgave
+\tableofcontents
+
+% Vanaf hier wel paginanummering en hoofding.
+\pagestyle{fancy}
+
+% Lijst met tabellen (facultatief)
+\listoftables
+
+% Lijst met figuren (facultatief)
+\listoffigures
+
+% Lijst van codefragmenten
+\lstlistoflistings
+
+% Woordenlijst
+\printglossary[title=Woordenlijst]
+
+% Lijst met afkortingen (facultatief)
+% ENKEL de afkortingen die verondersteld worden als niet gekend door de lezer. Dus bv. niet DNA, ISO, ...
+\printacronyms[title=Lijst van gebruikte afkortingen]
+
+% Inleiding
+% (duidelijke vraagstelling, aankondiging van structuur …)
+\include{chapters/inleiding}
+% Engelse termen worden niet in cursief geplaatst (zie boek)
+
+
+% Corpus, middenstuk, eigenlijke tekst
+
+% SNMP
+\include{chapters/snmp}
+
+% Bestaande situatie
+\include{chapters/bestaande_situatie}
+
+% Benchmarks en experimenten
+\include{chapters/benchmarks_experimenten}
+
+% Optimalisaties (Codeoptimalisaties / Optimalisaties voor de SNMP Data Retriever / SNMP Data Retriever Optimalisaties)
+
+% Problemen
+\include{chapters/problemen}
+
+% Testopstelling
+%TODO: DELETE ME
+\include{chapters/testopstelling}
+
+% Meetresultaten/oplossingen
+%TODO: DELETE ME
+\include{chapters/meetresultaten}
+
+% Tekstfragmenten
+\include{chapters/tekstfragmenten}
+
+
+% Conclusie / Besluit
+% (antwoord op centrale vraag, korte samenvatting, geen nieuwe elementen …)
+\chapter{Conclusie}
+
+
+% Referentielijst
+% Include all references. Replace * with reference key to include specific references only.
+%\nocite{*}
+%\nocite{snmp-wiki}
+\printbibliography[heading=bibintoc]
+
+% Bijlages (facultatief)
+\include{chapters/bijlagen}
+
+% Blanco blad
+\newpage
+\null
+\thispagestyle{empty}
+\newpage
+
+% Onbedrukte kaft (licht karton, zelfde kleur als bedrukte kaft)
+
+\end{document}
