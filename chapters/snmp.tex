@@ -94,7 +94,8 @@ Normaal zal de \gls{nms} simpelweg de SNMP-query opnieuw versturen.
 Voor het versturen en ontvangen van SNMP-berichten wordt er standaard gebruik gemaakt van poort 161.
 
 
-\section{Object Identifiers} %TODO Nieuwe alinea's
+\section{Object Identifiers}
+\todo[inline]{Alinea's opsplitsen.}
 Elk mogelijk soort gegeven dat je kunt opvragen van een toestel dat SNMP ondersteunt wordt wereldwijd uniek geïdentificeerd\cite{moreau} door een \gls{oid}.
 \glspl{oid} worden hiërarchisch ingedeeld in een boomstructuur, net als bij DNS. De eindpunten van de boom stellen objecten voor en de knooppunten van de boom
 worden gebruikt om objecten logisch te groeperen. De namen van de knooppunten bepalen de uiteindelijke \gls{oid}.
@@ -112,7 +113,7 @@ Een mogelijke hybride voorstelling van het vorig voorbeeld is 1.3.6.1.mgmt.1.1.s
 
 \begin{figure}[h]
 	\centering
-	\includegraphics{figures/OID_tree}
+	\includegraphics{figures/snmp/OID_tree}
 	\caption{Boomstructuur van SNMP-objecten}
 	\label{boomstructuur}
 \end{figure}
@@ -135,7 +136,103 @@ Het MIB-2 knooppunt die je kunt zien in figuur \ref{boomstructuur} is daar een v
 Die minimale set van gegevens zal je dus van ieder SNMP toestel kunnen opvragen.
 
 
+\section{Tabellen}
+
+Behalve scalaire waarden is het ook mogelijk om tabellen te gebruiken met SNMP.
+We maken gebruik van de standaardtabel voor netwerkinterfaces \emph{ifTable} met als \gls{oid} 1.3.6.1.2.1.2.2 ter illustratie.
+Een tabel wordt als volgt gedefiniëerd in een \gls{mib}-bestand: 
+je hebt enerzijds een tabelobject (hier ifTable) en anderzijds een rijobject (hier ifEntry).
+De definitie van het tabelobject zie je in \lstlistingnamesentence{} \ref{definitie-iftable}.
+De volgende \lstlistingnamesentence{}en tonen de definities van de overige objecten.
+
+Het tabelobject wordt gedefiniëerd als een sequentie of opeenvolging van rijobjecten.
+Het rijobject wordt op zijn beurt gedefiniëerd als een sequentie van kolommen.
+Hiervoor wordt een aparte sequentiedefinitie (IfEntry) gebruikt die 
+bestaat uit een opeenvolging van kolomnamen gevolgd door hun datatype.
+
+\begin{lstlisting}[language=asn.1, float=h, caption={Definitie van ifTable}, label=definitie-iftable]
+ifTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF IfEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+			"A list of interface entries.  The number of
+			entries is given by the value of ifNumber."
+	::= { interfaces 2 }
+\end{lstlisting}
+
+\begin{lstlisting}[language=asn.1, float=h, caption={Sequentiedefinitie voor een tabelrij}, label=definitie-sequentie-rij]
+IfEntry ::=
+	SEQUENCE {
+		ifIndex
+			INTEGER,
+		ifDescr
+			DisplayString,
+		ifType
+			INTEGER,
+		...
+	}
+\end{lstlisting}
+
+Bij de definitie van het rijobject zelf zie je dat er als syntax (datatype) de voorgaande sequentiedefinitie wordt gebruikt.
+Merk op dat de sequentiedefinitie (IfEntry) begint met een hoofdletter maar de definitie van het object zelf niet (ifEntry).
+
+\begin{lstlisting}[language=asn.1, float=h, caption={Definitie van een rijobject}, label=definitie-rijobject]
+ifEntry OBJECT-TYPE
+	SYNTAX	IfEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+			"An interface entry containing objects at the
+			subnetwork layer and below for a particular
+			interface."
+	INDEX	{ ifIndex }
+	::= { ifTable 1 }
+\end{lstlisting}
+
+Ook belangrijk is het INDEX-attribuut. Deze geeft aan hoe de tabel geïndexeerd moet worden, dus hoe je aan individuele rijen kunt geraken.
+Dit kan een eenvoudige integer zijn of een samenstelling van kolommen die een rij uniek kan identificeren.
+Hier wordt ifIndex gedefiniëerd als een eenvoudige integer.
+
+\begin{lstlisting}[language=asn.1, float=h, caption={Definitie van ifIndex}, label=definitie-ifindex]
+ifIndex OBJECT-TYPE
+	SYNTAX	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+			"A unique value for each interface.  Its value
+			ranges between 1 and the value of ifNumber.  The
+			value for each interface must remain constant at
+			least from one re-initialization of the entity's
+			network management system to the next re-
+			initialization."
+	::= { ifEntry 1 }
+\end{lstlisting}
+
+De indexering gebeurt dan als volgt. Om te beginnen heb je de \gls{oid} van de tabel zelf: 1.3.6.1.2.1.2.2.
+Het rijobject heeft ook een eigen \gls{oid}. Zijn volgnummer is 1 dus die komt achter de \gls{oid} van de tabel.
+Daarna komt het volgnummer van de kolom. Laten we als voorbeeld de kolom met de snelheid van de interface nemen (ifSpeed).
+Deze heeft als volgnummer 5. De \gls{oid} voor die kolom wordt dan 1.3.6.1.2.1.2.2.1.5.
+Als we alle \glspl{oid} overlopen die beginnen met de \gls{oid} van de ifSpeed kolom, dan krijgen we de waarden van alle rijen voor die ene kolom.
+Als we ook nog eens een specifieke rij willen opgeven dan volgt dat na de kolomaanduiding.
+Vermits er hier gebruik gemaakt wordt van een simpele integer als index kunnen we achteraan de \gls{oid} 1 toevoegen om 
+de snelheid van de \emph{eerste} interface te weten te komen. De uiteindelijke \gls{oid} wordt dan 1.3.6.1.2.1.2.2.1.5.1.
+Je kunt dit visueel ook bevestigen in \figurenamesentence{} \ref{boomstructuur-tabel}.
+
+Omdat de kolomaanduiding voor de rijaanduiding komt in een \gls{oid},
+zal het overlopen van alle \glspl{oid} die beginnen met de \gls{oid} van de tabel tot resultaat hebben dat de tabel kolom per kolom wordt overlopen.
+Deze operatie wordt een SNMP walk van een \gls{oid} genoemd en wordt later verder uitgelegd.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[resolution=110]{figures/snmp/ifTable-cropped}
+	\caption{Boomstructuur van een tabel}
+	\label{boomstructuur-tabel}
+\end{figure}
+
+
 \section{SNMP Operaties}
+\label{snmp-operaties}
 SNMP maakt gebruik van het \gls{pdu} berichtformaat voor al het communicatieverkeer tussen SNMP-agents en \glspl{nms}.
 Er worden een aantal verschillende operaties ondersteund door SNMP en die hebben elk hun eigen \gls{pdu}-formaat\cite{essentialsnmp}.
 Hieronder worden enkel de belangrijkste SNMP-operaties gegeven die relevant zijn voor de masterproef:
@@ -166,7 +263,10 @@ Deze manier van werken noemt men diepte-eerst zoeken.\cite{essentialsnmp}
 Wanneer de \gls{nms} het antwoord ontvangt van een GETNEXT-operatie zal ze een nieuwe sturen voor het volgende \gls{oid}.
 De \gls{nms} zal blijven GETNEXT-\glspl{pdu} sturen tot dat de agent een foutmelding terugstuurt die aangeeft dat het einde van de \gls{mib} bereikt is.
 
-\todo[inline]{Bespreek SNMP Walk die gebruik maakt van GETNEXT's}
+Normaal gezien zal je niet rechtstreeks in contact komen GETNEXT-operaties, maar zul je gebruik maken van de SNMP walkopdracht.
+Je hoeft enkel de OID mee te geven met de SNMP walkopdracht waarop deze de nodige GETNEXT-requests zal sturen om de ganse boomtak te overlopen.
+\todo{Herhaalt eigenlijk wat er hierboven werd gezegd, maar ipv NMS -> SNMP Walk}
+
 \todo[inline]{Figuur?}
 
 
@@ -177,6 +277,34 @@ Bij een gewone GET-operatie kun je ook meerdere \glspl{oid} meegeven maar de ber
 Als een SNMP-agent geen antwoord kan geven op alle \glspl{oid} die werden gevraagd in de GET-operatie wordt een foutboodschap teruggestuurd zonder data.
 De GETBULK-operatie daarentegen probeert zo veel mogelijk data terug te sturen als het kan.
 Met de GETBULK-operatie is het dus wel mogelijk om incomplete antwoorden terug te krijgen.\cite{essentialsnmp}
+
+\section{Manieren om SNMP gegevens op te vragen}
+\todo[inline]{Manieren/methoden/... om SNMP gegevens op te vragen. Of gewoon SNMP gegevens opvragen.}
+
+Aan de hand van de SNMP operaties besproken in sectie \ref{snmp-operaties} zijn er
+verschillende mogelijkheden om gegevens op te vragen.
+\todo[inline]{Vul mij aan.}
+
+\subsection{Enkelvoudige gegevens}
+\todo{Goede titel? Enkelvoudig?}
+
+Indien je maar geïnteresseerd bent in een gegeven dan ligt het voor de hand om gebruik te maken van de SNMP GET-operatie.
+Voorwaarde is wel dat je exact de OID kent van het gegeven dat je wenst op te vragen.
+
+
+
+\todo[inline]{Merk op dat je een .0 achteraan moet toevoegen om de waarde van een OID op te vragen (waarom?)! Zie pg 39 cursus \& boek. \\
+Een GETNEXT kan interessant zijn om de eerste waarde van een tabel op te vragen als je de indexering niet kent.}
+
+
+\subsection{Meervoudige gegevens}
+
+\todo[inline]{In principe is het ook mogelijk om meerdere gegevens op te vragen met een GET/GETNEXT(?) request.
+Maar ze is wel veel gevoeliger aan fouten: een fout en je krijgt géén gegevens terug.}
+
+\subsubsection{SNMP walk}
+
+\subsubsection{SNMP walk met behulp van GETBULK-requests}
 
 
 \section{Versies}
