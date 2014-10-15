@@ -1,4 +1,14 @@
-\documentclass[a4paper]{report}
+% Finale versie compileren:
+% Geef de disable optie mee aan de todonotes package
+% Geef de hidelinks optie mee aan hyperref
+% Schakel de nag package uit (?)
+% Voer makeglossary uit om glossaries bij te werken
+% Compileer tweemaal zodat alle referenties up-to-date zijn
+
+% Checks for obsolete LaTeX packages and outdated commands.
+\RequirePackage[l2tabu, orthodox]{nag}
+
+\documentclass[a4paper,dutch]{report}
 
 % Font encoding. Support for < and > characters, for example.
 % Note that the default font doesn't work with T1. You'll need lmodern or cm-super as well.
@@ -7,6 +17,8 @@
 \usepackage[utf8]{inputenc}
 % Latin Modern font. Required for T1 font encoding.
 \usepackage{lmodern}
+% Alternatieve monospaced font. Gebruikt in listings.
+\usepackage[scaled]{beramono}
 \usepackage[dutch]{babel}
 \usepackage{a4wide} % Obsolete & buggy (supposedly). See alternatives below.
 % \usepackage{fullpage}
@@ -17,8 +29,6 @@
 % \usepackage{titleps}
 % Support for importing images.
 \usepackage{graphicx}
-% All kinds of references become clickable hyperlinks in PDF.
-\usepackage{hyperref}
 % Fix links to figures from hyperref
 \usepackage[hypcap]{caption}
 % Afkortingen worden apart afgedrukt
@@ -43,6 +53,17 @@
 % Additional commands to enhance the quality of tables in LaTeX.
 \usepackage{booktabs}
 
+% All kinds of references become clickable hyperlinks in PDF. Should be loaded late.
+\usepackage{hyperref}
+% Clever references. Automatically adds "figure, table, ..." based on context to references. Load as last package to change referencing system.
+% nameinlink includes "figure, table, ..." in the hyperref link as opposed to only the number. For hyperref you'd need the \autoref command.
+% noabbrev never uses abbreviations. Instead of "fig." you'll get "figure".
+\usepackage[nameinlink,noabbrev]{cleveref}
+% Micro-typographic extensions: character protrusion and font expansion. Load after loading fonts.
+% http://www.ctan.org/tex-archive/macros/latex/contrib/microtype
+% http://www.khirevich.com/latex/microtype/
+\usepackage{microtype}
+
 
 % Configuration
 
@@ -55,10 +76,12 @@
 
 % Change listings settings.
 \lstset{
-	tabsize=4,		% Change tabsize from 8 spaces to 4 for listings.
-	captionpos=b,	% Change the caption position from top to bottom.
-	frame=single,	% Adds a frame around code listings.
-	breaklines=true	% Activates automatic line breaking of long lines.
+	tabsize=4,				% Change tabsize from 8 spaces to 4 for listings.
+	captionpos=b,			% Change the caption position from top to bottom.
+	frame=single,			% Adds a frame around code listings.
+	breaklines=true,		% Activates automatic line breaking of long lines.
+	breakatwhitespace=true,	% Only breaks at whitespaces.
+	basicstyle=\footnotesize\ttfamily	% Use a smaller font size.
 }
 % Change the caption label for listings.
 \renewcommand{\lstlistingname}{Codefragment}
@@ -68,12 +91,28 @@
 % Or alternatively with a minipage, see: https://tex.stackexchange.com/questions/18492/how-can-i-ensure-that-a-listing-is-not-going-to-be-split
 
 % Figuurnaam en listingnaam voor gebruik in zinnen.
-\newcommand{\lstlistingnamesentence}{\MakeLowercase{\lstlistingname}}
-\newcommand{\figurenamesentence}{\MakeLowercase{\figurename}}
-\newcommand{\tablenamesentence}{\MakeLowercase{\tablename}}
+%\newcommand{\lstlistingnamesentence}{\MakeLowercase{\lstlistingname}}
+\newcommand{\lstlistingnamesentence}{{\huge\textbf{VERWIJDER MIJ}}}
+%\newcommand{\figurenamesentence}{\MakeLowercase{\figurename}}
+\newcommand{\figurenamesentence}{{\huge\textbf{VERWIJDER MIJ}}}
+%\newcommand{\tablenamesentence}{\MakeLowercase{\tablename}}
+\newcommand{\tablenamesentence}{{\huge\textbf{VERWIJDER MIJ}}}
 
 % Hernoem de naam voor bijlagen in de inhoudstafel. Standaard: Appendices.
 \renewcommand{\appendixtocname}{Bijlagen}
+
+% Er is nog geen vertaling voor listings, dus kun je ze hiermee overschrijven.
+\crefname{listing}{codefragment}{codefragmenten}
+\Crefname{listing}{Codefragment}{Codefragmenten}
+
+% Mogelijke optie om rode kaders rond references te verwijderen.
+% Kleurt references donkerrood -> enkel voor online gebruik, niet om af te drukken.
+%\hypersetup{
+%	colorlinks,
+%	linkcolor={red!50!black},
+%	citecolor={blue!50!black},
+%	urlcolor={blue!80!black}
+%}
 
 
 % Load .bib files / referenties inladen

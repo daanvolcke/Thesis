@@ -28,10 +28,10 @@ zullen hoogstwaarschijnlijk eenmalig geconfigureerd worden als de software geïn
 \subsubsection{XML-configuratiebestand}
 Zoals gezegd is dit de belangrijkste manier om de retriever te configureren.
 De twee belangrijkste dingen die je kunt configureren zijn wat voor types toestellen er zijn en de lijst van IP-adressen van die toestellen.
-Een voorbeeld van een definitie van een type zie je in \lstlistingnamesentence \ref{xmlconfig-typedefinition}.
+Een voorbeeld van een definitie van een type zie je in \cref{xmlconfig-typedefinition}.
 Het toestel type heet \emph{General} en als er een toestal van dat type bevraagd wordt,
 moet er een SNMP walk gedaan worden van de boomtak met \gls{oid} 1.3.6.1.2.1.1. Met die \gls{oid} komt de naam \emph{system} overeen.
-Dit is dezelfde boomtak die we eerder hebben gezien in \figurenamesentence \ref{boomstructuur}.
+Dit is dezelfde boomtak die we eerder hebben gezien in \cref{boomstructuur}.
 De boomtak system is verplicht aanwezig op alle SNMP-toestellen, vandaar de naam van het toesteltype.
 Het \gls{mib}-bestand waarin die tak gedefiniëerd is heet \emph{RFC1213-MIB}. Al deze gegevens vind je terug in de attributen van de SNMP walk opdracht.
 Een toesteltype moet niet beperkt zijn tot een SNMP walk. Ze kan ook bestaan uit meerdere SNMP walk opdrachten,
@@ -46,17 +46,18 @@ of zelfs een SNMP GET opdracht voor een enkele \gls{oid}.
 
 Nadat de toesteltypes gedefiniëerd zijn kun je de IP-adressen opgeven van alle toestellen die opgevraagd moeten worden.
 Bij de opsomming van de toestellen hoort natuurlijk ook hun toesteltype die we eerder gedefiniëerd hebben.
-In \lstlistingnamesentence \ref{xmlconfig-devicedefinition} zie je dat de definitie van een toestel bestaat uit drie attributen: een arbitrair gekozen naam, zijn IP-adres of hostnaam en zijn toesteltype. 
+In \cref{xmlconfig-devicedefinition} zie je dat de definitie van een toestel bestaat uit drie attributen: een arbitrair gekozen naam, zijn IP-adres of hostnaam en zijn toesteltype. 
 
 \begin{lstlisting}[language=XML, float=h, caption={Definitie van een toestel in het XML-configuratiebestand}, label=xmlconfig-devicedefinition]
 <device name="atlas2a1.intec.ugent.be" ip="atlas2a1.intec.ugent.be" type="Bridge" />
 \end{lstlisting}
+\todo{Fix code listing breaking}
 
 De overige opties zijn die voor een databaseconnectiestring, de communitystring, de locatie van de \gls{mib}-bestanden en de SNMP timeout waarde.
 (hoelang gewacht wordt (in milliseconden) op een response na het versturen van een SNMP request)
 
 \begin{lstlisting}[language=XML, float=h, caption={Overige opties in het XML-configuratiebestand}, label=xmlconfig-misc]
-<database value="Database=snmpdb;Data Source=localhost;User Id=networkminer;Password=SomePassword;Port=3306;old syntax=yes"/>
+<database value="Database=snmpdb;Data Source=localhost;User Id=networkminer;Password=SomePassword;Port=3306;old syntax=yes" />
 <snmpCommunity get="public" />
 <MIBpath value=".\MIBs" />
 <snmpTimeout value="3000" />
@@ -68,7 +69,7 @@ Bij het oproepen van de retriever kun je optioneel enkele argumenten meegeven.
 De belangrijkste twee zijn \emph{inputfile} en \emph{clearresults}.
 Met het eerste argument geef je de locatie mee van het XML-configuratiebestand.
 Clearresults zorgt ervoor dat resultaten van een vorige retrieval gewist worden zodat je met een schone lei begint.
-In \lstlistingnamesentence \ref{retriever-argumenten} zie je een voorbeeld van hoe je deze argumenten moet gebruiken.
+In \cref{retriever-argumenten} zie je een voorbeeld van hoe je deze argumenten moet gebruiken.
 
 \begin{lstlisting}[float=h, caption={Oproepen van SNMP Data Retriever met twee argumenten}, label=retriever-argumenten]
 SNMPDataRetrieval.exe "-clearresults" "-inputfile=config\snmp.xml"

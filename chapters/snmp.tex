@@ -132,7 +132,7 @@ Ook voor \glspl{nms} zijn \gls{mib}-bestanden zeer belangrijk. Want ook zij moet
 agent, en vooral: hoe ze die gegevens moeten interpreteren! Een \gls{nms} zal dus minstens over dezelfde \glspl{mib} moeten beschikken als de
 agents die hij ondervraagt. Een groot aantal \glspl{mib} zijn gestandaardiseerd en worden ook standaard meegeleverd met SNMP-software.
 Een aantal van die gestandaardiseerde \glspl{mib} moeten ook verplicht ondersteund worden door SNMP-agents om de stempel 'SNMP compatibel' te mogen dragen.
-Het MIB-2 knooppunt die je kunt zien in figuur \ref{boomstructuur} is daar een voorbeeld van.
+Het MIB-2 knooppunt die je kunt zien in \cref{boomstructuur} is daar een voorbeeld van.
 Die minimale set van gegevens zal je dus van ieder SNMP toestel kunnen opvragen.
 
 
@@ -142,8 +142,8 @@ Behalve scalaire waarden is het ook mogelijk om tabellen te gebruiken met SNMP.
 We maken gebruik van de standaardtabel voor netwerkinterfaces \emph{ifTable} met als \gls{oid} 1.3.6.1.2.1.2.2 ter illustratie.
 Een tabel wordt als volgt gedefiniëerd in een \gls{mib}-bestand: 
 je hebt enerzijds een tabelobject (hier ifTable) en anderzijds een rijobject (hier ifEntry).
-De definitie van het tabelobject zie je in \lstlistingnamesentence{} \ref{definitie-iftable}.
-De volgende \lstlistingnamesentence{}en tonen de definities van de overige objecten.
+De definitie van het tabelobject zie je in \cref{definitie-iftable}.
+De volgende codefragmenten tonen de definities van de overige objecten. %TODO: lstlistingname
 
 Het tabelobject wordt gedefiniëerd als een sequentie of opeenvolging van rijobjecten.
 Het rijobject wordt op zijn beurt gedefiniëerd als een sequentie van kolommen.
@@ -217,7 +217,7 @@ Als we alle \glspl{oid} overlopen die beginnen met de \gls{oid} van de ifSpeed k
 Als we ook nog eens een specifieke rij willen opgeven dan volgt dat na de kolomaanduiding.
 Vermits er hier gebruik gemaakt wordt van een simpele integer als index kunnen we achteraan de \gls{oid} 1 toevoegen om 
 de snelheid van de \emph{eerste} interface te weten te komen. De uiteindelijke \gls{oid} wordt dan 1.3.6.1.2.1.2.2.1.5.1.
-Je kunt dit visueel ook bevestigen in \figurenamesentence{} \ref{boomstructuur-tabel}.
+Je kunt dit visueel ook bevestigen in \cref{boomstructuur-tabel}.
 
 Omdat de kolomaanduiding voor de rijaanduiding komt in een \gls{oid},
 zal het overlopen van alle \glspl{oid} die beginnen met de \gls{oid} van de tabel tot resultaat hebben dat de tabel kolom per kolom wordt overlopen.

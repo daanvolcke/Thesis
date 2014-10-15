@@ -37,11 +37,11 @@ Specifiek:
 
 De profiler in Visual Studio 2013 is erg makkelijk te gebruiken.
 Om te beginnen open je je project en klik je op \emph{Analyze} in de werkbalk en kies je voor \emph{Performance and Diagnostics}.
-Als alternatief kun je ook van de ALT+F2 sneltoets gebruik maken.\todo{Koppelteken}
+Als alternatief kun je ook van de ALT+F2 sneltoets gebruik maken. %TODO: Koppelteken
 Als \emph{Target} staat standaard het huidige project geselecteerd.
 Onder \emph{Available Tools} zou normaal ook de \emph{Performance Wizard} moeten geselecteerd zijn.
 Zoals de beschrijving al verklapt houdt dit onder andere het meten van CPU- en RAM-gebruik in.
-Als je op \emph{Start} klikt krijg je de \emph{Performance Wizard} te zien (\figurenamesentence{} \ref{performance-wizard}).
+\Cref{performance-wizard} toont de \emph{Performance Wizard} die je te zien krijgt als je op \emph{Start} klikt.
 Hier moet je kiezen van welke profilingmethode je wenst gebruik te maken.
 Wij kiezen voor de eerste: \emph{CPU Sampling}.
 De rest van de stappen staan standaard goed dus mag je meteen op \emph{Finish} klikken.
@@ -62,8 +62,8 @@ Die geeft je een boomstructuur van functies die elkaar oproepen en enkele belang
 hoeveel keer een functie werd opgeroepen en hoeveel tijd de functie gemiddeld nodig had om uit te voeren,
 dit zowel procentueel (ten opzichte van de totale uitvoeringstijd) als in absolute tijd.
 
-De call tree van de SNMP Data Retriever kun je zien in \figurenamesentence{} \ref{call-tree}.
-Hierbij werd de \emph{Main} functie opengeklapt.\todo{Koppelteken}
+De call tree van de SNMP Data Retriever kun je zien in \cref{call-tree}.
+Hierbij werd de \emph{Main} functie opengeklapt. %TODO: Koppelteken
 Je kunt functies verder open klappen om te zien welke andere functies worden opgeroepen en hun aandeel in de uitvoeringstijd analyseren.
 Dit kan verder gaan tot je atomaire functies krijgt die geen andere functies meer oproepen.
 
@@ -105,7 +105,7 @@ Op het moment van installatie was de laatste stabiele versie 5.5.33a.
 
 We doen een walk van 2 \glspl{oid} op een enkele productieswitch. Dit zal ons 443 objecten opleveren,
 waarvan 441 die voor ons relevant zijn. Volgens de profiler doet de retriever daar ongeveer 7,4 seconden over.
-De call tree van de retriever hebben we voor de leesbaarheid in een tabel gegoten (zie \tablenamesentence{} \ref{call-tree-main}).
+De call tree van de retriever hebben we voor de leesbaarheid in een tabel gegoten (zie \cref{call-tree-main}).
 De functies met een extreem kleine uitvoeringstijd (minder dan 0,01\%) hebben we achterwege gelaten.
 De kolommen die je ziet zijn de functie, het aantal oproepen, de \emph{inclusieve} tijd als percentage van de totale uitvoeringstijd en
 de gemiddelde \emph{inclusieve} tijd in milliseconden.
@@ -132,7 +132,50 @@ de gemiddelde \emph{inclusieve} tijd in milliseconden.
 	\label{call-tree-main}
 \end{table}
 
-We beginnen met de functie die het meeste tijd in beslag neemt: de \emph{RetrieveFromDevice} functie. \todo{Koppelteken}
+We beginnen met de functie die het meeste tijd in beslag neemt: de \emph{RetrieveFromDevice} functie. %TODO: Koppelteken
+Zoals de naam al verklapt gaat het hier om de methode die de requests stuurt om de gevraagde gegevens op te halen van de verschillende toestellen.
+
+\todo[inline]{Hoort de uitleg over de werking van de SNMP Data Retriever hier?}
+De manier waarop dit gebeurt is als volgt.
+Voor elk toestel dat ondervraagd moet worden wordt er een aparte thread gestart, met een maximum van 50 threads.
+Elk van die threads zal alle gegevens opvragen die opgevraagd moeten worden voor dat toesteltype. \todo{Toesteltypes al vermeld?}
+Wanneer een thread klaar is met gegevens opvragen wordt de thread verwijderd.
+Indien er nog toestellen zijn die nog moeten ondervraagd worden, zal er dan een nieuwe thread opgestart worden voor het volgende toestel. \todo{Volledige uitleg over thread management geven of later uitleggen bij verbeteringen?}
+Dit gaat zo door tot alle toestellen zijn ondervraagd.
+
+In \cref{snmp-operaties} werden de verschillende SNMP operaties besproken waarmee men
+gegevens kan opvragen. De originele versie van de SNMP Data Retriever maakte gebruik van
+GET-requests voor enkelvoudige gegevens en GETNEXT-requests om een SNMP walk te doen van 
+een ganse deelboom.
+
+De call tree van de RetrieveFromDevice functie zie je in \cref{call-tree-retrievefromdevice}. %TODO: Koppelteken
+De twee belangrijkste methoden hier zijn de \emph{SyncRequest} en de \emph{InsertResultRow} methoden. %TODO: Koppelteken
+SyncRequest maakt deel uit van de \emph{SnmpSource} bibliotheek. %TODO: Koppelteken
+Dit is de third party bibliotheek waarvan gebruik gemaakt wordt om alle SNMP interacties af te handelen. %TODO: Koppelteken
+De SyncRequest methode wordt gebruikt om synchroon een request te versturen.
+Het feit dat de request synchroon gebeurt wil zeggen dat de code wacht op het antwoord alvorens verder te gaan.
+We zien dat de methode 443 keer is opgeroepen dus dat wil zeggen dat er 443 requests verstuurd zijn geweest.
+Gemiddeld deed een request er een kleine 10 milliseconden over, samen goed voor bijna 60\% (oftewel ... seconden) van de totale uitvoeringstijd. \todo{aanvullen}
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{@{}lrrr@{}}
+		\toprule
+		Functie                                                  & Calls & Tijd (\%) & Tijd (ms) \\ \midrule
+		SnmpSource.SnmpSession.SyncRequest                       & 443   & 57,74     & 9,66      \\
+		SNMPDataRetrieval.InsertResultRow                        & 441   & 3,75      & 0,63      \\
+		SnmpSource.SnmpSession..ctor                             & 1     & 1,85      & 137,38    \\
+		Microsoft.VisualBasic.CompilerServices.NewLateBinding.L… & 445   & 0,42      & 0,07      \\
+		ComFunSQLConnection.TableContainsColumn                  & 2     & 0,12      & 4,43      \\
+		ComFunLogger.Log                                         & 451   & 0,07      & 0,01      \\
+		SnmpSource.SnmpPdu..ctor                                 & 1     & 0,05      & 3,84      \\
+		Microsoft.VisualBasic.CompilerServices.Conversions.ToBo… & 2     & 0,04      & 1,59      \\
+		Microsoft.VisualBasic.CompilerServices.NewLateBinding.L… & 6     & 0,04      & 0,52      \\
+		SnmpSource.SnmpVariable.CreateSnmpVariable               & 443   & 0,02      & 0,00      \\ \bottomrule
+	\end{tabular}
+	\caption{De call tree van de RetrieveFromDevice methode} %TODO: Koppelteken
+	\label{call-tree-retrievefromdevice}
+\end{table}
 
 
 \todo[inline]{Herschrijf begin van stuk over logging framework.}
@@ -141,8 +184,8 @@ uitvoeringstijd voor zijn rekening neemt.
 Rijst de vraag wat deze functie juist doet dat ze zoveel tijd nodig heeft.
 
 We klappen de Initialize methode open om de boosdoeners te zoeken.
-De functies van de Initialize methode vind je terug in \tablenamesentence{} \ref{call-tree-initialize}.
-We zien twee oproepen naar een \emph{Log} methode die er gemiddeld bijna een seconde over doet \emph{per oproep}! \todo{Koppelteken}
+De functies van de Initialize methode vind je terug in \cref{call-tree-initialize}.
+We zien twee oproepen naar een \emph{Log} methode die er gemiddeld bijna een seconde over doet \emph{per oproep}! %TODO: Koppelteken
 
 \begin{table}[h]
 	\centering
@@ -160,7 +203,7 @@ We zien twee oproepen naar een \emph{Log} methode die er gemiddeld bijna een sec
 		ComFun.NetworkMiningCopyRightStatement                    & 1     & 0,03      & 2,03      \\
 		ComFunLogger..ctor                                        & 1     & 0,01      & 1,10      \\ \bottomrule
 	\end{tabular}
-	\caption{De call tree van de Initialize methode}
+	\caption{De call tree van de Initialize methode} %TODO: Koppelteken
 	\label{call-tree-initialize}
 \end{table}
 
@@ -168,11 +211,11 @@ De \emph{ComFunLogger} is een stuk code die gebruikt wordt om te loggen naar een
 De naam komt van het feit dat ze een gemeenschappelijk stuk code is die over meerdere projecten kan
 gebruikt worden: \emph{common functions}, of \emph{ComFun} voor kort.
 Maar een functie die loggegevens wegschrijft naar een bestand hoort niet zo lang te duren.
-I/O operaties zijn kostelijk, maar niet \emph{zo} kostelijk. \todo{Koppelteken}
-Als we de functie helemaal openklappen in \figurenamesentence{} \ref{call-tree-performancecounter} vinden we de echte dader:
+I/O operaties zijn kostelijk, maar niet \emph{zo} kostelijk. %TODO: Koppelteken
+Als we de functie helemaal openklappen in \cref{call-tree-performancecounter} vinden we de echte dader:
 een constructor van \emph{System.Diagnostics.PerformanceCounter}.
 Een performance counter wordt gebruikt voor het monitoren van systeemcomponenten zoals
-processoren, geheugen en netwerk I/O. Als je ze gebruikt in je applicatie kunnen ze je \todo{Koppelteken}
+processoren, geheugen en netwerk I/O. Als je ze gebruikt in je applicatie kunnen ze je %TODO: Koppelteken
 informatie geven over de performantie van je programma.\cite{performance-counters-intro}
 De ComFunLogger gebruikt ze om het geheugengebruik te meten en weg te schrijven in de logbestanden.
 
