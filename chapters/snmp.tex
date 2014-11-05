@@ -137,6 +137,7 @@ Die minimale set van gegevens zal je dus van ieder SNMP toestel kunnen opvragen.
 
 
 \section{Tabellen}
+\label{snmp-tabellen}
 
 Behalve scalaire waarden is het ook mogelijk om tabellen te gebruiken met SNMP.
 We maken gebruik van de standaardtabel voor netwerkinterfaces \emph{ifTable} met als \gls{oid} 1.3.6.1.2.1.2.2 ter illustratie.
@@ -256,12 +257,19 @@ terug verstuurd door de SNMP-agent. De \gls{nms} ontvangt de GET-response \gls{p
 
 
 \subsection{GETNEXT}
+\label{snmp-getnext}
 De GETNEXT-operatie wordt gebruikt om een verzameling van opeenvolgende \glspl{oid} op te vragen.
 Gegeven een bepaalde \gls{oid} zal de GETNEXT-operatie de eerstvolgende \gls{oid} met bijhorende waarde teruggeven.
 Dit gebeurt in lexicografische volgorde en vermits \glspl{oid} samengesteld zijn door integers kan zo makkelijk een ganse boomtak overlopen worden.
 Deze manier van werken noemt men diepte-eerst zoeken.\cite{essentialsnmp}
 Wanneer de \gls{nms} het antwoord ontvangt van een GETNEXT-operatie zal ze een nieuwe sturen voor het volgende \gls{oid}.
 De \gls{nms} zal blijven GETNEXT-\glspl{pdu} sturen tot dat de agent een foutmelding terugstuurt die aangeeft dat het einde van de \gls{mib} bereikt is.
+
+De GETNEXT-operatie is vooral handig voor het overlopen van tabellen.
+Tabellen zijn niet noodzakelijk sequentieel geïndexeerd, ze kunnen bijvoorbeeld samengesteld zijn aan de hand van een aantal attributen.
+Maar met de GETNEXT-operatie hoef je daar geen rekening mee te houden, de GETNEXT-operatie geeft je meteen de volgende geldige index met de bijhorende gegevens.
+De GETNEXT-operatie uitgevoerd op de OID van een tabel geeft je de eerste geldige index.
+Daarmee kun je dan alle volgende indexen opvragen.
 
 Normaal gezien zal je niet rechtstreeks in contact komen GETNEXT-operaties, maar zul je gebruik maken van de SNMP walkopdracht.
 Je hoeft enkel de OID mee te geven met de SNMP walkopdracht waarop deze de nodige GETNEXT-requests zal sturen om de ganse boomtak te overlopen.
@@ -279,35 +287,167 @@ De GETBULK-operatie daarentegen probeert zo veel mogelijk data terug te sturen a
 Met de GETBULK-operatie is het dus wel mogelijk om incomplete antwoorden terug te krijgen.\cite{essentialsnmp}
 
 \section{Manieren om SNMP gegevens op te vragen}
-\todo[inline]{Manieren/methoden/... om SNMP gegevens op te vragen. Of gewoon SNMP gegevens opvragen.}
 
-Aan de hand van de SNMP operaties besproken in sectie \ref{snmp-operaties} zijn er
-verschillende mogelijkheden om gegevens op te vragen.
-\todo[inline]{Vul mij aan.}
-
-\subsection{Enkelvoudige gegevens}
-\todo{Goede titel? Enkelvoudig?}
-
-Indien je maar geïnteresseerd bent in een gegeven dan ligt het voor de hand om gebruik te maken van de SNMP GET-operatie.
-Voorwaarde is wel dat je exact de OID kent van het gegeven dat je wenst op te vragen.
+Aan de hand van de SNMP operaties besproken in \cref{snmp-operaties} zijn er verschillende mogelijkheden om gegevens op te vragen
+al naar gelang of je een of meerdere gegevens wenst op te vragen en welke gegevens je juist wenst op te vragen (bv. tabellen).
+Met behulp van Net-SNMP zullen deze verschillende mogelijkheden hieronder gedemonstreerd worden.
+Net-SNMP is een gratis en open-source softwarepakket die commando's aanbiedt voor de verschillende SNMP-operaties en
+is beschikbaar voor de meeste besturingssystemen waaronder Windows en Linux.
+Wij maken gebruik van de Linux versie.
 
 
+\subsection{Een gegeven}
+%TODO: Goede titel? Enkelvoudig/meervoudig? Een/meerdere gegevens?
 
-\todo[inline]{Merk op dat je een .0 achteraan moet toevoegen om de waarde van een OID op te vragen (waarom?)! Zie pg 39 cursus \& boek. \\
-Een GETNEXT kan interessant zijn om de eerste waarde van een tabel op te vragen als je de indexering niet kent.}
+\subsubsection{GET-operatie}
+
+Indien je maar geïnteresseerd bent in slechts een gegeven dan ligt het voor de hand om gebruik te maken van de SNMP GET-operatie.
+Voorwaarde is wel dat je exact de \gls{oid} kent van het gegeven dat je wenst op te vragen.
+Als we gebruik maken van het gratis softwarepakket Net-SNMP dat zowel voor de meeste besturingssystemen beschikbaar is,
+dan ziet een GET-request er ongeveer zo uit:
+
+\begin{lstlisting}[float=h, caption={SNMP GET-opdracht}, label=netsnmp-get]
+$ snmpget -v 1 -c public 127.0.0.1 sysDescr.0
+SNMPv2-MIB::sysDescr.0 = STRING: Linux debian-vm-01 3.2.0-4-amd64 #1 SMP Debian 3.2.54-2 x86_64
+\end{lstlisting}
+
+Daarbij geeft de -v optie de te gebruiken versie mee en de -c optie de communitystring.
+De opties worden gevolgd door het IP adres van het te ondervragen toestel en het \gls{oid} van het gegeven dat je wenst op te vragen.
+Zoals je misschien al opgemerkt hebt, wordt de \gls{oid} niet voorafgegaan door iso.org.dod.internet.mgmt.mib-2.system zoals het zou horen
+voor een \gls{oid} die in die subtak valt. De reden daarvoor is dat dit niet vereist is als de naam van de tak uniek is, wat het geval is voor sysDescr.
+
+De volgende vraag die je wellicht stelt is waarom er nog een .0 achter de \gls{oid} staat.
+Dit is omdat MIB objecten geïdentificeerd worden door de conventie x.y waarbij x de \gls{oid} is van het object
+en y de instantie aanduidt. Normaal wordt y gebruikt bij tabellen om de rij aan te duiden (1 is de eerste rij, 2 de tweede, enzovoort) zoals
+uitgelegd in \cref{snmp-tabellen}.
+Maar bij scalaire objecten is y altijd 0. De .0 achterwege laten levert een fout op.\cite{essentialsnmp}
+
+\subsubsection{GETNEXT-operatie}
+
+Je kan ook gebruik maken van de SNMP GETNEXT-operatie als je het \emph{volgende} gegeven wenst te weten te komen.
+Dit wordt hoofdzakelijk gebruikt bij het overlopen van tabellen zonder dat je moet rekening houden met de indexering van de tabel
+die immers niet noodzakelijk sequentieel is.
+Het is mogelijk om zelf een SNMP GETNEXT-operatie uit te voeren, maar normaliter maak je gebruik van de SNMP walkopdracht die
+hiervan gebruik maakt om een ganse boomtak te overlopen (zie \cref{snmp-getnext}).
+Als je de indexering van een tabel niet kent, dan zou je het volgende kunnen doen:
+
+\begin{lstlisting}[float=h, caption={SNMP GETNEXT-opdracht op een tabel}, label=netsnmp-getnext]
+$ snmpgetnext -v 1 -c public 127.0.0.1 ifTable
+IF-MIB::ifIndex.1 = INTEGER: 1
+\end{lstlisting}
+
+Dit levert dan de waarde van de eerste kolom (hier ifIndex) in de eerste rij op.
+Herinner je dat de \gls{oid} van een tabelelement eerst het kolomnummer bevat en dan de index van de rij.
+Dus als je de waarde van een andere kolom wenst zonder dat je de index van de eerste rij kent zou je het volgende kunnen doen:
+
+\begin{lstlisting}[float=h, caption={SNMP GETNEXT-opdracht op een kolom van een tabel}, label=netsnmp-getnextcol]
+$ snmpgetnext -v 1 -c public 127.0.0.1 ifTable.1.2
+IF-MIB::ifDescr.1 = STRING: lo
+\end{lstlisting}
+
+Dit levert dan de tweede kolom (de beschrijving van de interface, hier lo, kort voor loopback interface) op van de eerste rij.
+Maar zoals gezegd zul je eerder gebruik maken van de SNMP walkopdracht dan GETNEXT-operaties (zie verder).
 
 
-\subsection{Meervoudige gegevens}
+\subsection{Meerdere gegevens}
 
-\todo[inline]{In principe is het ook mogelijk om meerdere gegevens op te vragen met een GET/GETNEXT(?) request.
-Maar ze is wel veel gevoeliger aan fouten: een fout en je krijgt géén gegevens terug.}
+\subsubsection{SNMP BULK-operatie}
+Als je meerdere gegevens wenst op te vragen gebruik je best de SNMP BULK-operatie.
+Deze combineert meerdere \glspl{oid} in een bericht waardoor je sneller meerdere gegevens kunt opvragen.
+In feite zal de SNMP BULK-operatie simpelweg meerdere GETNEXT-operaties uitvoeren en de resultaten combineren in een bericht.
+
+Om van SNMP BULK-operaties gebruik te maken moet je ten eerste zorgen dat je gebruik maakt van SNMP versie 2c (zie ook \cref{snmp-versies}).
+Ten tweede moet je ook twee extra parameters opgeven: \textit{non-repeaters} en \textit{max-repetitions}.
+Je kunt meerdere \glspl{oid} meegeven met de BULK-operatie en met die parameters kun je opgeven of er slechts een keer
+een GETNEXT-operatie op een \gls{oid} moet uitgevoerd worden of meerdere.
+Non-repeaters geeft aan hoeveel \glspl{oid} er zijn meegegeven waarop slechts een keer een GETNEXT-operatie moet uitgevoerd worden.
+Deze \glspl{oid} zullen dus elk slechts een antwoord bevatten in het antwoordbericht.
+Met max-repetitions geef je aan hoeveel keer er een GETNEXT-operatie moet uitgevoerd worden op de overige \glspl{oid}.
+Als je max-repetitions op 10 zet, dan zal je voor elk van de overige \glspl{oid} 10 antwoorden krijgen in het antwoordbericht.
+Vermits je enkel opgeeft hoeveel \glspl{oid} niet herhalen (non-repeaters) moet je eerste de niet-herhalende \glspl{oid} opgeven en dan de herhalende.
+Wellicht dat een voorbeeld meer duidelijkheid verschaft:
+
+\begin{lstlisting}[float=h, caption={SNMP BULK-opdracht}, label=netsnmp-bulk]
+$ snmpbulkget -v 2c -c public -Cn1 -Cr3 127.0.0.1 sysDescr ifTable ipAddrTable
+SNMPv2-MIB::sysDescr.0 = STRING: Linux debian-vm-01 3.2.0-4-amd64 #1 SMP Debian 3.2.54-2 x86_64
+IF-MIB::ifIndex.1 = INTEGER: 1
+IP-MIB::ipAdEntAddr.10.0.2.11 = IpAddress: 10.0.2.11
+IF-MIB::ifIndex.2 = INTEGER: 2
+IP-MIB::ipAdEntAddr.127.0.0.1 = IpAddress: 127.0.0.1
+IF-MIB::ifIndex.3 = INTEGER: 3
+IP-MIB::ipAdEntIfIndex.10.0.2.11 = INTEGER: 2
+\end{lstlisting}
+
+Het aantal non-repeaters en het aantal max-repetitions worden ingesteld met respectievelijk de -Cn en de -Cr optie.
+Vermits het aantal non-repeaters op 1 staat wil dit zeggen dat enkel de eerste \gls{oid}, sysDescr, niet herhaald moet worden.
+En omdat max-repetitions op 3 staat, worden alle overige \glspl{oid} 3 keer herhaald (hier ifTable en ipAddrTable).
+Als antwoord zie je het volgende staan: de waarde van sysDescr, de eerste 3 waarden van ifTable en de eerste 3 waarden van ipAddrTable.
+
+Merk op dat de versie nu op 2c staat. Verder zie je dat de \gls{oid} voor de scalaire waarde sysDescr nu niet gevolgd wordt door .0,
+want achterliggend maakt de BULK-operatie gebruik van een GETNEXT-operatie.
+Als je toch .0 toevoegt dan zul je niet de waarde van sysDescr terugkrijgen maar die van de volgende \gls{oid}.
+Moest je ten slotte een hoger aantal max-repetitions gebruiken dan een tabel cellen heeft,
+of een scalaire waardere meerdere keren laten herhalen, dan krijg je ook nog de waarden van de \glspl{oid} die volgen op de tabel of de scalaire waarde terug.
+
+\subsubsection{GET- en GETNEXT-opdrachten}
+
+In principe is het ook mogelijk om meerdere gegevens op te vragen met een GET- of GETNEXT-opdracht.
+Om dat te doen geef je simpelweg meerdere \glspl{oid} mee in de opdracht:
+
+\begin{lstlisting}[float=h, caption={Meerdere gegevens opvragen met SNMP GET}, label=netsnmp-get-meerdere]
+$ snmpget -v 1 -c public 127.0.0.1 sysDescr.0 sysUpTime.0 sysName.0
+SNMPv2-MIB::sysDescr.0 = STRING: Linux debian-vm-01 3.2.0-4-amd64 #1 SMP Debian 3.2.54-2 x86_64
+DISMAN-EVENT-MIB::sysUpTimeInstance = Timeticks: (1451759) 4:01:57.59
+SNMPv2-MIB::sysName.0 = STRING: debian-vm-01
+\end{lstlisting}
+
+Het nadeel van dit te doen met een GET- of GETNEXT-opdracht is dat, als er een fout optreedt bij het opvragen
+van een van de \glspl{oid}, je geen gegevens terug zal krijgen over de \glspl{oid} die wel correct waren:
+
+\begin{lstlisting}[float=h, caption={Meerdere gegevens opvragen met SNMP GET met een foute OID}, label=netsnmp-get-meerdere-fout]
+$ snmpget -v 1 -c public 127.0.0.1 sysDescr.0 sysUpTime.0 sysName.0 fouteOID
+fouteOID: Unknown Object Identifier (Sub-id not found: (top) -> fouteOID)
+\end{lstlisting}
+
+Bij een BULK-opdracht krijg je die gegevens wel.
+Om meerdere gegevens op te vragen maak je dus beter gebruik van BULK-opdrachten.
+
 
 \subsubsection{SNMP walk}
 
-\subsubsection{SNMP walk met behulp van GETBULK-requests}
+Zoals gezegd maak je normaal gezien weinig gebruik van de GETNEXT-operatie maar gebruik je in de plaats de SNMP walkopdracht.
+De SNMP walkopdracht wordt gebruikt om een ganse boomtak te overlopen en maakt achterliggend gebruik van de GETNEXT-operaties.
+Met de volgende SNMP walkopdracht kun je de interfacetabel van een toestel overlopen:
+
+\begin{lstlisting}[float=h, caption={SNMP walkopdracht}, label=netsnmp-walk]
+$ snmpwalk -v 1 -c public 127.0.0.1 ifTable
+IF-MIB::ifIndex.1 = INTEGER: 1
+IF-MIB::ifIndex.2 = INTEGER: 2
+IF-MIB::ifIndex.3 = INTEGER: 3
+...
+IF-MIB::ifSpecific.4 = OID: SNMPv2-SMI::zeroDotZero
+IF-MIB::ifSpecific.5 = OID: SNMPv2-SMI::zeroDotZero
+IF-MIB::ifSpecific.6 = OID: SNMPv2-SMI::zeroDotZero
+\end{lstlisting}
+
+Merk op dat we hier geen instantie (de .0 bij scalaire gegevens) na de \gls{oid} hebben opgegeven!
+Moest je hier toch een instantie opgeven (de index van een rij van de tabel) dan zou je enkel die ene rij terugkrijgen
+en had je hetzelfde kunnen bereiken met een SNMP GET-opdracht.
+
+Vermits de BULK-operaties ook gebruik maken van GETNEXT-operaties maar die bundelen in een antwoord,
+kun je de SNMP walkopdracht nog sneller laten verlopen door de BULK variant te gebruiken.
+Het resultaat blijft natuurlijk hetzelfde.
+
+\begin{lstlisting}[float=h, caption={SNMP walkopdracht m.b.v. BULK-operaties}, label=netsnmp-bulkwalk]
+$ snmpbulkwalk -v 2c -c public 127.0.0.1 ifTable
+...
+\end{lstlisting}
+
+Let erop dat je de versie moet veranderen omdat je gebruik maakt van BULK-operaties!
 
 
 \section{Versies}
+\label{snmp-versies}
 Er zijn drie grote versies van SNMP die momenteel in gebruik zijn op netwerktoestellen: SNMPv1, SNMPv2c en SNMPv3.
 Ondanks dat SNMPv3 de twee voorgaande versies opvolgt kun je nog steeds veel toestellen vinden die enkel met SNMPv2c of zelfs met SNMPv1 werken.
 Opnieuw is er een afhankelijkheid van de fabrikant om voor de ondersteuning van SNMPv3 te zorgen.
