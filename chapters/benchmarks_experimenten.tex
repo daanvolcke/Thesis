@@ -54,7 +54,7 @@ De rest van de stappen staan standaard goed dus mag je meteen op \emph{Finish} k
 \end{figure}
 
 Wanner het programma klaar is met uitvoeren worden de resultaten geanalyseerd.
-Als dat klaar is krijg je een algemeen overzicht van de resultaten. \todo{gedaan?}
+Als dat klaar is krijg je een algemeen overzicht van de resultaten.
 Eerst en vooral zie je een grafiek met het CPU-gebruik doorheen de uitvoeringstijd van de applicatie.
 Daaronder zie je de \emph{Hot Paths}, dat zijn de functies die verantwoordelijk zijn voor het grootste deel van de uitvoeringstijd.
 Waar wij in geïnteresseerd zijn is hieraan gerelateerd: de \emph{Call Tree View}.
@@ -144,7 +144,7 @@ Indien er nog toestellen zijn die nog moeten ondervraagd worden, zal er dan een 
 Dit gaat zo door tot alle toestellen zijn ondervraagd.
 
 In \cref{snmp-operaties} werden de verschillende SNMP operaties besproken waarmee men
-gegevens kan opvragen. De originele versie van de SNMP Data Retriever maakte gebruik van
+gegevens kan opvragen. De originele versie van de SNMP Data Retriever die we nu testen maakt gebruik van
 GET-requests voor enkelvoudige gegevens en GETNEXT-requests om een SNMP walk te doen van 
 een ganse deelboom.
 
@@ -155,7 +155,11 @@ Dit is de third party bibliotheek waarvan gebruik gemaakt wordt om alle SNMP int
 De SyncRequest methode wordt gebruikt om synchroon een request te versturen.
 Het feit dat de request synchroon gebeurt wil zeggen dat de code wacht op het antwoord alvorens verder te gaan.
 We zien dat de methode 443 keer is opgeroepen dus dat wil zeggen dat er 443 requests verstuurd zijn geweest.
-Gemiddeld deed een request er een kleine 10 milliseconden over, samen goed voor bijna 60\% (oftewel ... seconden) van de totale uitvoeringstijd. \todo{aanvullen}
+Gemiddeld deed een request er een kleine 10 milliseconden over, allen samen goed voor bijna 60\% (oftewel 4,28 seconden) van de totale uitvoeringstijd.
+
+
+
+\todo[inline]{Aanvullen. Implementeren van BULK requests.}
 
 \begin{table}[h]
 	\centering
@@ -252,8 +256,8 @@ Zo was het veel sneller om een ander logging framework te gebruiken dan om beken
 
 De keuze is uiteindelijk gevallen op Apache log4net en is gebaseerd op waarschijnlijk het bekendste logging framework voor java: Apache log4j.
 Bij de keuze werd rekening gehouden met de performantieimpact en de features van de verschillende logging frameworks.\footnote{
-	Een vergelijking tussen de bekendste logging frameworks voor .NET vind je hier\cite{logging-frameworks-and-performance} en
-	hier\cite{logging-frameworks} in de bronnenlijst.}
+	Een vergelijking tussen de bekendste logging frameworks voor .NET vind je 
+	terug in de bronnenlijst bij bron \cite{logging-frameworks-and-performance} en \cite{logging-frameworks}.}
 
 
 
