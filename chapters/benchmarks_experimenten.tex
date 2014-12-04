@@ -13,16 +13,147 @@
 
 \section{Kleinschalige benchmarks en experimenten}
 
-\subsection{Testopstelling}
+\todo[inline]{Schrijf een inleiding. \\
+Enerzijds de Virtual Box opstelling. Anderzijds heb je ook de iMinds switchen. Ten slotte de profiler.}
 
-\todo[inline]{Enerzijds de Virtual Box opstelling. Anderzijds heb je ook de iMinds switchen.}
+\todo[inline]{Eigenlijk maakt het weinig uit om wat voor soort toestellen het gaat:
+alhoewel de applicatie voornamelijk bedoeld is voor netwerkapparatuur, voor onze testen hebben we enkel een noodzaak aan voldoende gegevens die via SNMP kunnen opgevraagd worden.}
 
+\subsection{VirtualBox}
+
+\todo[inline]{Betere titel! Virtuele testopstelling van een handvol switches.}
+
+\todo[inline, caption={}]{
+Bespreking originele testopstelling van Wouter Tavernier? \\
+Specs \\
+Software(config)
+
+\begin{itemize}
+	\item screen (niet geinstalleerd)
+	\item sudo
+	\item snmpd
+	\item snmp
+	\item snmp-mibs-downloader
+	\item bridge, lldp...
+\end{itemize}
+
+
+}
+
+De eerste testopstelling bestaat uit vier virtuele machines die switches in een netwerk nabootsen.
+Als virtualisatieplatform wordt er gebruik gemaakt van \textit{Oracle VM VirtualBox} (verder gewoon VirtualBox genoemd).
+VirtualBox is vrij te verkrijgen voor alle gangbare besturingssystemen en is bovendien open-source.
+
+\subsubsection{Hardwareconfiguratie}
+
+Het gastheerbesturingssysteem is een 64-bit versie van Windows 7.
+Windows en VirtualBox zijn geïnstalleerd op een SSD, maar de virtuele machines zelf staan op een magnetische harde schijf.
+
+Aan elke node wordt 256 MB geheugen en een CPU kern (van een Intel Core i7 3610QM processor) toegewezen.
+Op de nodes wordt een minimale versie van Debian 7 geïnstalleerd, zonder grafische schil.
+Hierdoor is zelfs 256 MB een ruime luxe voor de nodes: na het opstarten van een node wordt er amper 70MB geheugen gebruikt.
+
+Alle toestellen zijn rechtstreeks met elkaar verbonden in een privénetwerk.
+Via \gls{nat} kunnen ze via de gastheer toch nog het internet bereiken.
+Dit werd bewerkstelligd met de \textit{NAT Network mode},
+een nieuwe feature in VirtualBox die nog niet in de documentatie staat maar wel kort beschreven wordt in een nieuwspost (zie\cite{vbox-nat-network-mode}).
+Ter vergelijking:
+\textit{NAT mode} laat gastsystemen toe om met het internet te communiceren via \gls{nat} maar zitten elk in een apart privénetwerk en kunnen dus niet met elkaar praten.
+\textit{Host-only mode} laat gastsystemen met elkaar (en het gastheersysteem) communiceren door ze in een gezamelijk privénetwerk te plaatsen, 
+maar communicatie met het internet is niet mogelijk.
+
+\subsubsection{Softwareconfiguratie}
+
+Hieronder leggen we kort stap voor stap uit hoe je op een Debianinstallatie de nodige SNMP software kunt installeren en configureren.
+De uitleg is zeer is zeer beknopt gehouden en dient enkel om je op weg te helpen.
+In de testopstelling werden de nodes ook nog geconfigureerd als switches die het \gls{stp} draaien alsook het \gls{lldp}.
+Deze extra protocollen bieden informatie aan die via SNMP opgevraagd kan worden en zijn ook gegevens die in een realistische situatie opgevraagd kunnen worden.
+De configuratie als switch en van LLDP wordt hier echter niet besproken. \todo{Dit kan eventueel als bijlage uitgelegd worden.}
+
+Zoals gezegd worden alle nodes voorzien van een minimale Debian 7 installatie.
+Dit wil zeggen dat er geen extra softwarepakketten worden geselecteerd bij installatie.
+
+In de veronderstelling dat het internet werkt beginnen we na de installatie met het updaten van het systeem en het installeren van \textit{sudo}:
+
+\begin{lstlisting}[language=bash]
+# apt-get update
+# apt-get upgrade
+# apt-get install sudo
+\end{lstlisting}
+
+Maak een gebruiker aan en zorg ervoor dat je sudo rechten hebt met behulp van het \textit{visudo} commando of door je gebruiker toe te voegen aan de \textit{sudo} groep.
+
+\begin{lstlisting}[language=bash]
+# visudo
+# usermod -a -G sudo <jouw gebruikersnaam>
+\end{lstlisting}
+
+Dan installeren we de snmp \textit{daemon} die zal antwoorden op SNMP requests.
+Om te testen is het ook interessant om de client-side SNMP tools te installeren alsook een tool om de belangrijkste \glspl{mib} te downloaden.
+Met die \glspl{mib} worden numerieke \glspl{oid} omgezet naar de leesbare tekstuele voorstelling.
+
+Debian laat standaard niet toe dat niet-vrije (non-free) software\footnote{
+	Dit is software die niet volledig vrij is maar op een of andere manier beperkt wordt door zijn licentie. De eisen die gesteld worden aan vrije software voor Debian zijn te vinden in de Debian Free Software Guidelines (DFSG)\cite{dfsg}\cite{dfsg-wiki}.}
+geïnstalleerd wordt. De \textit{snmp-mibs-downloader} tool is daar een voorbeeld van.
+Om dit toch toe te laten moet je voor elke lijn in /etc/apt/sources.list het non-free component achteraan toevoegen.
+Dan krijg je zoiets:
+
+\begin{lstlisting}[language=bash]
+deb http://ftp.belnet.be/debian wheezy main non-free
+deb-src http://ftp.belnet.be/debian wheezy main non-free
+\end{lstlisting}
+
+Nu kunnen we wel snmp-mibs-downloader en de andere tools installeren.
+
+\begin{lstlisting}[language=bash]
+$ sudo apt-get install snmpd snmp snmp-mibs-downloader
+\end{lstlisting}
+
+Het volgende commando zal de \glspl{mib} downloaden:
+
+\begin{lstlisting}[language=bash]
+$ sudo download-mibs
+\end{lstlisting}
+
+Het gebruik van de \glspl{mib} kun je aanzetten door de volgende regel in commentaar te zetten in het bestand /etc/snmp/snmp.conf:
+
+\begin{lstlisting}[language=bash]
+mibs :
+\end{lstlisting}
+
+Om \textit{snmpd} te configureren kun je gebruik maken van het \textit{snmpconf} commando die op interactieve wijze configuratiebestanden aanmaakt.
+We moeten ook nog de locatie van de \gls{mib}-bestanden opgeven. Voeg daarom het volgende toe aan /etc/default/snmpd:
+
+\begin{lstlisting}[language=bash]
+export MIBS=/usr/share/mibs
+\end{lstlisting}
+
+Vervolgens herstarten we snmpd om de nieuwe configuratie in te laden.
+
+\begin{lstlisting}[language=bash]
+$ sudo /etc/init.d/snmpd restart
+\end{lstlisting}
+
+We kunnen testen of alles werkt met het volgende:
+
+\begin{lstlisting}[language=bash]
+$ snmpwalk -v1 -cpublic localhost mib-2
+\end{lstlisting}
+
+\todo[inline]{Verder eventueel: bridge configuratie, LLDP}
+
+\todo[inline]{\LARGE {Effectieve testen mbv VirtualBox VM's}}
+
+
+\subsection{iMinds Switches}
+
+\todo[inline]{Betere titel! Fysieke "testopstelling" van een handvol switches. Niet echt een testopstelling natuurlijk, maar wel echte productieswitches.}
 
 \subsection{Profiling van de SNMP Data Retriever}
 
 \todo[inline]{Cleanup. Aanvullen na afwerken. \\
 Is het een probleem dat functies en methoden door elkaar gebruikt worden?}
-In deze sectie gaan we de SNMP Data Retriever van NetworkMining onder de loep nemen met de ingebouwde profiler van Visual Studio.
+In deze paragraaf gaan we de SNMP Data Retriever van NetworkMining onder de loep nemen met de ingebouwde profiler van Visual Studio.
 Een profiler zal ons enkele belangrijke inzichten verschaffen over wat er achter de schermen gebeurt bij het uitvoeren van de retriever.
 Specifiek:
 
@@ -132,19 +263,24 @@ de gemiddelde \emph{inclusieve} tijd in milliseconden.
 	\label{call-tree-main}
 \end{table}
 
+\subsubsection{RetrieveFromDevice}
+
+\todo[inline]{Titel: functienaam (RetrieveFromDevice) of oplossing/onderdeel/probleem (Bulk requests). \\
+Hier maakt het weinig uit maar bij het volgende deel wel: Initialize of Logging (wat het probleem meteen weggeeft).}
+
 We beginnen met de functie die het meeste tijd in beslag neemt: de \emph{RetrieveFromDevice} functie. %TODO: Koppelteken
 Zoals de naam al verklapt gaat het hier om de methode die de requests stuurt om de gevraagde gegevens op te halen van de verschillende toestellen.
 
 \todo[inline]{Hoort de uitleg over de werking van de SNMP Data Retriever hier?}
-De manier waarop dit gebeurt is als volgt.
-Voor elk toestel dat ondervraagd moet worden wordt er een aparte thread gestart, met een maximum van 50 threads.
+De manier waarop dit gebeurt is als volgt:
+voor elk toestel dat ondervraagd moet worden wordt er een aparte thread gestart, met een maximum van 50 threads.
 Elk van die threads zal alle gegevens opvragen die opgevraagd moeten worden voor dat toesteltype. \todo{Toesteltypes al vermeld?}
 Wanneer een thread klaar is met gegevens opvragen wordt de thread verwijderd.
 Indien er nog toestellen zijn die nog moeten ondervraagd worden, zal er dan een nieuwe thread opgestart worden voor het volgende toestel. \todo{Volledige uitleg over thread management geven of later uitleggen bij verbeteringen?}
 Dit gaat zo door tot alle toestellen zijn ondervraagd.
 
 In \cref{snmp-operaties} werden de verschillende SNMP operaties besproken waarmee men
-gegevens kan opvragen. De originele versie van de SNMP Data Retriever die we nu testen maakt gebruik van
+gegevens kan opvragen. De originele versie van de SNMP Data Retriever die we eerst testen maakt gebruik van
 GET-requests voor enkelvoudige gegevens en GETNEXT-requests om een SNMP walk te doen van 
 een ganse deelboom.
 
@@ -156,10 +292,6 @@ De SyncRequest methode wordt gebruikt om synchroon een request te versturen.
 Het feit dat de request synchroon gebeurt wil zeggen dat de code wacht op het antwoord alvorens verder te gaan.
 We zien dat de methode 443 keer is opgeroepen dus dat wil zeggen dat er 443 requests verstuurd zijn geweest.
 Gemiddeld deed een request er een kleine 10 milliseconden over, allen samen goed voor bijna 60\% (oftewel 4,28 seconden) van de totale uitvoeringstijd.
-
-
-
-\todo[inline]{Aanvullen. Implementeren van BULK requests.}
 
 \begin{table}[h]
 	\centering
@@ -181,7 +313,12 @@ Gemiddeld deed een request er een kleine 10 milliseconden over, allen samen goed
 	\label{call-tree-retrievefromdevice}
 \end{table}
 
+\todo[inline]{Theoretische resultaten? (Adhv. testen met VirtualBox \& iMinds Switchen)}
 
+\todo[inline]{Aanvullen. Implementeren van BULK requests.}
+
+\subsubsection{Initialize}
+\todo{Titel ok?}
 \todo[inline]{Herschrijf begin van stuk over logging framework.}
 Het eerste wat er ons opvalt als we de call tree bekijken is dat de \emph{Initialize} methode 25\% van de
 uitvoeringstijd voor zijn rekening neemt.
