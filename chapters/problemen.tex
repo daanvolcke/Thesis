@@ -1,1 +1,32 @@
 \section{Problemen}
+
+\todo[inline,caption={}]{
+
+\begin{itemize}
+
+	\item Kolombreedte OID's (en andere? Hostnaam?) te klein
+	\item Grootschalige testopstelling op de Virtual Wall \\
+		Probleem met de virtualisatie (beta achtige feature, werkt in de praktijk niet zo goed)
+		Problemen met netwerkopstelling/adapters voor virtuele nodes
+	
+\end{itemize}
+
+Niet opgelost/niet belangrijk:
+
+\begin{itemize}
+
+	\item DDOS-bescherming bij iMinds
+	\item Permissieproblemen met snmpd.
+	\item Omdat mijn reactietijden.pl script maar een commando uitvoert, hebben we voor het benchmarken van bulkrequests die manueel opgesteld worden een ander script nodig.
+	Ik heb me hiervoor gebaseerd op m'n benchmarking script voor Windows die zelf de tijden meet (omdat ik de /usr/bin/time van Linux niet heb in Windows).
+	Deze maakt gebruik van een CPAN module. Om zeker te zijn dat er geen grote verschillen tussen de timing-methoden zitten, heb ik nog een derde manier geprobeerd.
+	Ik maak gebruik van HiRes time en hou start- en eindtijd bij en geef het verschil terug. De drie timingmethoden komen dicht genoeg bij elkaar in de buurt om te concluderen
+	dat er geen timingverschillen optreden bij het gebruik van verschillende timingmethoden en ik dus de tijden kan vergelijken. \\
+	Zie ook meerderekolommen - Vergelijk timings.pl en Verschillen in benchmark timings.txt.
+	\item Totaal aantal objecten dat een agent aanbiedt.
+	\item Gaten in tabellen, zie random notes.txt
+	\item Problemen met verouderde softwarepakketten op Debian
+	
+\end{itemize}
+
+}
