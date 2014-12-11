@@ -142,12 +142,45 @@ $ snmpwalk -v1 -cpublic localhost mib-2
 
 \todo[inline]{Verder eventueel: bridge configuratie, LLDP}
 
+\todo[inline]{SNMP Data Retriever in een Windows XP VM?}
+
 \todo[inline]{\LARGE {Effectieve testen mbv VirtualBox VM's}}
+
+\todo[inline, caption={}]{Tests in VirtualBox:
+
+\begin{itemize}
+	\item Aantal SNMP objecten onder de voornaamste OID's versus het totaal aantal objecten (snmp-objecten.pl) \\
+		Vergelijking tussen de verschillende iMinds switchen wat betreft aantal objecten (vergelijkfracties.pl) \\
+		Zie pg.7, verslag week 9-10
+	\item Reactietijd: tijd per object, SNMP walk vs bulk (verschillende groottes)
+	\item SNMP Data Retriever vs. Net-SNMP
+\end{itemize}
+
+}
+
+\subsubsection{Test \#1}
 
 
 \subsection{iMinds Switches}
 
 \todo[inline]{Betere titel! Fysieke "testopstelling" van een handvol switches. Niet echt een testopstelling natuurlijk, maar wel echte productieswitches.}
+
+
+\subsection{Netwerkvertraging}
+
+\todo[inline]{Latency speelt een grote rol, zie de onnauwkeurige resultaten. Conclusie: liefst/indien mogelijk de bevraging on-site doen, ipv remote. }
+
+\subsection{Aantal interessante gegevens t.o.v. totaal aantal gegevens}
+
+\todo[inline]{Is het nuttig om de op te vragen gegevens te filteren?}
+
+\subsection{Reactietijd (VBox als iMinds switchen)}
+
+\todo[inline]{Betere titel}
+
+\subsection{Reactietijd voor bulkrequests}
+
+\todo[inline]{Betere titel}
 
 \subsection{Profiling van de SNMP Data Retriever}
 
@@ -416,7 +449,31 @@ Bij de keuze werd rekening gehouden met de performantieimpact en de features van
 
 }
 
+\subsection{Tabellen rij per rij opvragen i.p.v. kolom per kolom}
 
+\todo[inline]{Betere/kortere titel?}
+
+\todo[inline, caption={}]{Vraag: waarom zou dit sneller zijn??? \\
+Als je graag rij per rij LEEST zou kan je gebruik maken van het \textbf{smptable commando}.
+Deze zorgt voor de correcte alignering en houdt rekening met indexen en gaten in de tabel.
+Zie ook \textbf{http://www.net-snmp.org/wiki/index.php/TUT:snmptable}. \\
+Zowel op VBox als iMinds Switchen \\
+
+Caveats:
+
+\begin{itemize}
+	\item Goede integratie van MIB's vereist, want je moet weten welke kolommen er zijn en wat de indexering is
+	\item Rekening houden met lege cellen/gaten in de tabel
+	\item Als je de indexen op voorhand niet kent kun je maar een rij tegelijkertijd opvragen m.b.v. getnexts,
+		Je kunt dus niet meer gegevens opvragen als er kolommen zijn in een request. Bulkrequests hebben daarentegen
+		geen limiet op het aantal objecten (afgezien van de pakketgrootte natuurlijk).
+\end{itemize}
+
+}
+
+\subsection{Impact van de fragmentatie van pakketten}
+
+\todo{Titel: Snelheidsimpact?}
 
 
 \section{Grootschalige benchmarks en experimenten}
@@ -439,6 +496,10 @@ Bij de keuze werd rekening gehouden met de performantieimpact en de features van
 
 \subsubsection{Invloed aantal ondervraagde nodes}
 
+\todo[inline]{Verwijs voor dip in bandbreedte bij groot aantal nodes (>50) naar sectie CPU gebruik.}
+
 \subsection{Benchmarks CPU-gebruik}
+
+\todo[inline]{Onderzoek waarom verkeer \& CPU-verbruik dippen voor het einde (aantal threads daalt).}
 
 \subsection{Benchmarks geheugenverbruik}

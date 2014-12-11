@@ -1,10 +1,14 @@
-\section{Problemen}
+\chapter{Problemen}
+
+\todo[inline]{Zou dit niet beter een apart hoofdstuk zijn?}
 
 \todo[inline,caption={}]{
 
 \begin{itemize}
 
 	\item Kolombreedte OID's (en andere? Hostnaam?) te klein
+	\item endOfMibView exceptie niet ondersteund door SNMP Data Retriever \\
+		Zie pg. 7, verslag week 9-10
 	\item Grootschalige testopstelling op de Virtual Wall \\
 		Probleem met de virtualisatie (beta achtige feature, werkt in de praktijk niet zo goed)
 		Problemen met netwerkopstelling/adapters voor virtuele nodes
@@ -16,7 +20,7 @@ Niet opgelost/niet belangrijk:
 \begin{itemize}
 
 	\item DDOS-bescherming bij iMinds
-	\item Permissieproblemen met snmpd.
+	\item Permissieproblemen met snmpd.	$ \rightarrow $ IP range beperking~
 	\item Omdat mijn reactietijden.pl script maar een commando uitvoert, hebben we voor het benchmarken van bulkrequests die manueel opgesteld worden een ander script nodig.
 	Ik heb me hiervoor gebaseerd op m'n benchmarking script voor Windows die zelf de tijden meet (omdat ik de /usr/bin/time van Linux niet heb in Windows).
 	Deze maakt gebruik van een CPAN module. Om zeker te zijn dat er geen grote verschillen tussen de timing-methoden zitten, heb ik nog een derde manier geprobeerd.
@@ -30,3 +34,16 @@ Niet opgelost/niet belangrijk:
 \end{itemize}
 
 }
+
+
+\section{Ondersteuning voor lange OID's}
+
+\section{Ondersteuning voor de endOfMibView exceptie}
+
+\section{''DOS-bescherming'' op intern netwerk iMinds}
+
+\todo[inline]{Betere titel? Alhoewel de oorzaak nooit is vastgelegd...}
+
+\section{Grootschalige opstelling op de Virtual Wall m.b.v. virtualisatie}
+
+\todo[inline]{Betere/kortere titel?}
