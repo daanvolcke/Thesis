@@ -168,7 +168,113 @@ $ snmpwalk -v1 -cpublic localhost mib-2
 
 \subsection{Netwerkvertraging}
 
-\todo[inline]{Latency speelt een grote rol, zie de onnauwkeurige resultaten. Conclusie: liefst/indien mogelijk de bevraging on-site doen, ipv remote. }
+Netwerkvertraging of \textit{latency} definiëren we als de zogenaamde \textit{round-trip time},
+of de tijd die nodig is om een bericht te sturen naar een ander toestel en voor die computer om het antwoord terug naar jou te sturen\footnote{
+	Latency kan ook gedefiniëerd worden als enkel de tijd dat een bericht nodig heeft om in een richting reizen.
+	Dat is echter moeilijker om te meten. Meestal hanteert men de round-trip time omdat dat gemeten kan worden vanaf slechts een punt. \cite{latency-wiki}
+}.
+De latency tussen twee toestellen kan je gemakkelijk meten vanop een van de twee toestellen met behulp van het \textit{ping} commando.
+
+Op een LAN-netwerk bedraagt de latency gewoonlijk minder dan 1 ms en valt dus te verwaarlozen.
+Vanaf dat verkeer over het internet gaat, gaat latency een grote rol spelen.
+Zolang de afstand niet te lang is (als we binnen West-Europa blijven) dan blijft de latency beperkt tot 10-50 ms.
+Als we daarentegen communiceren met bv. Amerika, dan spreken we al over 100-200 ms (afhankelijk of we spreken over de Oost- of Westkust).
+Voor sommige toepassingen (zoals bijvoorbeeld real-time spellen) is dit te hoog om nog te gebruiken.
+
+Het belang voor ons van de latency is voornamelijk bij het opvragen van veel gegevens met GET- en GETNEXT-requests.
+Zoals uitgelegd in \cref{snmp-operaties} wordt er slechts een gegeven in een request gestopt en
+moet je steeds wachten op het antwoord alvoren je de volgende request stuurt.
+Als te maken hebt met een latency van zeg maar 25 ms, wil dat zeggen dat je steeds 25 ms moet wachten alvorens je de volgende request kunt sturen.
+Stel dat je 200 gegevens wenst op te halen, dan doe je hier 5 seconden over (200 gegevens $*$ 25 ms wachten per gegeven).
+
+Was er een netwerkvertraging van slechts 1 ms, dan zou het ophalen van dezelfde 200 gegevens slechts 200 ms duren.
+Natuurlijk houden we hier nog geen rekening met de tijd die het toestel zelf nodig heeft om het bericht te verwerken en te antwoorden.
+
+De originele versie van de SNMP Data Retriever maakte effectief gebruik van GET- en GETNEXT-requests.
+Daarom hebben we hier enkele tests op gedaan om te zien of latency inderdaad een grote rol speelt in de tijd nodig om gegevens op te vragen.
+
+\subsubsection{Meetresultaten}
+
+Deze tests hebben we gedaan op de virtuele machines met Debian.
+In Linux kun je gemakkelijk een artificiële netwerkvertraging creëren met het volgende commando:
+
+\begin{lstlisting}[language=bash, caption={Artificiële netwerkvertraging van 25ms op de eth0 interface}]
+$ sudo tc qdisc add dev eth0 root netem delay 25 ms
+\end{lstlisting}
+
+Dit zorgt ervoor dat er een latency van 25 ms gecreëerd wordt op de \textit{eth0} interface.
+\todo[]{Is een vertraging van 25 ms wel realistisch?}
+We hebben de test gedaan met de originele versie van de SNMP Data Retriever bij het ondervragen van 1 en 4 machines,
+alsook bij een vertraging van 25 ms en zonder vertraging.
+De volgende \glspl{oid} werden opgevraagd (in het XML formaat van SNMP Data Retriever, zie \cref{snmp-data-retriever-configuratie}),
+goed voor ongeveer 217 gegevens per toestel:
+
+\begin{lstlisting}[language=xml]
+<snmpWalk oid="1.3.6.1.2.1.1" mib="RFC1213-MIB" name="system" />
+<snmpWalk oid="1.3.6.1.2.1.2" mib="RFC1213-MIB" name="interfaces" />
+<snmpWalk oid="1.3.6.1.2.1.4" mib="RFC1213-MIB" name="ip" />
+<snmpWalk oid="1.3.6.1.2.1.17.1" mib="BRIDGE-MIB" name="dot1dBase" />
+<snmpWalk oid="1.3.6.1.2.1.17.2" mib="BRIDGE-MIB" name="dot1dStp" />
+\end{lstlisting}
+
+De resultaten zie je in \cref{tabel-latency}.
+Je ziet de gemiddelde uitvoeringstijd in ms van 10 iteraties.
+Daaronder zie je ook het CPU-gebruik van het (volledige) systeem.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lllll@{}}
+\toprule
+                      & \multicolumn{2}{c}{25 ms vertraging} & \multicolumn{2}{c}{geen vertraging} \\
+                      & 1 toestel       & 4 toestellen       & 1 toestel       & 4 toestellen      \\ \midrule
+Gemiddelde tijd (ms): & 15.650          & 15.987             & 2.693           & 6.105             \\
+CPU verbruik:         & 10\%            & 35\%               & 80-90\%         & \textbf{100\%}    \\ \bottomrule
+\end{tabular}
+\caption{De tijd nodig om 1-4 toestellen te ondervragen met en zonder vertraging}
+\label{tabel-latency}
+\end{table}
+
+Jammer genoeg is de resolutie voor het meten van het CPU-gebruik beperkt tot 1 meting per seconde.
+Desondanks is dat toch voldoende om te zien dat het CPU-gebruik een bottleneck is bij het bevragen van vier toestellen zonder vertraging.
+Het moet wel gezegd worden dat het testsysteem waarop de retriever draaide een Windows XP virtuele machine was met slechts 1 CPU core toegewezen\footnote{
+	Dit was omdat er een VirtualBox image werd voorzien waarop alles reeds voorgeconfigureerd was om snel te kunnen beginnen met testen van de retriever.
+	Latere tests maken gebruik van Windows 7 en meerdere cores.
+}.
+Ook bij slechts een toestel zie je dat het CPU-gebruik vrij hoog ligt.
+Wanneer we een vertraging van 25 ms introduceren is het CPU-gebruik een stuk lager.
+Hadden we 50 toestellen bevraagd, het maximum aantal dat de retriever tegelijk doet, met een vertraging van 25 ms, dan hadden we evenwel weer in de problemen gezeten.
+
+Hoe dan ook, de belangrijkste reden dat we deze test gedaan hebben is de impact op de uitvoeringstijd.
+We zien dat het opvragen van iets meer dan 200 gegevens van een enkel toestel zonder vertraging geen 200 ms duurt zoals eerst berekend,
+maar ongeveer 2700 ms.
+We zaten er slechts een factor 10 naast.
+Er is natuurlijk flink wat meer aan de hand dan enkel het vervoeren van het pakket over de netwerkverbinding.
+De retriever doet namelijk ook een aantal databankinteracties zoals het aanmaken van tabellen en
+het wegschrijven van de resultaten in die databank (zie \cref{snmp-data-retriever-db}).
+
+Als we dan een vertraging van 25 ms invoeren neemt de uitvoeringstijd toe met bijna een factor 6.
+Onze oververeenvoudigde rekensom van daarnet zou uitkomen op een kleine 6 seconden, de realiteit wijst uit dat het ruim 15 seconden duurt.
+
+Dezelfde vergelijking maken met vier toestellen is jammer genoeg nutteloos vanwege de CPU-bottleneck.
+Het is wel interessant om te zien dat het ondervragen van extra toestellen slechts een kleine impact heeft op de uitvoeringstijd.
+Logisch, want de vier toestellen worden (gelukkig) tegelijkertijd ondervraagd.
+
+
+\subsubsection{Conclusie}
+
+Het is duidelijk dat de netwerkvertraging een belangrijke rol speelt in de uitvoeringstijd van de retriever.
+We raden daarom dan ook sterk aan om, indien mogelijk, de bevragingen \textit{on-site} te doen
+(dit wil zeggen op hetzelfde netwerk in plaats van op afstand) om de netwerkvertraging te minimaliseren.
+
+We kunnen het effect van de netwerkvertraging ook beperken door het gebruik van GETBULK-requests,
+waarbij we meteen meerdere gegevens in een pakket stoppen.
+Als je 10 gegevens in een pakket stopt, betekent dat theoretisch al een snelheidwinst van factor 10.
+We zullen dit dan ook verder onderzoeken in \cref{reactietijd-bulkrequests}.
+
+\todo[inline]{Dubbelcheck of naar de correcte paragraaf verwezen wordt.}
+
+
+
 
 \subsection{Aantal interessante gegevens t.o.v. totaal aantal gegevens}
 
@@ -179,8 +285,11 @@ $ snmpwalk -v1 -cpublic localhost mib-2
 \todo[inline]{Betere titel}
 
 \subsection{Reactietijd voor bulkrequests}
+\label{reactietijd-bulkrequests}
 
 \todo[inline]{Betere titel}
+
+\todo[inline]{In de paragraaf over latency.... Hadden we die 200 gegevens met bulkrequests opgehaald dan had het nog 200ms geduurd...}
 
 \subsection{Profiling van de SNMP Data Retriever}
 
