@@ -276,9 +276,90 @@ We zullen dit dan ook verder onderzoeken in \cref{reactietijd-bulkrequests}.
 
 
 
-\subsection{Aantal interessante gegevens t.o.v. totaal aantal gegevens}
+\subsection{Filteren van de op te vragen gegevens}
 
-\todo[inline]{Is het nuttig om de op te vragen gegevens te filteren?}
+Een van de vragen die we ons gesteld hebben, is of het wel degelijk de moeite waard is om gegevens te filteren?
+Is het met andere woorden nuttig dat we ons bezighouden met een lijst op te stellen van enkel de \glspl{oid} die ons interesseren,
+of kunnen we evengoed meteen alle gegevens opvragen die een SNMP agent ons aanbiedt?
+
+\subsubsection{Meetresultaten}
+
+Voor deze test stellen we een lijst op van \gls{oid} die ons interesseren en vergelijken we het aantal objecten dat dit oplevert
+in vergelijking met het totaal aantal objecten dat een SNMP agent aanbiedt.
+Omdat de virtuele machines die als switch geconfigureerd zijn niet zijn aangesloten op echte computers hebben ze ook maar weinig data.
+Bovendien bevatten de virtuele machines omdat ze een gans besturingssysteem draaien heel wat extra informatie die een gewone switch niet heeft.
+Denk hierbij aan bijvoorbeeld een lijst van alle geïnstalleerde softwarepakketten.
+Anderzijds ontbreken de virtuele machines een aantal extra gegevens die producenten kunnen aanbieden zoals statistieken.
+Omdat het belangrijk is dat deze test de realiteit zo goed mogelijk weergeeft,
+werd deze test dan ook uitgevoerd op de productieswitches van iMinds.
+
+Dit is de lijst van \glspl{oid} die we als interessant beschouwen:
+
+\begin{lstlisting}
+1.3.6.1.2.1.1			(system)
+1.3.6.1.2.1.2			(interfaces)
+1.3.6.1.2.1.4			(ip)
+1.3.6.1.2.1.17.1 		(dot1dBase)
+1.3.6.1.2.1.17.2		(dot1dStp)
+1.0.8802.1.1.2.1.4.1	(lldpRemTable)
+\end{lstlisting}
+
+De \textit{dot1d} \glspl{oid} hebben betrekking op de switching functionaliteit.
+\textit{dot1dBase} bevat onder andere de tabel met alle switchpoorten terwijl \textit{dot1dStp} informatie bevat over het Spanning Tree Protocol (STP).
+
+Om te bepalen hoeveel objecten er in totaal aangeboden worden kun je een SNMP walk doen van \gls{oid} '.' of '.1'.
+
+Een voorbeeld van de uitvoer die onze test levert is het volgende:
+
+\begin{lstlisting}
+Host: atlas1a1.intec.ugent.be
+Date: Thu Apr 17 17:20:48 CEST 2014
+
+Retrieved 267 objects for dot1dStp (1.3.6.1.2.1.17.2).
+Retrieved 1318 objects for dot1dBase (1.3.6.1.2.1.17.1).
+Retrieved 7943 objects for interfaces (1.3.6.1.2.1.2).
+Retrieved 7 objects for system (1.3.6.1.2.1.1).
+Retrieved 1716 objects for ip (1.3.6.1.2.1.4).
+Retrieved 207 objects for lldpRemTable (1.0.8802.1.1.2.1.4.1).
+Retrieved 11458 objects in total.
+The agent has 369388 objects in total.
+Percentage of retrieved objects from total: 3.10188744626247%
+\end{lstlisting}
+
+We zien dus hoeveel objecten we terugkrijgen bij het overlopen van elke \gls{oid},
+het totaal aantal objecten we teruggekregen hebben bij alle voor ons interessante \glspl{oid} en
+hoeveel objecten het toestal in totaal aanbiedt (voor alle ondersteunde \glspl{oid}).
+Tenslotte zien we ook nog het percentage van interessante objecten t.o.v. het totaal.
+Een samenvatting van de resultaten voor de verschillende switches zien we in \cref{tabel-fracties}.
+Gemiddeld komen we uit op een percentage van 4,48\% interessante gegevens over alle switches heen.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Host                    & Interessante objecten & Totaal aantal objecten & Percentage \\ \midrule
+atlas1a1.intec.ugent.be & 11.458                & 369.388                & 3,10\%     \\
+atlas1a2.intec.ugent.be & 5.636                 & 123.617                & 4,56\%     \\
+atlas2a1.intec.ugent.be & 3.247                 & 69.022                 & 4,70\%     \\
+atlas2a2.intec.ugent.be & 3.238                 & 69.201                 & 4,68\%     \\
+atlas2b1.intec.ugent.be & 3.247                 & 69.418                 & 4,68\%     \\
+atlas2b2.intec.ugent.be & 3.238                 & 69.449                 & 4,66\%     \\
+atlas3a1.intec.ugent.be & 3.256                 & 69.952                 & 4,65\%     \\
+atlas3a2.intec.ugent.be & 3.251                 & 69.509                 & 4,68\%     \\
+atlas3b1.intec.ugent.be & 3.247                 & 70.212                 & 4,62\%     \\ \bottomrule
+\end{tabular}
+\caption{Aantal interessante objecten t.o.v. totaal aantal objecten}
+\label{tabel-fracties}
+\end{table}
+
+\subsubsection{Conclusie}
+
+Gezien het lage percentage van gegevens die voor ons echt interessant is,
+loont het zeker de moeite om een lijst op te stellen van de \glspl{oid} die interessant zijn.
+Dit zal sowieso al schelen in de uitvoeringstijd omdat er 20 keer minder gegevens moeten opgevraagd worden,
+bovendien scheelt dit ook in de opslag van de gegevens.
+Zeker als er meerdere kopieën van dezelfde gegevens bijgehouden worden over een bepaalde tijdspanne.
+
 
 \subsection{Reactietijd (VBox als iMinds switchen)}
 
@@ -288,6 +369,18 @@ We zullen dit dan ook verder onderzoeken in \cref{reactietijd-bulkrequests}.
 \label{reactietijd-bulkrequests}
 
 \todo[inline]{Betere titel}
+
+\todo[inline, caption={}]{
+
+Indien nodig twee paragrafen over bulkrequests:
+
+\begin{itemize}
+	\item We zijn begonnen met GET- vs. BULK te testen met Net-SNMP tools alvorens te implementeren!
+	\item Over de impact van latency? (Niet getest...)
+	\item Over het aantal objecten dat we best in een request stoppen
+\end{itemize}
+
+}
 
 \todo[inline]{In de paragraaf over latency.... Hadden we die 200 gegevens met bulkrequests opgehaald dan had het nog 200ms geduurd...}
 
