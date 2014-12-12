@@ -11,12 +11,15 @@ Bij de aanvang van de masterproef was het zo dat de retriever reeds ingezet werd
 De bedoeling is echter om de nodige aanpassingen te doen zodat de retriever ook vlot kan ingezet worden voor grote netwerken,
 van 1000 toestellen en meer. Het plan is om eind dit jaar de software ook te kunnen gebruiken voor het netwerk van Telenet. \todo{Mag Telenet vermeld worden?}
 
+\todo[inline]{Samenvatting van de werking van de retriever? GET- \& GETNEXT-requests, wegschrijven van de resultaten in een DB}
+
 \todo[inline,caption=bestaande-snmp-retriever]{Uitleg over bestaande SNMP Data Retriever. \\
 Vandaag in gebruik bij NetworkMining voor kleine netwerken.
 Bedoeling om te kunnen inzetten op grote netwerken zoals dat van Telenet. \\
 Beschrijving huidige functionaliteit, hoe werkt de software, configuratie zie hieronder.}
 
 \subsection{Configuratie}
+\label{snmp-data-retriever-configuratie}
 Er zijn drie manieren waarop de retriever kan geconfigureerd worden. De belangrijkste,
 en wellicht de enige waar je als eindgebruiker mee in aanraking zal komen is het XML-configuratiebestand.
 Je kunt ook een aantal opties doorgeven aan de hand van argumenten bij het oproepen van het programma.
@@ -102,6 +105,7 @@ Ook het logformaat kan je zelf aanpassen. Op al deze opties wordt dieper ingegaa
 
 
 \subsection{Databankstructuur}
+\label{snmp-data-retriever-db}
 Tijdens het uitvoeren van de retriever worden er een aantal tabellen aangemaakt in de opgegeven databank om de resultaten in op te slaan.
 
 
