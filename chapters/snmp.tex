@@ -287,6 +287,7 @@ De GETBULK-operatie daarentegen probeert zo veel mogelijk data terug te sturen a
 Met de GETBULK-operatie is het dus wel mogelijk om incomplete antwoorden terug te krijgen.\cite{essentialsnmp}
 
 \section{Manieren om SNMP gegevens op te vragen}
+\label{manieren-om-snmp-gegevens-op-te-vragen}
 
 Aan de hand van de SNMP operaties besproken in \cref{snmp-operaties} zijn er verschillende mogelijkheden om gegevens op te vragen
 al naar gelang of je een of meerdere gegevens wenst op te vragen en welke gegevens je juist wenst op te vragen (bv. tabellen).
@@ -389,6 +390,7 @@ Als je toch .0 toevoegt dan zul je niet de waarde van sysDescr terugkrijgen maar
 Moest je ten slotte een hoger aantal max-repetitions gebruiken dan een tabel cellen heeft,
 of een scalaire waardere meerdere keren laten herhalen, dan krijg je ook nog de waarden van de \glspl{oid} die volgen op de tabel of de scalaire waarde terug.
 
+
 \subsubsection{GET- en GETNEXT-opdrachten}
 
 In principe is het ook mogelijk om meerdere gegevens op te vragen met een GET- of GETNEXT-opdracht.
@@ -419,7 +421,7 @@ Zoals gezegd maak je normaal gezien weinig gebruik van de GETNEXT-operatie maar 
 De SNMP walkopdracht wordt gebruikt om een ganse boomtak te overlopen en maakt achterliggend gebruik van de GETNEXT-operaties.
 Met de volgende SNMP walkopdracht kun je de interfacetabel van een toestel overlopen:
 
-\begin{lstlisting}[float=h, caption={SNMP walkopdracht}, label=netsnmp-walk]
+\begin{lstlisting}[caption={SNMP walkopdracht}, label=netsnmp-walk]
 $ snmpwalk -v 1 -c public 127.0.0.1 ifTable
 IF-MIB::ifIndex.1 = INTEGER: 1
 IF-MIB::ifIndex.2 = INTEGER: 2
@@ -438,12 +440,30 @@ Vermits de BULK-operaties ook gebruik maken van GETNEXT-operaties maar die bunde
 kun je de SNMP walkopdracht nog sneller laten verlopen door de BULK variant te gebruiken.
 Het resultaat blijft natuurlijk hetzelfde.
 
-\begin{lstlisting}[float=h, caption={SNMP walkopdracht m.b.v. BULK-operaties}, label=netsnmp-bulkwalk]
+\begin{lstlisting}[caption={SNMP walkopdracht m.b.v. BULK-operaties}, label=netsnmp-bulkwalk]
 $ snmpbulkwalk -v 2c -c public 127.0.0.1 ifTable
 ...
 \end{lstlisting}
 
 Let erop dat je de versie moet veranderen omdat je gebruik maakt van BULK-operaties!
+
+Net als bij het snmpbulkget commando kun je hier echter nog het aantal herhalingen (max-repetitions) opgeven met de -Cr optie.
+Daarbij komt het erop neer dat we kunnen opgeven hoeveel objecten moeten samengebundeld worden in een pakket.
+Om een SNMP walk zo snel mogelijk te laten verlopen zijn we natuurlijk geneigd om dit aantal zo hoog mogelijk in te stellen.
+We moeten wel rekening houden met twee beperkingen: de maximale grootte van een pakket is beperkt tot de Maximum Transmission Unit (MTU) van een verbinding.
+Bij een ethernetverbinding gaat het om 1500 Bytes.
+
+Bij een groot aantal herhalingen is het ook mogelijk dat er redelijk wat data verspild wordt.
+Stel dat we het aantal herhalingen instellen op 50, dan zullen de pakketten steeds 50 objecten bevatten.
+Ook het laatste pakket zal er 50 bevatten, ook al valt er slechts een object meer binnen de walk.
+Dan zijn de overige 49 objecten natuurlijk niet relevant voor ons en doen we daar dan ook niks mee.
+
+Als we een walk doen van een deelboom die maar 10 objecten heeft, heeft het ook geen zin om het aantal herhalingen op 50 te zetten.
+Natuurlijk weet je op voorhand niet hoeveel objecten juist onder een \gls{oid} vallen,
+maar je kan meestal wel een schatting doen of dit baseren op het aantal objecten dat in het verleden werd opgehaald voor dat \gls{oid} en voor dat toestel.
+
+Het aantal herhalingen is uiteindelijk een beslissing die vooral zal afhangen van het geschatte aantal gegevens dat opgevraagd gaat worden.
+Standaard staat het aantal herhalingen daarom op een conservatieve 10 objecten.
 
 
 \section{Versies}
