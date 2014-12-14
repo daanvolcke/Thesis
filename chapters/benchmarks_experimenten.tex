@@ -518,8 +518,94 @@ Vooral het effect van latency op bulkrequests hadden we moeten testen.}
 
 \subsection{SNMP Data Retriever versus Net-SNMP tools}
 
+Bij deze test vergelijken we de performantie tussen de \nwmretriever{} en de Net-SNMP tools.
+Alvorens we beginnen moeten we opmerken dat het niet echt een eerlijke vergelijking is,
+want de geschiedenis van Net-SNMP dateert al terug van 1992\cite{net-snmp-history}.
+\nwmretriever{} is in vergelijking nog een jong project dat nog volop ontwikkeld wordt.
+Gedurende de verscheidene testen die we gedaan hebben genoot de software nog van meerdere updates.
+Om een vast referentiepunt aan te houden werd echter geen rekening gehouden met deze updates.
+Wel zullen we de updates vermelden als die relevant zijn voor een bepaalde test.
+
+Behalve het verschil in maturiteit van de software doet de \nwmretriever{} nog iets meer dan de Net-SNMP tools.
+De Net-SNMP tools ondersteunen maar een opdracht (een GET-request of een SNMP walk bijvoorbeeld) en voor slechts een toestel.
+Om meerdere gegevens van verschillende toestellen op te vragen moet je de verschillende tools meerdere malen laten uitvoeren.
+De resultaten worden uiteindelijk simpelweg uitgeschreven op het scherm.
+
+Bij de \nwmretriever{} daarentegen wordt er gewerkt met een XML-bestand (zie \cref{snmp-data-retriever}) waarin je alle verschillende toestellen kunt opsommen,
+en voor elk soort toestel kun je een lijst van opdrachten opstellen die moeten uitgevoerd worden voor dat type toestel.
+Op het einde som je dan alle toestellen op en geef je mee om wat voor soort toestel het gaat zodat de software weet welke opdrachten moeten uitgevoerd worden.
+Wanneer het programma wordt uitgevoerd worden alle nodige opdrachten voor alle opgegeven toestellen in parallel uitgevoerd.
+Bij deze test houden we het wel maar bij een toestel, waardoor dat voordeel wegvalt in dit geval.
+Na het ophalen van de gegevens worden de resultaten uiteindelijk weggeschreven in een databank (of een XML-bestand in een latere versie).
+Die gegevens worden dan later verwerkt door andere tools van NetworkMining voor verschillende doeleinden zoals bijvoorbeeld het visualiseren van inventarissen.
+
+\subsubsection{Meetresultaten}
+
+Hier gaat het zoals gezegd slechts over het bevragen van een enkel toestel, namelijk een van de virtuele machines.
+De bevragingen zelf gebeuren ook vanaf virtuele machines: de Net-SNMP tools worden zoals voorheen uitgevoerd op een andere Debian virtuele machine,
+de \nwmretriever opnieuw op de voorziene Windows XP virtuele machine.
+De Windows XP virtuele machine heeft iets meer geheugen (512 MB tegenover 256 MB bij Debian) omwille van
+de grafische schil van Windows en de databank die er ook op draait,
+maar heeft verder geen invloed op de test want de software zelf gebruikt een stuk minder dan 100 MB geheugen).
+
+Omdat de \nwmretriever{} de \textit{endOfMibView}-exceptie niet ondersteunt (zie \cref{probleem-endofmibview-exceptie}),
+is het niet mogelijk om een SNMP walk te doen van een ganse SNMP-agent.
+Deze exceptie wordt opgegooid wanneer het einde van een \gls{mib}-bestand bereikt wordt en er dus geen verdere gegevens meer zijn.
+De exceptie is een speciaal geval omdat ze geen gebruik maakt van het error-veld in het antwoordbericht.
+Het error-veld staat dus onterecht op 0, wat aangeeft dat er zich geen fout heeft voorgedaan.
+Daarom, en omdat het ongewoon is om een ganse SNMP-agent te overlopen, is het begrijpelijk dat de \nwmretriever nog geen ondersteuning had voor deze exceptie.
+We hebben dit wel doorgegeven aan NetworkMining dus dat zal zeker opgelost zijn in een latere versie.
+
+Omdat we dus geen ganse SNMP-agent kunnen overlopen kiezen we een \gls{oid} die voldoende gegevens bevat.
+We gaan uiteindelijk voor de \textit{mgmt}-tak (1.3.6.1.2), de ouder van de \textit{mib-2}-tak.
+Die \gls{oid} is goed voor ongeveer 1700 objecten.
+
+Bij de Net-SNMP tools hebben we het gemiddelde genomen van 50 iteraties,
+bij de \nwmretriever{} gaat het om 10 iteraties omdat die testen nog niet geautomatiseerd waren.
+De resultaten zie je in \cref{tabel-nwmretriever-vs-net-snmp}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Operatie (objecter per request) & Uitvoeringstijd (ms) & Objecten/ms \\ \midrule
+SNMP Data Retriever             & 4575                 & 0.357       \\
+Net-SNMP Walk                   & 606                  & 2.928       \\
+Net-SNMP Bulkwalk (10)          & 145                  & 12.218      \\
+Net-SNMP Bulkwalk (50)          & 100                  & 17.740      \\ \bottomrule
+\end{tabular}
+\caption{Metingen tussen de \nwmretriever{} en de Net-SNMP tools}
+\label{tabel-nwmretriever-vs-net-snmp}
+\end{table}
+
+Opnieuw zie je in de eerste kolom over welke operatie het gaat alsook hoeveel objecten per request opgevraagd werden.
+In de tweede kolom staat de gemiddelde uitvoeringstijd en in de laatste het gemiddeld aantal objecten er werden opgehaald per ms.
+De tool die we gebruiken om de uitvoeringstijd te meten, GNU time, heeft een precisie van 10 ms.
+
+Eerst en vooral zien we dat er een groot verschil is tussen de resultaten van de \nwmretriever{}
+en de Net-SNMP walkopdracht, en zoals voorheen tussen de Net-SNMP walk- en bulkwalkopdracht.
+Dit geeft aan dat er wellicht nog veel te optimaliseren valt, maar het resultaat valt ook deels te verklaren door de bijkomende databankinteracties.
+
+We zien ook dat het samenbundelen van 50 objecten per request inderdaad nog een stuk beter is dan slechts 10 objecten.
+Het is je misschien ook opgevallen dat de resultaten nog een stuk beter zijn hier dan bij de tests over bulkrequests (\cref{bulkrequests-benchmarks}).
+Nochthans is het enige verschil met die test de datum waarop de test werd uitgevoerd en het aantal objecten dat werd opgehaald.
+Bij die test overliepen we echter gans de SNMP-agent en kregen we op het einde dan ook een endOfMibView-exceptie,
+mogelijks heeft dat een impact gehad op de resultaten.
+Ter vergelijking, de meeste bulkwalks hadden 440 ms nodig voor ong. 4200 objecten tegenover de 100 ms voor de ong. 1700 objecten bij deze test.
+
+We hadden graag ook de test herhaald op een productieswitch,
+maar we stootten hierbij opnieuw op problemen bij het genereren van veel verkeer op het netwerk van iMinds (zie \cref{probleem-dos-bescherming}).
+
+\todo[inline]{We zouden hier kunnen de test herhalen met een Wireshark capture om te zien of er een afwijking is in de tijd nodig per request...}
+
+\subsubsection{Conclusie}
+
+Er is nog flink wat ruimte over voor verbetering bij de \nwmretriever{} als we de uitvoeringstijden vergelijken met die van de Net-SNMP tools.
+Wat voor performantiewinsten en in welke componenten we die kunnen boeken zal blijken uit de profileranalyse in \cref{profiling}.
+Ook het verhogen van het aantal objecten per request van 10 naar 50 heeft een positieve invloed op de uitvoeringstijd.
 
 \subsection{Profiling van de SNMP Data Retriever}
+\label{profiling}
 
 \todo[inline]{Cleanup. Aanvullen na afwerken. \\
 Is het een probleem dat functies en methoden door elkaar gebruikt worden?}
