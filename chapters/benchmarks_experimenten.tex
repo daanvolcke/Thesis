@@ -518,6 +518,8 @@ Vooral het effect van latency op bulkrequests hadden we moeten testen.}
 
 \subsection{SNMP Data Retriever versus Net-SNMP tools}
 
+\todo[inline]{\nwmretriever{} Gebruikt het .NET platform, Net-SNMP op C.}
+
 Bij deze test vergelijken we de performantie tussen de \nwmretriever{} en de Net-SNMP tools.
 Alvorens we beginnen moeten we opmerken dat het niet echt een eerlijke vergelijking is,
 want de geschiedenis van Net-SNMP dateert al terug van 1992\cite{net-snmp-history}.
@@ -690,8 +692,9 @@ De retriever verwacht een MySQL databank, maar wij kiezen voor een MariaDB-insta
 Omdat MariaDB een drop-in vervanging is voor MySQL is dat echter geen probleem.
 Op het moment van installatie was de laatste stabiele versie 5.5.33a.
 
-We doen een walk van 2 \glspl{oid} op een enkele productieswitch. Dit zal ons 443 objecten opleveren,
-waarvan 441 die voor ons relevant zijn. Volgens de profiler doet de retriever daar ongeveer 7,4 seconden over.
+We doen een walk van 2 \glspl{oid} op een enkele productieswitch: ip (1.3.6.1.2.1.4) en dot1dBase (1.3.6.1.2.1.17.1).
+Dit zal ons 443 objecten opleveren, waarvan 441 die voor ons relevant zijn.
+Volgens de profiler doet de retriever daar ongeveer 7,4 seconden over.
 De call tree van de retriever hebben we voor de leesbaarheid in een tabel gegoten (zie \cref{call-tree-main}).
 De functies met een extreem kleine uitvoeringstijd (minder dan 0,01\%) hebben we achterwege gelaten.
 De kolommen die je ziet zijn de functie, het aantal oproepen, de \emph{inclusieve} tijd als percentage van de totale uitvoeringstijd en
@@ -730,9 +733,9 @@ Zoals de naam al verklapt gaat het hier om de methode die de requests stuurt om 
 \todo[inline]{Hoort de uitleg over de werking van de SNMP Data Retriever hier?}
 De manier waarop dit gebeurt is als volgt:
 voor elk toestel dat ondervraagd moet worden wordt er een aparte thread gestart, met een maximum van 50 threads.
-Elk van die threads zal alle gegevens opvragen die opgevraagd moeten worden voor dat toesteltype. \todo{Toesteltypes al vermeld?}
+Elk van die threads zal alle gegevens opvragen die opgevraagd moeten worden voor dat toesteltype (zie de configuratie van de \nwmretriever, \cref{snmp-data-retriever-configuratie}).
 Wanneer een thread klaar is met gegevens opvragen wordt de thread verwijderd.
-Indien er nog toestellen zijn die nog moeten ondervraagd worden, zal er dan een nieuwe thread opgestart worden voor het volgende toestel. \todo{Volledige uitleg over thread management geven of later uitleggen bij verbeteringen?}
+Indien er nog toestellen zijn die nog moeten ondervraagd worden, zal er dan een nieuwe thread opgestart worden voor het volgende toestel. \todo{Volledige uitleg over thread management geven of later uitleggen bij verbeteringen? Dit zal aan bod komen bij grootschalige testen.}
 Dit gaat zo door tot alle toestellen zijn ondervraagd.
 
 In \cref{snmp-operaties} werden de verschillende SNMP operaties besproken waarmee men
@@ -769,9 +772,106 @@ Gemiddeld deed een request er een kleine 10 milliseconden over, allen samen goed
 	\label{call-tree-retrievefromdevice}
 \end{table}
 
-\todo[inline]{Theoretische resultaten? (Adhv. testen met VirtualBox \& iMinds Switchen)}
+Het versturen van de GETNEXT-requests en wachten op het antwoord voor de SNMP walkopdrachten is dus
+verantwoordelijk voor meer dan de helft van de totale uitvoeringstijd.
+Gezien de resultaten die we gezien hebben in \cref{bulkrequests-benchmarks} waarbij GETBULK-requests vier keer sneller gingen dan GETNEXT-requests,
+was de keuze dan ook snel gemaakt om de SNMP walkopdracht te implementeren met behulp van GETBULK-requests.
 
-\todo[inline]{Aanvullen. Implementeren van BULK requests.}
+Na het implementeren van de SNMP walkopdracht met behulp van GETBULK-requests doen we een test op basis van dezelfde twee \glspl{oid} als hierboven.
+We laten de oude en nieuwe implementatie 100 maal lopen en vergelijken de resultaten in \cref{tabel-nwmretriever-met-bulkrequests}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+                                                                                            & Objecten & Uitvoeringstijd (s) & Objecten/ms \\ \midrule
+SNMP Walk met GETNEXT-requests                                                              & 472      & 7,371               & 0,064       \\
+SNMP Walk met GETBULK-requests                                                              & 441      & 3,131               & 0,141       \\
+\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice methode met\\   GETNEXT-requests\end{tabular} & 472      & 5,060               & 0,093       \\
+\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice methode met\\   GETBULK-requests\end{tabular} & 441      & 0,722               & 0,611       \\ \bottomrule
+\end{tabular}
+\caption{SNMP Walk op basis van GETNEXT-requests versus GETBULK-requests in de \nwmretriever{}}
+\label{tabel-nwmretriever-met-bulkrequests}
+\end{table}
+
+De eerste twee rijen geven de totale uitvoeringstijd weer van de \nwmretriever{},
+de laatste twee tonen de uitvoeringstijd van de RetrieveFromDevice methode gemeten met de profiler.
+Het verschil in het aantal objecten tussen de SNMP walk met GETNEXT- en GETBULK-requests valt te verklaren door het feit dat er gebruik gemaakt wordt van
+respectievelijk SNMP versie 1 en 2c. Versie 1 ondersteunt geen objecten van het type Counter64, dus die kunnen niet opgehaald worden\cite{snmp-counters-faq}.
+
+We zien dat gemiddelde uitvoeringstijd met ruim vier seconden ingekort wordt, goed voor een ruime verdubbeling van de snelheid.
+Als we met de profiler echter enkel en alleen kijken naar methode voor de retrieval zien we dat de methode net zever keer sneller is
+geworden dankzij het gebruik van BULK-requests.
+
+\todo[inline]{Vergelijken met de theoretische resultaten? (Adhv. testen met VirtualBox \& iMinds Switchen)}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Functie                                                  & Calls & Tijd (\%) & Tijd (ms) \\ \midrule
+SnmpSource.SnmpSession.SyncRequest                       & 11    & 11,07     & 33,62     \\
+SNMPDataRetrieval.InsertResultRow                        & 441   & 6,46      & 0,49      \\
+Microsoft.VisualBasic.CompilerServices.NewLateBinding.L… & 1.768 & 1,79      & 0,03      \\
+SnmpSource.SnmpSession..ctor                             & 1     & 0,58      & 19,50     \\
+Microsoft.VisualBasic.CompilerServices.NewLateBinding.L… & 443   & 0,58      & 0,04      \\
+SNMPDataRetrieval.GetRequestsForDevice                   & 1     & 0,34      & 11,22     \\
+SnmpSource.SnmpPdu..ctor                                 & 1     & 0,11      & 3,72      \\
+Microsoft.VisualBasic.CompilerServices.Conversions.ToBo… & 441   & 0,10      & 0,01      \\
+ComFunLogger.Log                                         & 1     & 0,05      & 1,64      \\
+System.Array.Exists                                      & 6     & 0,05      & 0,27      \\
+SnmpSource.SnmpVariable.CreateSnmpVariable               & 11    & 0,04      & 0,13     
+\end{tabular}
+\caption{De call tree van de RetrieveFromDevice methode met GETBULK-requests}
+\label{call-tree-retrievefromdevice-bulk}
+\end{table}
+
+In \cref{call-tree-retrievefromdevice-bulk} zie je hoe de call tree van de RetrieveFromDevice methode er nu uitziet.
+In de nieuwe implementatie doen de SyncRequest oproepen er drie keer zo lang over,
+maar er moeten maar 11 requests meer verstuurd worden in plaats van 443.
+De requests zijn nu nog maar voor 11\% i.p.v. 58\% verantwoordelijk van de totale uitvoeringstijd.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Functie                                                  & Calls & Tijd (\%) & Tijd (ms) \\ \midrule
+SNMPDataRetrieval.Initialize                             & 1     & 55,57     & 1.857,07  \\
+SNMPDataRetrieval.RetrieveFromDevice2                    & 1     & 21,62     & 722,49    \\
+SNMPDataRetrieval.ReadDeviceTypes                        & 1     & 12,03     & 401,84    \\
+SNMPDataRetrieval.CreateDBTable                          & 1     & 5,31      & 177,32    \\
+SNMPDataRetrieval.ReadDevices                            & 1     & 1,39      & 46,56     \\
+ComFunSQLConnection.DoSQLNonQuery                        & 1     & 0,79      & 26,49     \\
+ComFunSQLConnection.GetSQLSelectData                     & 1     & 0,52      & 17,33     \\
+Microsoft.VisualBasic.CompilerServices.NewLateBinding.L… & 1     & 0,47      & 15,71     \\
+ComFunLogger.Close                                       & 1     & 0,22      & 7,40      \\
+ComFunLogger.Log                                         & 3     & 0,20      & 2,23      \\
+ComFunSQLConnection.TableExists                          & 3     & 0,06      & 0,72      \\ \bottomrule
+\end{tabular}
+\caption{De call tree van de Main methode met GETBULK-requests}
+\label{call-tree-main-bulk}
+\end{table}
+
+De call tree van de Main methode met de nieuwe implementatie zien we in \cref{call-tree-main-bulk}.
+Voor de nieuwe implementatie hebben we een aparte methode geschreven gebaseerd op de oude: RetrieveFromDevice2.
+Deze heeft dezelfde functionaliteit als voorheen maar maakt dus gebruik van GETBULK-requests.
+De methode die zowel de gegevens ophaalt als wegschrijft is nu nog verantwoordelijk voor minder dan 22\% i.p.v. ruim 64\% van de totale uitvoeringstijd
+en is zoals eerder gezegd zeven keer sneller dan de vorige methode.
+
+De InsertResultRow-methode in de RetrieveFromDevice-methode hebben we nog niet bekeken.
+Die is verantwoordelijk voor het wegschrijven van een gegeven in de databank.
+Omdat er dus 441 gegevens zijn die binnen de SNMP walk vallen, werd de methode dus 441 keer opgeroepen.
+
+Telkens een gegeven per keer in de databank klinkt even inefficiënt als het ophalen van een gegeven per keer.
+Ook het invoegen van gegevens in een databank kan in bulk gebeuren met behulp van een zogeheten \textit{bulk insert} in plaats van een gewone \textit{insert}.
+Maar als we kijken naar de tijd die nodig is om alle gegevens in de databank weg te schrijven dan zien we dat
+dit slechts iets meer dan 200 ms of 6,5\% van de totale uitvoeringstijd bedraagt.
+We beslissen dan ook dat het niet de moeite is om dit te implementeren omdat er nog veel grotere winsten elders kunnen gehaald worden\footnote{
+	Wat we echter over het hoofd hebben gezien is dat we de databank geïnstalleerd hebben op een SSD.
+	Een databank heeft enorm veel baat bij het gebruik van een SSD en heeft weinig moeite om een groot aantal inserts bij te houden zoals onze test.
+	Pas bij de grootschalige tests ontdekken we onze fout, en daar komen we er dan ook op terug.
+}.
+
 
 \subsubsection{Initialize}
 \todo{Titel ok?}
@@ -852,7 +952,7 @@ Bij de keuze werd rekening gehouden met de performantieimpact en de features van
 	Een vergelijking tussen de bekendste logging frameworks voor .NET vind je 
 	terug in de bronnenlijst bij bron \cite{logging-frameworks-and-performance} en \cite{logging-frameworks}.}
 
-
+\todo[inline]{Afwerken.}
 
 \todo[inline, caption={}]{
 
