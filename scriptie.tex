@@ -30,10 +30,9 @@
 % Support for importing images.
 \usepackage{graphicx}
 % Fix links to figures from hyperref
+% Normally they link to the caption, as opposed to the figure itself
+% Also provides options to make your captions fancier
 \usepackage[hypcap]{caption}
-% Afkortingen worden apart afgedrukt
-% Gebruik nomain om enkel afkortingen te gebruiken
-\usepackage[acronym]{glossaries}
 % Voegt bibliografie/referenties, inhoudstafel en figurenlijst toe aan inhoudstafel.
 %\usepackage{tocbibind}
 \usepackage[backend=biber]{biblatex}
@@ -53,7 +52,7 @@
 % Additional commands to enhance the quality of tables in LaTeX.
 \usepackage{booktabs}
 % Merge rows in tables
-\usepackage{multirow}
+%\usepackage{multirow}
 
 % All kinds of references become clickable hyperlinks in PDF. Should be loaded late.
 \usepackage{hyperref}
@@ -61,6 +60,10 @@
 % nameinlink includes "figure, table, ..." in the hyperref link as opposed to only the number. For hyperref you'd need the \autoref command.
 % noabbrev never uses abbreviations. Instead of "fig." you'll get "figure".
 \usepackage[nameinlink,noabbrev]{cleveref}
+% Afkortingen worden apart afgedrukt
+% Gebruik nomain om enkel afkortingen te gebruiken
+% Load after hyperref!
+\usepackage[acronym]{glossaries}
 % Micro-typographic extensions: character protrusion and font expansion. Load after loading fonts.
 % http://www.ctan.org/tex-archive/macros/latex/contrib/microtype
 % http://www.khirevich.com/latex/microtype/
