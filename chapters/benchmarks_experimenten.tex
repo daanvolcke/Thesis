@@ -694,7 +694,7 @@ De retriever verwacht een MySQL databank, maar wij kiezen voor een MariaDB-insta
 Omdat MariaDB een drop-in vervanging is voor MySQL is dat echter geen probleem.
 Op het moment van installatie was de laatste stabiele versie 5.5.33a.
 
-We doen een walk van 2 \glspl{oid} op een enkele productieswitch: ip (1.3.6.1.2.1.4) en dot1dBase (1.3.6.1.2.1.17.1).
+We doen een walk van de volgende twee \glspl{oid} op een enkele productieswitch: ip (1.3.6.1.2.1.4) en dot1dBase (1.3.6.1.2.1.17.1).
 Dit zal ons 443 objecten opleveren, waarvan 441 die voor ons relevant zijn.
 Volgens de profiler doet de retriever daar ongeveer 7,4 seconden over.
 De call tree van de retriever hebben we voor de leesbaarheid in een tabel gegoten (zie \cref{call-tree-main}).
@@ -1054,28 +1054,136 @@ Daar kunnen gegevens best in bulk weggeschreven worden in plaats van gegeven per
 }
 
 \subsection{Tabellen rij per rij opvragen i.p.v. kolom per kolom}
-
 \todo[inline]{Betere/kortere titel?}
 
-\todo[inline, caption={}]{Vraag: waarom zou dit sneller zijn??? \\
-Als je graag rij per rij LEEST zou kan je gebruik maken van het \textbf{smptable commando}.
-Deze zorgt voor de correcte alignering en houdt rekening met indexen en gaten in de tabel.
-Zie ook \textbf{http://www.net-snmp.org/wiki/index.php/TUT:snmptable}. \\
-Zowel op VBox als iMinds Switchen \\
+Zoals uitgelegd in \cref{snmp-tabellen} worden tabellen kolom per kolom overlopen met de SNMP walkopdracht.
+Een meer natuurlijke manier van werken zou de tabel echter rij per rij opvragen.
+En misschien valt die methode zelfs sneller uit.
 
-Caveats:
+Een gewone SNMP walk wordt geïmplementeerd met GETNEXT-requests (of GETBULK-requests die meerdere GETNEXT-requests doet bij de SNMP-agent)
+en vraagt zo steeds de volgende \gls{oid} op.
+Om een tabel rij per rij op te vragen moeten we beginnen bij de eerste rij en sequentieel de kolommen overlopen van die rij.
+Daarna overlopen we de kolommen van de volgende rij enzovoort.
+Maar het kan nog sneller, we kunnen meteen alle kolommen van de eerste rij opvragen, gevolgd door alle kolommen van de tweede rij enzovoort.
+Om dat te doen kunnen we een GETNEXT-request sturen met de \glspl{oid} van alle kolommen.
+Dan weten de index van de eerste rij en sturen we de volgende GETNEXT-request met met de \glspl{oid} van alle kolommen met de index van de eerste rij.
+Dat geeft ons de tweede rij en zo gaan we verder tot we de ganse tabel hebben opgehaald.
+
+Jammer genoeg is het niet voldoende om een snmpbulkwalk te doen met de \glspl{oid} van alle kolommen want
+die doet simpelweg sequentieel een snmpbulkwalk van elke opgegeven \gls{oid}.
+Dus moeten we het wiel heruitvinden en een snmpbulkwalk implementeren die wel alle \glspl{oid} in parallel overloopt en op het juiste moment stopt.
+
+Daarvoor maken we gebruik van een GETBULK-request met de \glspl{oid} van alle kolommen om meteen meerdere rijen tegelijkertijd op te vragen.
+Het aantal max-repetitions is dan gelijk aan het aantal rijen dat in een request wordt opgevraagd.
+En het aantal objecten in een request is natuurlijk gelijk aan het product van het aantal max-repetitions en het aantal kolommen.
+
+Om op het juiste moment te stoppen moeten we ofwel op voorhand het aantal rijen kennen, ofwel moeten we de geretourneerde \glspl{oid}
+bekijken om te zien of ze nog steeds deel uitmaken van de tabel zoals een gewone SNMP walk doet.
+
+De voorwaarde om dit alles echter te kunnen doen is dat we vooraf de \glspl{oid} van de kolommen van de tabel moeten kennen.
+Om de snelheid te vergelijken tussen beiden manieren om een tabel te overlopen,
+bepalen we het maximum aantal rijen dat we tegelijkertijd kunnen opvragen zodat het aantal objecten in een request onder 50 blijft.
+Dan overlopen we de tabel met een gewone SNMP walk op basis van GETBULK-requests met hetzelfde aantal objecten in een request.
+
+Een voorbeeld: de interfacetabel ifTabel heeft 22 kolommen, dus dan vragen we 2 rijen per request op (goed voor 44 objecten).
+Bij de gewone snmpbulkwalk geven we dan als aantal max-repetitions 44 op zodat beide methoden 44 objecten per request opvragen.
+
+Om te beginnen vragen we de dot1dBasePortTable (1.3.6.1.2.1.17.1.4) op van de productieswitches bij iMinds.
+Vanwege de problemen bij het genererern van grote hoeveelheden verkeer (\cref{probleem-dos-bescherming}) konden we slechts een iteratie per keer uitvoeren.
+We hebben de test wel meermaals herhaald om zeker te zijn dat er geen grote verschillen zijn in de metingen,
+maar het is toch belangrijk om in het achterhoofd te houden dat de resultaten niet erg nauwkeurig zijn.
+
+\todo[inline]{Aantal objecten/ms? Niet echt interessant vermits we zo weinig metingen hebben...}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Toestel  & Objecten & Uitvoeringstijd rij per rij (s) & Uitvoeringstijd kolom per kolom (s) \\ \midrule
+atlas1a1 & 1315     & 1.09                            & 0.59                                \\
+atlas2a1 & 615      & 0.36                            & 0.25                                \\
+atlas2a2 & 250      & 0.37                            & 0.28                                \\
+atlas3a1 & 250      & 0.32                            & 0.21                                \\ \bottomrule
+\end{tabular}
+\caption{Tabel rij per rij opvragen versus kolom per kolom}
+\label{tabel-serieel-vs-parallel}
+\end{table}
+
+Het is belangrijk om in het achterhoofd te houden dat de resultaten niet erg nauwkeurig zijn.
+Niettemin kunnen we wel al een algemene trend waarnemen in de resultaten in \cref{tabel-serieel-vs-parallel}:
+de tabel kolom per kolom ophalen is gemiddeld ongeveer anderhalf keer sneller dan ze rij per rij op te halen.
+Deze trend zien we ook bij de andere productieswitches.
+Voor alle duidelijkheid: deze testen zijn gebaseerd op de Net-SNMP tools!
+
+Naar aanleiding van de grootschalige testen hebben we al een kleine opstelling klaar die gelijkaardig is aan de virtuele machines qua softwareconfiguratie,
+maar waarbij elke machine op een \textit{dedicated server}\footnote{
+	Bij een dedicated server worden de resources van een machine volledig toegewijd tot een of meer taken,
+	in tegenstelling tot een virtuele machine die slechts een deel van de resources van een toestel krijgt.
+} draait.
+Omdat deze servers in een apart netwerk zitten hebben we gelukkig geen problemen met het genereren van veel verkeer,
+we kunnen zoveel verkeer versturen als de fysieke verbinding aankan.
+Hier kunnen we dus dezelfde test doen maar kunnen we ze wel 100 keer herhalen en het gemiddelde berekenen voor een nauwkeuriger resultaat.
+
+De ping tijd tussen de twee toestellen is gemiddeld 0,204 ms.
+Bij deze test vragen we de interfacetabel ifTable (1.3.6.1.2.1.2.2) op.
+De tabel heeft 22 kolommen en de server heeft zes interfaces, samen goed voor 154 objecten.
+Omdat 154 objecten wat aan de lage kant is,
+kunnen we een aantal VLAN's toewijzen aan interfaces om het aantal objecten te verhogen,
+want VLAN's komen ook in de ifTabel terecht.
+
+We voegen 100 VLAN's toe, goed voor 2200 extra objecten of 2354 in totaal.
+Om een VLAN aan te maken gebruik je het volgend commando:
+
+\begin{lstlisting}[caption={Aanmaken van een VLAN}, label=commando-vlan]
+$ sudo ip link add link eth3 name eth3.100 type vlan id 100
+\end{lstlisting}
+
+In dit commando voegen we het VLAN met ID 100 toe aan interface \textit{eth3} en geven we die de naam \textit{eth3.100}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+                & Objecten & Uitvoeringstijd (ms) & Objecten/ms \\ \midrule
+Rij per rij     & 154      & 109                  & 1.413       \\
+Kolom per kolom & 154      & 30                   & 5.133       \\
+Rij per rij     & 2354     & 1523                 & 1.546       \\
+Kolom per kolom & 2354     & 80                   & 29.425      \\ \bottomrule
+\end{tabular}
+\caption{Tabel rij per rij opvragen versus kolom per kolom op dedicated hardware}
+\label{tabel-serieel-vs-parallel-vwall}
+\end{table}
+
+In \cref{tabel-serieel-vs-parallel-vwall} zien we de resultaten.
+Opnieuw is het sneller om een tabel kolom per kolom op te vragen in plaats van rij per rij.
+Deze keer is het zelfs ruim drie keer sneller bij 154.
+2354 objecten is ongeveer 15 keer meer objecten, en de tabel rij per rij overlopen doet er ook 15 keer langer over.
+Bij het kolom per kolom overlopen echter is de uitvoeringstijd amper met factor drie toegenomen!
+We hebben de test (van 100 iteraties) meermaals uitgevoerd om  te bevestigen dat de resultaten kloppen,
+maar de metingen waren zeer consistent.
+
+\todo[inline]{Onderzoek de Wireshark trace.}
+
+Behalve het snelheidsverschil zijn er nog andere redenen om tabellen kolom per kolom te overlopen:
 
 \begin{itemize}
-	\item Goede integratie van MIB's vereist, want je moet weten welke kolommen er zijn en wat de indexering is
-	\item Rekening houden met lege cellen/gaten in de tabel
-	\item Als je de indexen op voorhand niet kent kun je maar een rij tegelijkertijd opvragen m.b.v. getnexts,
-		Je kunt dus niet meer gegevens opvragen als er kolommen zijn in een request. Bulkrequests hebben daarentegen
-		geen limiet op het aantal objecten (afgezien van de pakketgrootte natuurlijk).
+	\item De implementatie bestaat al en is uitvoerig getest.
+	\item Voorkennis van de tabel is vereist: er moet dus een goede integratie zijn van \gls{mib}-bestanden
+		om op de kolommen van elke tabel te bepalen en om te weten welke \glspl{oid} overeenstemmen met een tabel.
+	\item Als de tabel deel uitmaakt van een SNMP walk van een hoger gelegen \gls{oid},
+		dan moet er tijdens de uitvoering van implementatie gewisseld worden bij de \gls{oid} van de tabel, wat extra complexiteit veroorzaakt.
+	\item Er moet rekening gehouden worden met randsituaties, zoals het voorkomen van gaten in de tabel\cite{net-snmp-table-holes}.
+		Bij het rij per rij overlopen kan een antwoordpakket dus gegevens bevatten van meer dan een rij.
+	\item Het aantal objecten per request moet een veelvoud zijn van het aantal kolommen.
 \end{itemize}
 
-}
+\subsubsection{Conclusie}
 
-\todo[inline]{Interne werking van Net-SNMP tools -> meerdere OID's in bulkrequests -> sequentieel, zie structuur 3}
+Het rij per rij overlopen van een tabel is niet alleen trager dan ze kolom per kolom te overlopen,
+ze brengt ook een heleboel problemen mee voor de implementatie.
+Indien je toch een tabel rij per rij wil \textit{lezen}, dan kan je beter gebruik maken van bijvoorbeeld de Net-SNMP \textit{snmptable} tool.
+Deze overloopt een tabel kolom per kolom zoals gewoonlijk, maar beeldt ze correct rij per rij af en houdt ook rekening met speciale gevallen zoals gaten in de tabel.
+
 
 \subsection{Impact van de fragmentatie van pakketten}
 
