@@ -450,7 +450,7 @@ Let erop dat je de versie moet veranderen omdat je gebruik maakt van BULK-operat
 Net als bij het snmpbulkget commando kun je hier echter nog het aantal herhalingen (max-repetitions) opgeven met de -Cr optie.
 Daarbij komt het erop neer dat we kunnen opgeven hoeveel objecten moeten samengebundeld worden in een pakket.
 Om een SNMP walk zo snel mogelijk te laten verlopen zijn we natuurlijk geneigd om dit aantal zo hoog mogelijk in te stellen.
-We moeten wel rekening houden met twee beperkingen: de maximale grootte van een pakket is beperkt tot de Maximum Transmission Unit (MTU) van een verbinding.
+We moeten wel rekening houden met twee beperkingen: de maximale grootte van een pakket is beperkt tot de \gls{mtu} van een verbinding.
 Bij een ethernetverbinding gaat het om 1500 Bytes.
 
 Bij een groot aantal herhalingen is het ook mogelijk dat er redelijk wat data verspild wordt.
@@ -506,5 +506,79 @@ maar ook actief te beheren door configuratiewijzigingen uit te voeren via SNMP.
 SNMPv3 is echter op veel toestellen nog steeds niet aanwezig en zeker de SNMP SET-operatie wordt in de praktijk maar zelden geïmplementeerd.
 
 \section{Berichtstructuur van SNMP}
+\label{snmp-berichtstructuur}
 
-\todo[inline]{Berichtstructuur van SNMP}
+In deze paragraaf bespreken we de berichtstructuur van een SNMP-bericht.
+In tegenstelling tot bijvoorbeeld IP- en ethernetheaders, hebben de headers van SNMP-berichten geen vaste lengte.
+In de plaats daarvan bestaat een SNMP-bericht uit Tag-Length-Value (TLV) tripletten\cite{moreau}.
+Daarbij geeft de tag aan om wat voor datatype het gaat, de length duidt de lengte aan van de data en value bevat de data zelf.
+Je hebt primitieve datatypes zoals een integer, een octetstring of een \gls{oid}.
+Maar je hebt ook complexe datatypes zoals een sequentie of een \gls{pdu} voor bijvoorbeeld een GET-request of een GET-response.
+De complexe types zoals de sequentie zijn opgebouwd uit meerdere kleinere velden zodat je een geneste structuur krijgt\cite{snmp-message-format}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+Primitieve datatypes & Complexe datatypes \\ \midrule
+Integer              & Sequence           \\
+Octet String         & GetRequest         \\
+Object Identifier    & GetResponse        \\
+Null                 & GetBulkRequest     \\ \bottomrule
+\end{tabular}
+\caption{Enkele SNMP datatypes}
+\label{tabel-datatypes}
+\end{table}
+
+Een SNMP-bericht is dus niks meer dan een geneste structuur van datavelden.
+Het SNMP-bericht zelf wordt gedefinieerd als een sequentie van drie velden: een integer die de SNMP versie voorstelt, een octetstring die de community voorstelt en
+de eigenlijke SNMP-\gls{pdu} (zelf een samengesteld type).
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.45]{figures/snmp/berichtstructuur-1}
+	\caption{Berichtstructuur van een SNMP-bericht}
+	\label{fig-berichtstructuur-1}
+\end{figure}
+
+De SNMP-\gls{pdu} bestaat uit de volgende velden:
+
+\begin{itemize}
+	\item Request ID (integer): unieke identificatie van een SNMP-request.
+		Het responsebericht zal dezelfde identificatie gebruiken zodat de ontvanger weer bij welke request het antwoord hoort.
+	\item Error (integer): duidt aan of er een fout is opgetreden.
+		De SNMP-agent zal deze waarde veranderen indien nodig. Als de waarde op nul staat is er geen fout opgetreden.
+	\item Error Index (integer): verwijst naar het object dat de fout heeft veroorzaakt.
+	\item Varbind List (sequentie): de verzameling van alle objecten in de \gls{pdu}.
+		\begin{itemize}
+			\item Varbind (sequentie): komt overeen met een object en bevat zijn \gls{oid} en zijn waarde (enkel ingevuld in het antwoordbericht).
+				\begin{itemize}
+					\item Object Identifier (OID)
+					\item Value (integer, octetstring, \ldots)
+				\end{itemize}
+		\end{itemize}
+\end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.45]{figures/snmp/berichtstructuur-2}
+	\caption{Berichtstructuur van een SNMP-bericht en zijn SNMP-\gls{pdu}}
+	\label{fig-berichtstructuur-2}
+\end{figure}
+
+Een voorbeeld van een GET-request in detail zie je in \cref{fig-berichtstructuur-3}.
+Onderaan zie je de hexadecimale waarden van de bytes.
+De eerste byte van een veld duidt steeds de code van het datatype aan en de tweede de lengte van het veld.
+De volgende bytes vormen dan de inhoud van het veld.
+Zodoende krijgen we de Tag-Length-Value tripletten waar we over spraken.
+Merk op dat als de lengte van een veld verandert dat deel uitmaakt van een complex datatype zoals een sequentie,
+dan moet de lengte van het bovenliggende datatype ook aangepast worden.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.40]{figures/snmp/berichtstructuur-3}
+	\caption{Berichtstructuur van een SNMP-bericht in detail}
+	\label{fig-berichtstructuur-3}
+\end{figure}
+
+\todo[inline]{Bronvermelding figuren.}
