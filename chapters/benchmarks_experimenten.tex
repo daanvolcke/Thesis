@@ -158,8 +158,6 @@ $ snmpwalk -v1 -cpublic localhost mib-2
 
 }
 
-\subsubsection{Test \#1}
-
 
 \subsection{iMinds Switches}
 
@@ -1088,6 +1086,8 @@ Dan overlopen we de tabel met een gewone SNMP walk op basis van GETBULK-requests
 Een voorbeeld: de interfacetabel ifTabel heeft 22 kolommen, dus dan vragen we 2 rijen per request op (goed voor 44 objecten).
 Bij de gewone snmpbulkwalk geven we dan als aantal max-repetitions 44 op zodat beide methoden 44 objecten per request opvragen.
 
+\subsubsection{Meetresultaten}
+
 Om te beginnen vragen we de dot1dBasePortTable (1.3.6.1.2.1.17.1.4) op van de productieswitches bij iMinds.
 Vanwege de problemen bij het genererern van grote hoeveelheden verkeer (\cref{probleem-dos-bescherming}) konden we slechts een iteratie per keer uitvoeren.
 We hebben de test wel meermaals herhaald om zeker te zijn dat er geen grote verschillen zijn in de metingen,
@@ -1186,8 +1186,143 @@ Deze overloopt een tabel kolom per kolom zoals gewoonlijk, maar beeldt ze correc
 
 
 \subsection{Impact van de fragmentatie van pakketten}
-
 \todo{Titel: Snelheidsimpact?}
+
+Een van de laatste kleinschalige experimenten die we uitvoeren is het onderzoeken van de impact van fragmentatie van pakketten.
+Dit doet zich voor als we proberen teveel objecten in een request te steken waardoor ze groter wordt dan de \gls{mtu} en
+bijgevolg moet opgesplitst worden in meerdere pakketten alvorens ze verstuurd kan worden.
+Dit onderzoek wordt bemoeilijkt omdat de objecten en zelfs de headers van een SNMP-bericht geen vaste grootte hebben.
+
+We trachten om de gemiddelde grootte te bepalen van objecten om een schatting te doen van het ideaal aantal objecten per request
+zodat we zo veel mogelijk objecten per request kunnen opvragen maar er toch zo weinig mogelijk fragmentatie voorkomt.
+Om de gemiddelde objectgrootte te bepalen moeten we een SNMP-bericht volledig ontleden en de grootte van alle headers bepalen.
+Eenmaal we de gemiddelde objectgrootte kennen, berekenen we hoeveel objecten er in een niet-gefragmenteerd bericht passen.
+Vervolgens meten we hoelang een gefragmenteerd bericht er over doet tegenover een niet-gefragmenteerd bericht,
+hoeveel gefragmenteerde berichten er werkelijk zijn in een SNMP walk en vergelijken we de uitvoeringstijd met
+een SNMP walk met een ''optimaal'' aantal objecten per request.
+
+\todo[inline]{
+Eerst en vooral bekijken we in welke mate fragmentatie zich voordoet bij het aanhouden van 50 objecten per request.
+Daarna zullen we de gemiddelde grootte bepalen van objecten om een schatting te doen van het ideaal aantal objecten per request
+zodat we zo veel mogelijk objecten per request kunnen opvragen maar en toch zo weinig mogelijk fragmentatie voorkomt.
+Tenslotte bekijken we wat voor impact de fragmentatie van pakketten/beide aanpakken hebben op de uitvoeringstijd en vormen we onze conclusie.
+}
+
+\subsubsection{Gemiddelde objectgrootte en optimaal aantal objecten per request}
+
+Om de gemiddelde objectgrootte te berekenen doen we een SNMP walk van de mib-2-tak (1.3.6.1.2.1).
+We gebruiken de variant op basis van GETNEXT-requests zodat elk antwoordbericht juist een object bevat.
+Dat levert ons 3560 \emph{antwoord}berichten op.
+De gemiddelde lengte van een antwoordbericht bedraagt 102,26 bytes.
+Dus nemen we er willekeurig een antwoordbericht uit van 102 bytes om te ontleden.
+
+Om te beginnen hebben we de ethernetheader, goed voor 14 bytes\cite{ethernet-header}.
+Gevolgd door de ethernetheader is de IP-header van typisch 20 bytes\cite{ipv4-header-wiki}.
+Na de IP-header komt de SNMP-\gls{pdu} die de overige 68 bytes ($ 102 - 14 - 20$) voor zijn rekening neemt.
+
+De berichtstructuur van een SNMP-bericht hebben we besproken in \cref{snmp-berichtstructuur}.
+Zoals gezegd hebben SNMP-berichten een variable headerlengte.
+Maar veel headervelden hebben in de praktijk een vaste lengte.
+We overlopen alle velden van een SNMP-header en bepalen hun typische lengte.
+Als referentie kun je nogmaals de structuur van een SNMP-bericht bekijken in \cref{fig-berichtstructuur-4}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.40]{figures/snmp/berichtstructuur-3}
+	\caption{Berichtstructuur van een SNMP-bericht in detail}
+	\label{fig-berichtstructuur-4}
+\end{figure}
+
+Het SNMP-bericht is een sequentie van:
+
+\begin{itemize}
+	\item De SNMP versie: steeds 1 byte.
+	\item De community string: variabel, maar uitgaande van de community ''public'' gaat het om 6 bytes.
+	\item De SNMP-\gls{pdu}: bestaande uit:
+		\begin{itemize}
+			\item De request ID: de unieke identificatie van een request.
+				Bij de SNMP walk hadden alle requests de ID 1, dus: 1 byte.
+			\item Het errorveld: een byte.
+			\item Error Index: staat op nul indien er zich geen fout heeft voorgedaan, dus ook 1 byte.
+			\item Varbind List: een sequentie van varbinds, maar bij de SNMP walk op basis van GETNEXT-requests gaat het om slechts een object.
+				\begin{itemize}
+					\item Varbind: stelt een object voor en is hetgeen we trachten te bepalen
+						\begin{itemize}
+							\item OID: variabel
+							\item Value: variabel
+						\end{itemize}
+				\end{itemize}
+		\end{itemize}
+\end{itemize}
+
+In totaal heeft een SNMP-bericht dus 8 vaste \gls{tlv}-tripletten (tot en met de Varbind List) met elk een overhead van 2 bytes voor de tag en length,
+wat goed is voor 16 bytes.
+De velden die een vaste lengte hebben zijn samen goed voor 10 bytes.
+Elk object wordt voorgesteld door een Varbind bestaande uit een \gls{oid} en een value, samen goed voor een overhead van 6 bytes per object.
+Uiteindelijk komen we uit op een headerlengte van het SNMP-bericht van 26 bytes, zonder objecten.
+
+Als we de headerlengte van 26 bytes aftrekken van de 68 bytes van het SNMP-gedeelte van ons GETNEXT-response houden we nog 42 bytes over voor de varbind
+die het object en zijn \gls{oid} en value bevatten.
+Een gemiddeld object heeft dus een lengte van 42 bytes, inclusief zijn headers.
+
+We gaan uit van een \gls{mtu} van 1500 bytes voor een ethernetpakket.
+Als we daarvan de lengtes aftrekken van de ethernet-, IP- en SNMP-header houden we nog 1440 bytes ($1500 - 14 - 20 - 26$) over voor de objecten en hun headers.
+Uitgaande van een gemiddelde objectlengte van 42 bytes is dat goed voor iets meer dan 34 objecten.
+
+\subsubsection{Meetresultaten}
+
+We laten de \nwmretriever{} op basis van de nieuwe implementatie een SNMP walk doen met 34 en 50 objecten.
+Met behulp van Wireshark analyseren we de pakketten van beide tests.
+
+We bepalen voor beide tests de impact van de fragmentatie op antwoordberichten door de gemiddelde tijd te meten die de pakketten nodig hebben.
+De tijd die een pakket nodig heeft is dan het tijdsverschil tussen het versturen van de request tot het ontvangen van het responsebericht.
+We bepalen tenslotte voor beide tests ook het percentage pakketten die gefragmenteerd werden.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+                                                                           & Objecten/request & Aantal & Percentage & Tijd (ms) & Tijdsverschil (ms) \\ \midrule
+\begin{tabular}[c]{@{}l@{}}Niet-gefragmenteerde\\   pakketten\end{tabular} & 50               & 22     &            & 6.996     &                    \\
+\begin{tabular}[c]{@{}l@{}}Gefragmenteerd\\   pakketten\end{tabular}       & 50               & 50     & 69.44\%    & 9.822     & 2.826 (+40.39\%)   \\
+\begin{tabular}[c]{@{}l@{}}Niet-gefragmenteerde\\   pakketten\end{tabular} & 34               & 83     &            & 5.843     &                    \\
+\begin{tabular}[c]{@{}l@{}}Gefragmenteerd\\   pakketten\end{tabular}       & 34               & 22     & 20.95\%    & 7.882     & 2.039 (+34.9\%)    \\ \bottomrule
+\end{tabular}
+\caption{Impact en percentage van gefragmenteerde pakketten bij bulkrequests}
+\label{tabel-fragmentatie-impact-percentage}
+\end{table}
+
+In \cref{tabel-fragmentatie-impact-percentage} zien we het aantal gefragmenteerde- en niet-gefragmenteerde pakketten bij bulkrequests van 34 en 50 objecten per request.
+Ook getoond is de gemiddelde tijd die nodig was om een antwoordbericht te ontvangen en het tijdsverschil tussen de gefragmenteerde- en niet-gefragmenteerde pakketten.
+We zien dat bij 50 objecten per request het percentage van pakketten dat gefragmenteerd werd vrij hoog ligt: net geen 70\% en dat ze er ook 40\% langer over doen.
+Bij 34 objecten per request is dat percentage sterk gedaald en we zien ook dat de tijd die de pakketten erover doen gedaald is als gevolg van
+het kleiner aantal objecten per request.
+
+Maar de vraag is nu of het loont om 32\% minder objecten in een pakket te steken zodat ze 35 à 40\% sneller gaan?
+Daarvoor laten we de \nwmretriever{} een SNMP walk doen van de \textit{enterprises}-tak (1.3.6.1.4.1) en de gekende mib-2-tak, samen goed voor 3558 objecten.
+We herhalen de test 100 keer en berekenen de gemiddelde uitvoeringstijd.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}rrrr@{}}
+\toprule
+Objecten/request & Objecten & Uitvoeringstijd (s) & Tijdsverschil (s) \\ \midrule
+50               & 3558     & 17.735              &                   \\
+34               & 3558     & 18.626              & 0.891 (+5.02\%)   \\ \bottomrule
+\end{tabular}
+\caption{Gemiddelde uitvoeringstijd van een SNMP walk met 50 en 34 objecten per request}
+\label{tabel-fragmentatie-uitvoeringstijd}
+\end{table}
+
+In \cref{tabel-fragmentatie-uitvoeringstijd} zien we dat de SNMP walk met 34 objecten per request er gemiddeld bijna een seconde (of 5\%) langer over doet
+dan de SNMP walk met 50 objecten per request.
+Het is duidelijk dat de tijdswinst van niet-gefragmenteerde pakketten dus niet opweegt tegen de tijdswinst bij opvragen van meer objecten per request.
+
+\subsubsection{Conclusie}
+
+Ondanks het feit dat we antwoordberichten een stuk sneller krijgen als ze niet gefragmenteerd hoeven te worden,
+lijkt die tijdswinst toch niet op te wegen tegen de tijdswinst van het opvragen van meer requests per object.
+We kunnen dus beter meer requests per object opvragen, zelfs als dat een hoge mate van fragmentatie veroorzaakt.
 
 
 \section{Grootschalige benchmarks en experimenten}

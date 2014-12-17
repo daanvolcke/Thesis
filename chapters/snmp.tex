@@ -510,7 +510,7 @@ SNMPv3 is echter op veel toestellen nog steeds niet aanwezig en zeker de SNMP SE
 
 In deze paragraaf bespreken we de berichtstructuur van een SNMP-bericht.
 In tegenstelling tot bijvoorbeeld IP- en ethernetheaders, hebben de headers van SNMP-berichten geen vaste lengte.
-In de plaats daarvan bestaat een SNMP-bericht uit Tag-Length-Value (TLV) tripletten\cite{moreau}.
+In de plaats daarvan bestaat een SNMP-bericht uit \gls{tlv} tripletten\cite{moreau}.
 Daarbij geeft de tag aan om wat voor datatype het gaat, de length duidt de lengte aan van de data en value bevat de data zelf.
 Je hebt primitieve datatypes zoals een integer, een octetstring of een \gls{oid}.
 Maar je hebt ook complexe datatypes zoals een sequentie of een \gls{pdu} voor bijvoorbeeld een GET-request of een GET-response.
