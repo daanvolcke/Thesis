@@ -574,6 +574,10 @@ Zodoende krijgen we de Tag-Length-Value tripletten waar we over spraken.
 Merk op dat als de lengte van een veld verandert dat deel uitmaakt van een complex datatype zoals een sequentie,
 dan moet de lengte van het bovenliggende datatype ook aangepast worden.
 
+Omdat het hier om een request gaat, is de waarde van het object nog niet ingevuld.
+Daarmee zien we meteen ook het doel van het Null-datatype: zo kan er aangegeven worden dat een veld niet is ingevuld en kan er een byte uitgespaard worden.
+De value van het \gls{tlv}-triplet is dan ook niet aanwezig en zijn lengte is nul.
+
 \begin{figure}[h]
 	\centering
 	\includegraphics[scale=0.40]{figures/snmp/berichtstructuur-3}
