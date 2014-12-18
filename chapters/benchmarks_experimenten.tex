@@ -13,8 +13,7 @@
 
 \section{Kleinschalige benchmarks en experimenten}
 
-\todo[inline]{Schrijf een inleiding. \\
-Enerzijds de Virtual Box opstelling. Anderzijds heb je ook de iMinds switchen. Ten slotte de profiler.}
+\todo[inline]{Inleiding. Kort uitleggen wat we allemaal doen in deze sectie.}
 
 \todo[inline]{Eigenlijk maakt het weinig uit om wat voor soort toestellen het gaat:
 alhoewel de applicatie voornamelijk bedoeld is voor netwerkapparatuur, voor onze testen hebben we enkel een noodzaak aan voldoende gegevens die via SNMP kunnen opgevraagd worden.}
@@ -1331,6 +1330,8 @@ We kunnen dus beter meer requests per object opvragen, zelfs als dat een hoge ma
 
 \section{Grootschalige benchmarks en experimenten}
 
+\todo[inline]{Inleiding. Kort uitleggen wat we allemaal doen in deze sectie.}
+
 \subsection{Testopstelling}
 
 \subsubsection{Virtual Wall}
@@ -1428,6 +1429,7 @@ en met onze truc met het aanmaken van VLAN's (\cref{rij-per-rij}) kunnen we dat 
 
 
 \subsection{Impact databankinteracties}
+\label{impact-db}
 
 Als je de voetnoten gelezen hebt in onze tests met de profiler in \cref{profiling},
 dan weet je dat we daar een fout hebben gemaakt waarbij we de databank geïnstalleerd hadden op een SSD.
@@ -1481,8 +1483,9 @@ We zien ook dat het verschil tussen de oude versie en de nieuwe versie verwaarlo
 de nieuwe versie is daarbij slechts 5\% sneller.
 Maar als de uitvoeringstijd niet tegengehouden wordt door de databaseinserts,
 dan is de nieuwe versie ruim zeven keer sneller als er veel toestellen bevraagd moeten worden!
-Bij de kleinschalige tests zagen we al dat de nieuwe versie bij slechts een toestel al vier keer sneller was.
-De snelheidswinst neemt dus sterk toe naarmate het aantal toestellen toeneemt dat bevraagd moet worden.
+Het is dus belangrijk om de databankinteracties aan te pakken om de nieuwe versie van de \nwmretriever{} volledig tot zijn recht te laten komen.
+\todo[inline]{Bij de kleinschalige tests zagen we al dat de nieuwe versie bij slechts een toestel al vier keer sneller was.
+De snelheidswinst neemt dus sterk toe naarmate het aantal toestellen toeneemt dat bevraagd moet worden.}
 
 \subsubsection{Conclusie}
 
@@ -1498,6 +1501,47 @@ kan men overwegen om in afwachting de databank op te slaan op een SSD om zo het 
 
 
 \subsection{Benchmarks uitvoeringstijd}
+\label{uitvoeringstijd-vwall}
+
+In deze paragraaf beoordelen we de uitvoeringstijd van de nieuwe versie van de \nwmretriever{} ten opzichte van de oude.
+Om de schaalbaarheid van de \nwmretriever{} te verbeteren hebben we al aanpassingen gedaan om gebruik te maken bulkrequests en een alternatief loggingframework.
+In \cref{impact-db} hebben we ook gezien dat de databankinteracties een grote negatieve impact hebben op de uitvoeringstijd.
+Omdat we daarvoor geen oplossing hebben geïmplementeerd, moeten we het stellen bij het vergelijken van de uitvoeringstijd met en zonder databankinteracties.
+
+\subsubsection{Meetresultaten}
+
+De uitvoeringstijd van de \nwmretriever{} op grote schaal hebben we al gemeten in de paragraaf over de impact van de databankinteracties,
+dus nemen we die resultaten er weer bij.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}ccrrr@{}}
+\toprule
+\multicolumn{1}{l}{Nodes} & \multicolumn{1}{l}{Versie} & Insert & Uitvoeringstijd (s) & Factor nieuw vs oud \\ \midrule
+\multirow{4}{*}{100}      & \multirow{2}{*}{Oud}       & Ja     & 1100.418            &                     \\
+                          &                            & Nee    & 125.820             &                     \\
+                          & \multirow{2}{*}{Nieuw}     & Ja     & 1051.373            & 1.05                \\
+                          &                            & Nee    & 17.229              & 7.30                \\ \bottomrule
+\end{tabular}
+\caption{Uitvoeringstijd van de \nwmretriever{} op grote schaal}
+\label{tabel-uitvoeringstijd-vwall}
+\end{table}
+
+In die paragraaf hebben we al gezien dat het verschil tussen de oude versie en de nieuwe slechts 5\% bedraagt
+als de gegevens in de databank weggeschreven moeten worden.
+Wanneer dat niet het geval is, is de nieuwe versie ruim zever keer sneller dan de oude!
+Het is dus van absoluut belang dat dit probleem aangepakt wordt, of er gebruik gemaakt wordt van een SSD om de databank op te slaan
+Natuurlijk zal een alternatieve implementatie niet exact 7,3 keer sneller zijn, maar het geeft wel een goed idee
+van hoeveel sneller de \nwmretriever{} zou kunnen gaan.
+
+\subsubsection{Conclusie}
+
+Op voorwaarde dat het probleem met de databankinteracties aangepakt wordt kunnen we besluiten dat de gemaakte verbeteringen
+al een zeer positieve invloed hebben gehad op de uitvoeringstijd van de \nwmretriever{} op grote schaal.
+De kleine uitvoeringstijd is echter niet het enige criterium om te beslissen of de retriever goed schaalbaar is:
+ook met andere resources moet goed omgegaan worden, zoals CPU, geheugen en bandbreedte.
+Die zaken onderzoeken we in de volgende paragrafen.
+
 
 \todo[inline]{Oude versie vs. nieuwe versie}
 
