@@ -159,10 +159,14 @@ $ snmpwalk -v1 -cpublic localhost mib-2
 }
 
 
-\subsection{iMinds Switches}
+\subsection{Productieswitches}
 
-\todo[inline]{Betere titel! Fysieke "testopstelling" van een handvol switches. Niet echt een testopstelling natuurlijk, maar wel echte productieswitches.}
+\todo[inline]{Betere titel? Fysieke "testopstelling" van een handvol switches. Niet echt een testopstelling natuurlijk, maar wel echte productieswitches.}
 
+Naast een viertal virtuele machines kunnen we ook gebruik maken van tien productieswitches die deel uitmaken van het netwerk van iMinds.
+Deze switches kunnen we gebruiken om na te gaan of de tests met de virtuele machines de realiteit goed kunnen benaderen.
+Er worden drie verschillende modellen gebruikt, allen van HP: een 5412 zl, 4208 vl en acht ProCurve 2650 switches.
+De grootste bevat bijna 300 poorten en bevat ook routerfunctionaliteiten.
 
 \subsection{Netwerkvertraging}
 \label{latency}
@@ -1543,11 +1547,15 @@ ook met andere resources moet goed omgegaan worden, zoals CPU, geheugen en bandb
 Die zaken onderzoeken we in de volgende paragrafen.
 
 
-\todo[inline]{Oude versie vs. nieuwe versie}
-
 \subsection{Benchmarks bandbreedte}
 
-\todo[inline]{Een machine? 50, 100 machines?}
+\todo[inline]{\textbf{Een} machine? 50, 100 machines?}
+
+\todo[inline]{Een toestel -> Bytes/sec ~= Packets/sec \\
+Gecombineerde grafiek? Bps en packets?}
+
+\subsubsection{Een toestel}
+
 
 \subsubsection{SNMP Walk versus SNMP Bulk Requests}
 
