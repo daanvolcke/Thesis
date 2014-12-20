@@ -114,5 +114,34 @@ Tijdens het uitvoeren van de retriever worden er een aantal tabellen aangemaakt 
 
 
 \subsection{Werking}
+\label{werking}
 
-\todo[inline]{Eventueel: toestellen, toesteltypes overlopen -> inserten in DB.}
+In deze paragraaf geven we een high-level overzicht van de werking van de \nwmretriever{}.
+Bij het analyseren van de applicatie met een profiler wordt hier ook naar verwezen om te weten wat elke methode juist doet.
+
+De \nwmretriever{} begint eerst en vooral met de \textit{Initialize}-methode op te roepen,
+die verantwoordelijk is voor de configuratie en het opzetten van de databankverbinding.
+Zowel de commandlineparameters als het XML-configuratiebestand worden hier verwerkt.
+Na het inlezen van de configuratie wordt de databankverbinding opgezet met de gegevens uit de configuratie.
+
+Nadat de basisconfiguratie werd ingelezen door de Initialize-methode worden de toesteltypes (devicetypes) ingelezen uit het XML-configuratiebestand.
+Indien nodig wordt er in de databank een nieuwe devicetypestabel aangemaakt en worden de toesteltypes daarin opgeslaan.
+Hetzelfde gebeurt voor de te bevragen toestellen.
+Ten slotte wordt er ook indien nodig de resultstabel aangemaakt om de opgehaalde gegevens in weg te schrijven.
+
+Daarna kan het ophalen van de gegevens beginnen.
+De lijst van de te bevragen toestellen wordt overlopen en om meerdere toestellen tegelijkertijd op te vragen,
+wordt voor elk toestel wordt een nieuwe thread gestart.
+Het ophalen zelf gebeurt in de methode RetrieveFromDevice en elke thread voert die methode uit voor een toestel.
+
+Er is een limiet van 50 threads, dus er kunnen maar 50 toestellen tegelijkertijd opgevraagd worden.
+Eens er 50 threads aangemaakt zijn wordt er dus gewacht tot een vorige thread klaar is om een nieuwe te starten.
+De threads worden in een lijst bijgehouden en in een oude versie van de \nwmretriever{} werd na de eerste 50 threads gewacht op
+de eerste thread om nieuwe threads aan te maken.
+
+De \textit{RetrieveFromDevice}-methode overloopt de lijst van instructies die moeten afgehandeld worden voor een bepaald toestel(type).
+Dat kunnen ofwel enkelvoudige gegevens zijn die opgehaald moeten worden met een GET-request ofwel moet een SNMP walk gedaan worden van een bepaalde \gls{oid}.
+Vervolgens worden de request(s) gestuurd naar dat toestel.
+Nadat het antwoord is ontvangen worden alle variabelen die in dat antwoord zitten overlopen.
+Er wordt gecontroleerd of de ontvangen gegevens relevant zijn (als ze onder de originele \gls{oid} vallen bij een SNMP walk),
+en zoja wordt het gegeven weggeschreven in de databank met de \textit{InsertResultRow}-methode.
