@@ -99,18 +99,48 @@ Zie ParseCommandLineAttributes():
 \subsubsection{AppConfig}
 Het AppConfig bestand zal de eindgebruiker normaal niet mee in contact komen.
 Ze bevat de mogelijkheid om het loglevel te veranderen zodat meer of minder logging informatie wordt uitgeschreven.
-De databaseconfiguratiestring kan hier ook opgegeven worden, maar wordt overschreven indien dit al opgegeven is in het XML-configuratiebestand.
-Na het vervangen van het loggingframework (zie \cref{vervanging-loggingframework}) komen er enkele loggingopties bij in dit bestand.
+De databaseconfiguratiestring kan hier ook opgegeven worden,
+maar indien er in het XML-configuratiebestand ook een databank opgegeven wordt, dan wordt de laatste gebruikt.
+Na het vervangen van het loggingframework (zie \cref{profiling}) komen er enkele loggingopties bij in dit bestand.
 Zo kun je naast het loglevel ook extra uitvoermogelijkheden opgeven: naar een tekstbestand, naar het consolescherm, naar een databank of een combinatie.
-Ook het logformaat kan je zelf aanpassen. Op al deze opties wordt dieper ingegaan in \cref{vervanging-loggingframework}.
-
+Ook het logformaat kan je zelf aanpassen.
 
 \subsection{Databankstructuur}
 \label{snmp-data-retriever-db}
-Tijdens het uitvoeren van de retriever worden er een aantal tabellen aangemaakt in de opgegeven databank om de resultaten in op te slaan.
+Tijdens het uitvoeren van de \nwmretriever{} worden er een drietal tabellen aangemaakt: \textit{types}, \textit{devices} en \textit{results}.
+In de eerste tabel worden de toesteltypes opgeslagen.
+Een voorbeeld zie je in \cref{fig-db-types}.
+Daar werden twee toesteltypes gedefinieerd: bridge en router.
+Voor elk toesteltype zijn er een aantal opdrachten (GET-opdrachten of walkopdrachten) samen met hun datatype, \gls{oid}, \gls{mib}-bestand en naam.
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.50]{figures/database/types}
+	\caption{Tabel van toesteltypes}
+	\label{fig-db-types}
+\end{figure}
 
-\todo[inline]{Tabellen en kolommen: results, devices en types.}
+De toestellen zelf worden opgeslagen in de devicestabel.
+In \cref{fig-db-devices} zie je een toestel met zijn IP-adres of hostnaam, het toesteltype en zijn communitystring.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.40]{figures/database/devices}
+	\caption{Tabel van toestellen}
+	\label{fig-db-devices}
+\end{figure}
+
+De laatste tabel bevat de opgehaalde gegevens.
+Een aantal resultaten zie je in \cref{fig-db-results}.
+Elk resultaat bevat de host, de \gls{oid}, het attribuutnaam dat wordt samengesteld uit de naam van de \gls{mib} en de naam van de \gls{oid},
+de waarde van het resultaat en de datum waarop ze werd opgehaald.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.50]{figures/database/results}
+	\caption{Tabel van resultaten}
+	\label{fig-db-results}
+\end{figure}
 
 
 \subsection{Werking}
