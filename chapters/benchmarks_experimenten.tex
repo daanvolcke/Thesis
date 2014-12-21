@@ -1509,14 +1509,15 @@ kan men overwegen om in afwachting de databank op te slaan op een SSD om zo het 
 \subsection{Benchmarks uitvoeringstijd}
 \label{uitvoeringstijd-vwall}
 
-\todo[inline]{Invloed aantal nodes?}
-
-In deze paragraaf beoordelen we de uitvoeringstijd van de nieuwe versie van de \nwmretriever{} ten opzichte van de oude.
-Om de schaalbaarheid van de \nwmretriever{} te verbeteren hebben we al aanpassingen gedaan om gebruik te maken bulkrequests en een alternatief loggingframework.
+Om de schaalbaarheid van de \nwmretriever{} te verbeteren hebben we al twee grote aanpassingen gedaan aan de \nwmretriever{},
+namelijk het gebruik van bulkrequests en een alternatief loggingframework.
+In deze paragraaf beoordelen we de uitvoeringstijd van de nieuwe versie van de \nwmretriever{} met de aanpassingen ten opzichte van de oude.
 In \cref{impact-db} hebben we ook gezien dat de databankinteracties een grote negatieve impact hebben op de uitvoeringstijd.
 Omdat we daarvoor geen oplossing hebben geïmplementeerd, moeten we het stellen bij het vergelijken van de uitvoeringstijd met en zonder databankinteracties.
+Ten slotte bekijken we ook de invloed van het aantal te bevragen toestellen op de uitvoeringstijd en op basis daarvan
+doen we een schatting voor het opvragen van tot 10.000 toestellen.
 
-\subsubsection{Meetresultaten}
+\subsubsection{Uitvoeringstijd op grote schaal}
 
 De uitvoeringstijd van de \nwmretriever{} op grote schaal hebben we al gemeten in de paragraaf over de impact van de databankinteracties,
 dus nemen we die resultaten er weer bij.
@@ -1542,11 +1543,70 @@ Het is dus van absoluut belang dat dit probleem aangepakt wordt, of er gebruik g
 Natuurlijk zal een alternatieve implementatie niet exact 7,3 keer sneller zijn, maar het geeft wel een goed idee
 van hoeveel sneller de \nwmretriever{} zou kunnen gaan.
 
+\subsubsection{Invloed aantal bevraagde toestellen}
+
+In \cref{tabel-uitvoeringstijd-aantalnodes} zien we de gemiddelde uitvoeringstijd van de \nwmretriever{} bij 1, 10, 50 en 100 nodes (zonder databankinteracties).
+Alhoewel er tot 50 toestellen tegelijkertijd opgevraagd kunnen worden, zien we toch dat de uitvoeringstijd ook bij minder dan 50 toestellen toeneemt.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+                    & 1 node & 10 nodes & 50 nodes & 100 nodes \\ \midrule
+Uitvoeringstijd (s) & 2.669  & 4.013    & 8.590    & 17.351    \\ \bottomrule
+\end{tabular}
+\caption{Uitvoeringstijd bij een verschillend aantal toestellen}
+\label{tabel-uitvoeringstijd-aantalnodes}
+\end{table}
+
+Om te zien hoe sterk de uitvoeringstijd juist toeneemt met het aantal te bevragen toestellen,
+hebben we de resultaten in een grafiek gegooid in \cref{fig-uitvoeringstijd} en de trendlijn getekend.
+
+Het is duidelijk dat er een lineair verband is tussen het aantal toestellen dat moet bevraagd worden en de uitvoeringstijd.
+De trendlijn leert ons dat de toename in uitvoeringstijd in seconden ongeveer gelijk is aan het extra aantal te ondervragen toestellen keer 0,15.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.40]{figures/uitvoeringstijd}
+	\caption{Uitvoeringstijd bij een verschillend aantal toestellen}
+	\label{fig-uitvoeringstijd}
+\end{figure}
+
+In \cref{tabel-theoretische-uitvoeringstijd} hebben we de theoretische uitvoeringstijd berekend aan de hand van de bovenstaande formule voor 1 tot 10.000 toestellen.
+We zien dat de resultaten weinig afwijken van de reële resultaten.
+De theoretische uitvoeringstijd voor 1000 toestellen bedraagt amper 2,5 minuten en voor 10.000 toestellen gaat het om minder dan 25 minuten.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}rr@{}}
+\toprule
+Toestellen & Uitvoeringstijd (s) \\ \midrule
+1          & 2.669               \\
+2          & 2.815               \\
+3          & 2.961               \\
+4          & 3.107               \\
+5          & 3.253               \\
+10         & 3.984               \\
+20         & 5.445               \\
+30         & 6.906               \\
+40         & 8.367               \\
+50         & 9.828               \\
+100        & 17.133              \\
+1000       & 148.623             \\
+10000      & 1463.523            \\ \bottomrule
+\end{tabular}
+\caption{Theoretische uitvoeringstijd bij een verschillend aantal toestellen}
+\label{tabel-theoretische-uitvoeringstijd}
+\end{table}
+
 \subsubsection{Conclusie}
 
 Op voorwaarde dat het probleem met de databankinteracties aangepakt wordt kunnen we besluiten dat de gemaakte verbeteringen
-al een zeer positieve invloed hebben gehad op de uitvoeringstijd van de \nwmretriever{} op grote schaal.
-De kleine uitvoeringstijd is echter niet het enige criterium om te beslissen of de retriever goed schaalbaar is:
+al een zeer positieve invloed hebben op de uitvoeringstijd van de \nwmretriever{} op grote schaal.
+
+Ook de impact van het aantal te bevragen toestellen op de uitvoeringstijd blijft zeer beperkt met ongeveer 0,15 seconden extra per bijkomend toestel.
+
+Een lage uitvoeringstijd is echter niet het enige criterium om te beslissen of de retriever goed schaalbaar is:
 ook met andere resources moet goed omgegaan worden, zoals CPU, geheugen en bandbreedte.
 Die zaken onderzoeken we in de volgende paragrafen.
 
