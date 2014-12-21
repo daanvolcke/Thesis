@@ -1551,101 +1551,8 @@ ook met andere resources moet goed omgegaan worden, zoals CPU, geheugen en bandb
 Die zaken onderzoeken we in de volgende paragrafen.
 
 
-\subsection{Benchmarks bandbreedte}
-
-\todo[inline]{\textbf{Een} machine? 50, 100 machines?}
-
-\todo[inline]{Een toestel -> Bytes/sec ~= Packets/sec \\
-Gecombineerde grafiek? Bps en packets?}
-
-\todo[inline]{Inleiding}
-
-\todo[inline]{Het bandbreedtepatroon van GETNEXT vs GETBULK verschilt grondig. \\
-Bij bulk zijn de antwoordpakketten veel groter dan de verzonden pakketten. \\
-Bij getnext zijn ze ongeveer gelijk, getbulk bespaart dus bandbreedte (minder overhead van alle headers van de overbodige pakketten) \\
-Bps == packets/sec}
-
-\subsubsection{SNMP Walk met GETNEXT- versus GETBULK-requests}
-
-In \cref{tabel-bandbreedte-walk-vs-bulk} staan de netwerkstatistieken voor een SNMP walk op basis van GETNEXT- en GETBULK-request.
-Weinig verrassend is dat er een stuk minder pakketten verstuurd als ontvangen zijn:
-vermits we 50 objecten per request opvragen, hebben we ook 50 keer minder pakketten die moeten verstuurd worden.
-Omdat er veel minder pakketten zijn verstuurd en ontvangen zijn er natuurlijk ook minder bytes verstuurd en ontvangen.
-Minder pakketten wil ook zeggen minder overhead door de headers van de pakketten.
-En omdat er in totaal minder data is verstuurd en ontvangen, was er ook gemiddeld minder bandbreedte nodig.
-
-
-\begin{table}[h]
-\centering
-\begin{tabular}{@{}lrr@{}}
-\toprule
-                           & Walk   & Bulkwalk \\ \midrule
-Pakketten verstuurd        & 2752   & 56       \\
-Pakketten ontvangen        & 2752   & 56       \\
-KiloBytes verstuurd        & 234.86 & 4.78     \\
-KiloBytes ontvangen        & 239.83 & 54.25    \\
-Gem. KiloBytes per seconde & 79.82  & 40.23    \\
-Gem. Megabits per seconde  & 0.65   & 0.33     \\ \bottomrule
-\end{tabular}
-\caption{Netwerkstatistieken SNMP walk met GETNEXT- versus GETBULK-requests}
-\label{tabel-bandbreedte-walk-vs-bulk}
-\end{table}
-
-We zien dit ook terug in \cref{fig-bandbreedte-walk,fig-bandbreedte-bulkwalk} die de bandbreedte tonen gedurende
-de SNMP walk met respectievelijk GETNEXT- en GETBULK-requests.
-De fluctuatie die je ziet in beide grafieken is trouwens enkel te wijten aan de fluctuatie in responsetijd van de SNMP-agent.
-De verwerkingstijd aan de kant van de retriever, of de tijd die nodig is om een nieuwe request te versturen, is zeer stabiel.
-We hebben hierbij wel de resultaten niet weggeschreven in de databank.
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[scale=0.40]{figures/bandbreedte/snmpwalk}
-	\caption{Bandbreedte SNMP walk met GETNEXT-requests}
-	\label{fig-bandbreedte-walk}
-\end{figure}
-\todo[inline]{decimalen in uitvoeringstijd weglaten}
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[scale=0.40]{figures/bandbreedte/snmpbulkwalk}
-	\caption{Bandbreedte SNMP walk met GETBULK-requests}
-	\label{fig-bandbreedte-bulkwalk}
-\end{figure}
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[scale=0.40]{figures/bandbreedte/bandbreedte-100nodes}
-	\caption{Bandbreedte bij bevragen 100 nodes}
-	\label{fig-bandbreedte-100-nodes}
-\end{figure}
-\todo[inline]{Relatief tijdstip ~> Uitvoeringstijd}
-
-
-\subsubsection{Invloed aantal ondervraagde nodes}
-
-\todo[inline]{Verwijs voor dip in bandbreedte bij groot aantal nodes (>50) naar sectie CPU gebruik.}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{@{}lrrrr@{}}
-\toprule
-                           & 1 node & 10 nodes & 50 nodes & 100 nodes \\ \midrule
-Pakketten verstuurd        & 72     & 648      & 3507     & 7093      \\
-Pakketten ontvangen        & 72     & 648      & 3507     & 7093      \\
-KiloBytes verstuurd        & 6.75   & 60.75    & 328.10   & 663.70    \\
-KiloBytes ontvangen        & 97.82  & 880.44   & 4762.68  & 9633.34   \\
-Gem. KiloBytes per seconde & 84.64  & 398.51   & 730.84   & 655.82    \\
-Gem. Megabits per seconde  & 0.69   & 3.27     & 5.99     & 5.37      \\ \bottomrule
-\end{tabular}
-\caption{Netwerkstatistieken verschillend aantal nodes}
-\label{tabel-bandbreedte-aantalnodes}
-\end{table}
-
-\subsubsection{Conclusie}
-
-\todo[inline]{SNMP bulkwalk is zowel sneller als efficienter voor wat betreft dataverbruik en nodige bandbreedte.}
-
 \subsection{Benchmarks CPU-gebruik}
+\label{cpu-gebruik}
 
 In deze paragraaf bekijken we de invloed van het aantal op te vragen toestellen op het CPU-gebruik van de \nwmretriever{}.
 We bekijken het CPU-gebruik gedurende de uitvoering van het programma en bespreken het gedrag ervan.
@@ -1749,3 +1656,113 @@ Moest het voorstel om de impact van de databankinteracties te beperken geïmplem
 nog genoeg geheugen vrij om een tabel in het geheugen te houden alvorens ze in de databank weg te schrijven. 
 
 
+\subsection{Benchmarks bandbreedte}
+
+In deze paragraaf bekijken we het bandbreedteverbruik van de \nwmretriever{}.
+We vergelijken het bandbreedteverbruik van een SNMP walk op basis van GETNEXT- en GETBULK-requests.
+Ook gaan we na wat de invloed is van het aantal te bevragen toestellen op het bandbreedtegebruik.
+
+\subsubsection{SNMP Walk met GETNEXT- versus GETBULK-requests}
+
+In \cref{tabel-bandbreedte-walk-vs-bulk} staan de netwerkstatistieken voor een SNMP walk op basis van GETNEXT- en GETBULK-request.
+Weinig verrassend is dat er een stuk minder pakketten verstuurd als ontvangen zijn:
+vermits we 50 objecten per request opvragen, hebben we ook 50 keer minder pakketten die moeten verstuurd worden.
+Omdat er veel minder pakketten zijn verstuurd en ontvangen zijn er natuurlijk ook minder bytes verstuurd en ontvangen.
+Minder pakketten wil ook zeggen minder overhead door de headers van de pakketten.
+En omdat er in totaal minder data is verstuurd en ontvangen, was er ook gemiddeld minder bandbreedte nodig.
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+                           & Walk   & Bulkwalk \\ \midrule
+Pakketten verstuurd        & 2752   & 56       \\
+Pakketten ontvangen        & 2752   & 56       \\
+KiloBytes verstuurd        & 234.86 & 4.78     \\
+KiloBytes ontvangen        & 239.83 & 54.25    \\
+Gem. KiloBytes per seconde & 79.82  & 40.23    \\
+Gem. Megabits per seconde  & 0.65   & 0.33     \\ \bottomrule
+\end{tabular}
+\caption{Netwerkstatistieken SNMP walk met GETNEXT- versus GETBULK-requests}
+\label{tabel-bandbreedte-walk-vs-bulk}
+\end{table}
+
+We zien dit ook terug in \cref{fig-bandbreedte-walk,fig-bandbreedte-bulkwalk} die de bandbreedte tonen gedurende
+de SNMP walk met respectievelijk GETNEXT- en GETBULK-requests.
+De fluctuatie die je ziet in beide grafieken is trouwens enkel te wijten aan de fluctuatie in responsetijd van de SNMP-agent.
+De verwerkingstijd aan de kant van de retriever, of de tijd die nodig is om een nieuwe request te versturen, is zeer stabiel.
+We hebben hierbij wel de resultaten niet weggeschreven in de databank.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.40]{figures/bandbreedte/snmpwalk}
+	\caption{Bandbreedte SNMP walk met GETNEXT-requests}
+	\label{fig-bandbreedte-walk}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.40]{figures/bandbreedte/snmpbulkwalk}
+	\caption{Bandbreedte SNMP walk met GETBULK-requests}
+	\label{fig-bandbreedte-bulkwalk}
+\end{figure}
+
+
+\subsubsection{Invloed aantal ondervraagde nodes}
+
+In \cref{tabel-bandbreedte-aantalnodes} zien we de netwerkstatistieken voor 1, 10, 50 en 100 nodes.
+Omdat de toestellen quasi gelijk zijn aan elkaar zien we dat het aantal pakketten en de hoeveelheid data lineair stijgt met het aantal nodes.
+Bij het bandbreedteverbruik is dat echter niet het geval door het tijdsverschil.
+Ondanks het feit dat de toestellen tegelijkertijd opgevraagd worden, duurt het toch iets langer om meerdere toestellen op te vragen.
+Laat ons als voorbeeld het verschil tussen een en tien nodes nemen.
+Er zijn wel tien keer meer toestellen op te vragen, maar er wordt er bijna twee keer langer over gedaan.
+Daardoor stijgt het bandbreedteverbruik dus ongeveer maar met factor vijf in plaats van tien.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+                           & 1 node & 10 nodes & 50 nodes & 100 nodes \\ \midrule
+Pakketten verstuurd        & 72     & 648      & 3507     & 7093      \\
+Pakketten ontvangen        & 72     & 648      & 3507     & 7093      \\
+KiloBytes verstuurd        & 6.75   & 60.75    & 328.10   & 663.70    \\
+KiloBytes ontvangen        & 97.82  & 880.44   & 4762.68  & 9633.34   \\
+Gem. KiloBytes per seconde & 84.64  & 398.51   & 730.84   & 655.82    \\
+Gem. Megabits per seconde  & 0.69   & 3.27     & 5.99     & 5.37      \\
+Tijd\textsuperscript{*} (s)& 1.235  & 2.362    & 6.966    & 15.701    \\ \midrule[.5pt]
+\multicolumn{4}{l}{\textsuperscript{*} \footnotesize{Tijd nodig enkel voor het SNMP-verkeer}}
+\end{tabular}
+\caption{Netwerkstatistieken voor een verschillend aantal nodes}
+\label{tabel-bandbreedte-aantalnodes}
+\end{table}
+
+Het bandbreedteverbruik zou ook niet verder mogen stijgen als er meer dan 50 toestellen bevraagd worden,
+maar we zien dat ze zelfs daalt.
+Als we naar de grafiek van het bandbreedteverbruik bij 100 nodes kijken in \cref{fig-bandbreedte-100-nodes}
+zien we echter snel waarom.
+Ook in het bandbreedteverbruik zien we hetzelfde fenomeen terug als bij het CPU-gebruik in \cref{cpu-gebruik}:
+een dip gevolgd door een piek in het verbruik naar het einde toe.
+Als er gelijktijdig gewacht wordt op antwoorden van de toestellen zal het bandbreedteverbruik op dat moment natuurlijk ook zakken.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.40]{figures/bandbreedte/bandbreedte-100nodes}
+	\caption{Bandbreedte bij bevragen 100 nodes}
+	\label{fig-bandbreedte-100-nodes}
+\end{figure}
+
+Vandaar dus dat het gemiddelde bandbreedteverbruik lager uitvalt.
+De mediaan van het bandbreedteverbruik valt bij 100 nodes op bijna 6 Mbps wat wel overeenkomt met het verbruik van 50 nodes.
+
+Het bandbreedteverbruik valt op zich ook zeer goed mee als je rekening houdt met het feit dat netwerkverbindingen meestal 100 Mbps of zelfs al 1 Gbps zijn.
+In geval van een verbinding van 100 Mbps gaat het om een belasting van 6\%, bij een verbinding van 1 Gbps zelfs maar 0,6\%.
+
+\subsubsection{Conclusie}
+
+Naast de uitvoeringstijd is er nog een voordeel bij het gebruik van bulkrequests:
+zowel het totale dataverkeer als de benodigde bandbreedte vallen een stuk lager uit dan bij GETNEXT-requests.
+
+Net als bij het CPU- en geheugengebruik kunnen we opnieuw vaststellen dat het bandbreedteverbruik niet verder stijgt als er meer dan 50 toestellen bevraagd worden.
+Ook over het bandbreedteverbruik hoeven we ons weinig zorgen te maken.
+De bevragingen kunnen ook 's nachts ingepland worden zodat er helemaal geen impact is op het netwerkverkeer.
