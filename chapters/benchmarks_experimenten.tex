@@ -611,6 +611,8 @@ Ook het verhogen van het aantal objecten per request van 10 naar 50 heeft een po
 \subsection{Profiling van de SNMP Data Retriever}
 \label{profiling}
 
+\todo[inline]{Verwijs naar werking ipv hier uit te leggen.}
+
 In deze paragraaf gaan we de SNMP Data Retriever van NetworkMining onder de loep nemen met de ingebouwde profiler van Visual Studio.
 Een profiler zal ons enkele belangrijke inzichten verschaffen over wat er achter de schermen gebeurt bij het uitvoeren van de retriever.
 Specifiek:
@@ -1507,6 +1509,8 @@ kan men overwegen om in afwachting de databank op te slaan op een SSD om zo het 
 \subsection{Benchmarks uitvoeringstijd}
 \label{uitvoeringstijd-vwall}
 
+\todo[inline]{Invloed aantal nodes?}
+
 In deze paragraaf beoordelen we de uitvoeringstijd van de nieuwe versie van de \nwmretriever{} ten opzichte van de oude.
 Om de schaalbaarheid van de \nwmretriever{} te verbeteren hebben we al aanpassingen gedaan om gebruik te maken bulkrequests en een alternatief loggingframework.
 In \cref{impact-db} hebben we ook gezien dat de databankinteracties een grote negatieve impact hebben op de uitvoeringstijd.
@@ -1554,17 +1558,194 @@ Die zaken onderzoeken we in de volgende paragrafen.
 \todo[inline]{Een toestel -> Bytes/sec ~= Packets/sec \\
 Gecombineerde grafiek? Bps en packets?}
 
-\subsubsection{Een toestel}
+\todo[inline]{Inleiding}
+
+\todo[inline]{Het bandbreedtepatroon van GETNEXT vs GETBULK verschilt grondig. \\
+Bij bulk zijn de antwoordpakketten veel groter dan de verzonden pakketten. \\
+Bij getnext zijn ze ongeveer gelijk, getbulk bespaart dus bandbreedte (minder overhead van alle headers van de overbodige pakketten) \\
+Bps == packets/sec}
+
+\subsubsection{SNMP Walk met GETNEXT- versus GETBULK-requests}
+
+In \cref{tabel-bandbreedte-walk-vs-bulk} staan de netwerkstatistieken voor een SNMP walk op basis van GETNEXT- en GETBULK-request.
+Weinig verrassend is dat er een stuk minder pakketten verstuurd als ontvangen zijn:
+vermits we 50 objecten per request opvragen, hebben we ook 50 keer minder pakketten die moeten verstuurd worden.
+Omdat er veel minder pakketten zijn verstuurd en ontvangen zijn er natuurlijk ook minder bytes verstuurd en ontvangen.
+Minder pakketten wil ook zeggen minder overhead door de headers van de pakketten.
+En omdat er in totaal minder data is verstuurd en ontvangen, was er ook gemiddeld minder bandbreedte nodig.
 
 
-\subsubsection{SNMP Walk versus SNMP Bulk Requests}
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+                           & Walk   & Bulkwalk \\ \midrule
+Pakketten verstuurd        & 2752   & 56       \\
+Pakketten ontvangen        & 2752   & 56       \\
+KiloBytes verstuurd        & 234.86 & 4.78     \\
+KiloBytes ontvangen        & 239.83 & 54.25    \\
+Gem. KiloBytes per seconde & 79.82  & 40.23    \\
+Gem. Megabits per seconde  & 0.65   & 0.33     \\ \bottomrule
+\end{tabular}
+\caption{Netwerkstatistieken SNMP walk met GETNEXT- versus GETBULK-requests}
+\label{tabel-bandbreedte-walk-vs-bulk}
+\end{table}
+
+We zien dit ook terug in \cref{fig-bandbreedte-walk,fig-bandbreedte-bulkwalk} die de bandbreedte tonen gedurende
+de SNMP walk met respectievelijk GETNEXT- en GETBULK-requests.
+De fluctuatie die je ziet in beide grafieken is trouwens enkel te wijten aan de fluctuatie in responsetijd van de SNMP-agent.
+De verwerkingstijd aan de kant van de retriever, of de tijd die nodig is om een nieuwe request te versturen, is zeer stabiel.
+We hebben hierbij wel de resultaten niet weggeschreven in de databank.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.40]{figures/bandbreedte/snmpwalk}
+	\caption{Bandbreedte SNMP walk met GETNEXT-requests}
+	\label{fig-bandbreedte-walk}
+\end{figure}
+\todo[inline]{decimalen in uitvoeringstijd weglaten}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.40]{figures/bandbreedte/snmpbulkwalk}
+	\caption{Bandbreedte SNMP walk met GETBULK-requests}
+	\label{fig-bandbreedte-bulkwalk}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.40]{figures/bandbreedte/bandbreedte-100nodes}
+	\caption{Bandbreedte bij bevragen 100 nodes}
+	\label{fig-bandbreedte-100-nodes}
+\end{figure}
+\todo[inline]{Relatief tijdstip ~> Uitvoeringstijd}
+
 
 \subsubsection{Invloed aantal ondervraagde nodes}
 
 \todo[inline]{Verwijs voor dip in bandbreedte bij groot aantal nodes (>50) naar sectie CPU gebruik.}
 
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+                           & 1 node & 10 nodes & 50 nodes & 100 nodes \\ \midrule
+Pakketten verstuurd        & 72     & 648      & 3507     & 7093      \\
+Pakketten ontvangen        & 72     & 648      & 3507     & 7093      \\
+KiloBytes verstuurd        & 6.75   & 60.75    & 328.10   & 663.70    \\
+KiloBytes ontvangen        & 97.82  & 880.44   & 4762.68  & 9633.34   \\
+Gem. KiloBytes per seconde & 84.64  & 398.51   & 730.84   & 655.82    \\
+Gem. Megabits per seconde  & 0.69   & 3.27     & 5.99     & 5.37      \\ \bottomrule
+\end{tabular}
+\caption{Netwerkstatistieken verschillend aantal nodes}
+\label{tabel-bandbreedte-aantalnodes}
+\end{table}
+
+\subsubsection{Conclusie}
+
+\todo[inline]{SNMP bulkwalk is zowel sneller als efficienter voor wat betreft dataverbruik en nodige bandbreedte.}
+
 \subsection{Benchmarks CPU-gebruik}
 
-\todo[inline]{Onderzoek waarom verkeer \& CPU-verbruik dippen voor het einde (aantal threads daalt).}
+In deze paragraaf bekijken we de invloed van het aantal op te vragen toestellen op het CPU-gebruik van de \nwmretriever{}.
+We bekijken het CPU-gebruik gedurende de uitvoering van het programma en bespreken het gedrag ervan.
+Ook het aantal threads dat toestellen bevraagt gedurende de uitvoering nemen we onder de loep.
+
+\subsubsection{Meetresultaten}
+
+In \cref{fig-cpu-aantalnodes} zien we het CPU-gebruik van de \nwmretriever{} bij een verschillend aantal nodes.
+Misschien vraag je je af waarom het CPU-gebruik over de 100\% gaat.
+De reden daarvoor is omdat de server waarop de retriever draait in totaal 16 cores heeft.
+De belasting van een volledige core komt dan overeen met 100\%, twee cores met 200\% enzovoort.
+Als je dus een CPU-gebruik van 900\% ziet, dan komt dat ongeveer overeen met een volledige belasting van 9 cores.
+In de praktijk wordt de werklast echter verdeeld over meer dan 9 cores zodat ze niet allemaal volledig belast worden.
+
+We zien dat het CPU-gebruik meestijgt met het aantal nodes.
+Vanaf 50 nodes echter stijgt het CPU-gebruik niet verder voorbij iets meer dan 900\%.
+Dat is logisch, want er worden maar maximaal 50 toestellen tegelijkertijd opgevraagd.
+
+Naar het einde toe zien we iets vreemds.
+We verwachten dat eenmaal het resterend aantal te bevragen toestellen onder de 50 zakt,
+het CPU-gebruik zou moeten zakken tot 0\% wanneer alle toestellen bevraagd zijn en het programma afsluit.
+Wat we echter zien is dat het CPU-gebruik bij 100 nodes vanaf 13 seconden sterk zakt om na 15 seconden weer sterk te stijgen.
+
+Met behulp van het logbestand en Wireshark kunnen we de oorzaak vinden.
+Met het logbestand kunnen we zien hoeveel threads er actief zijn om toestellen te bevragen,
+en met Wireshark kunnen we zien hoeveel requests onderweg zijn.
+Een grafiek van het aantal retrieverthreads zie je in \cref{fig-retrieverthreads}.
+
+Het probleem dat zich voordoet is het volgende:
+er zijn op het einde nog minder dan 50 toestellen die moeten bevraagd worden dus er zijn minder dan 50 threads actief.
+In de grafiek met het aantal threads zie je rond 13 seconden dat de laatste antwoorden van een aantal toestellen binnenkomen en dat die toestellen afgewerkt zijn.
+Omdat er verder geen toestellen meer zijn worden er geen nieuwe threads meer gestart.
+De threads die wel nog actief zijn blijken allemaal te wachten op een antwoord van de toestellen en hebben dus niks te doen.
+Wanneer de antwoorden kort daarna aankoemen krijg je opnieuw een piek in CPU-gebruik door de gegevens die moeten verwerkt worden.
+Tegelijkertijd zie je dat het aantal threads verder afneemt naar mate de laatste antwoorden binnenkomen.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.40]{figures/cpu-100nodes}
+	\caption{CPU-gebruik bij verschillend aantal nodes}
+	\label{fig-cpu-aantalnodes}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.30]{figures/threads-100nodes}
+	\caption{Aantal retrieverthreads tijdens de uitvoer van de \nwmretriever{}}
+	\label{fig-retrieverthreads}
+\end{figure}
+
+In de grafiek met het aantal retrieverthreads zien we trouwens ook een probleem met hoe de threads beheerd worden.
+Zoals uitgelegd in \cref{werking} wordt in de oude versie die wij gebruiken de threads in een lijst bijgehouden en wordt er
+gewacht op de eerste thread om te voltooien eer er nieuwe threads gestart worden.
+Het probleem daarbij is dat niet noodzakelijk de eerst gestarte thread niet noodzakelijk eerst klaar is.
+Terwijl we wachten op de eerste thread kunnen er gerust al andere threads klaar zijn en dat zien we ook in de grafiek rond 5 en 10 seconden.
+Het aantal threads daalt maar doordat er gewacht wordt op de eerste thread duurt het even eer er nieuwe threads aangemaakt worden.
+Dit probleem werd doorgegeven aan NetworkMining en dit werd vrij snel opgelost.
+
+\subsubsection{Conclusie}
+
+Doordat er maximaal 50 toestellen tegelijkertijd bevraagd worden blijft het CPU-gebruik ook constant bij het bevragen van meer 50 toestellen.
+Door het constant houden van het aantal threads zien we echter dat niet alle rekenkracht benut wordt.
+Er zijn 16 cores beschikbaar, maar er is maar een CPU-belasting die overeenkomt met een volledige belasting van iets meer dan 9 cores.
+
+Het beheren van threads zou dus beter aangepakt kunnen worden aangepakt:
+enerzijds in het bepalen van het aantal threads dat moet gebruikt worden, afhankelijk van hoeveel rekenkracht er nog over is
+(en het RAM- en bandbreedtegebruik, maar die spelen een veel kleinere rol zoals we verder zullen zien).
+Anderzijds moeten ook nieuwe threads gestart worden van zodra een toestel volledig bevraagd is,
+maar dat is een probleem dat reeds opgelost werd door NetworkMining.
 
 \subsection{Benchmarks geheugenverbruik}
+
+Over het geheugenverbruik valt weinig te vertellen.
+We bekijken opnieuw de invloed van het aantal te bevragen toestellen op het geheugengebruik maar
+we zullen zien dat de conclusies die we gemaakt hebben in de vorige paragraaf hier ook van toepassing zijn.
+
+\subsubsection{Meetresultaten}
+
+In \cref{fig-ram-aantalnodes} zien we het geheugengebruik van de \nwmretriever{} bij een verschillend aantal nodes.
+Net als bij het CPU-gebruik zien we dat het geheugenverbruik meestijgt met het aantal op te vragen toestellen.
+En opnieuw stijgt het geheugengebruik niet verder als er meer dan 50 toestellen moeten bevraagd worden.
+
+Het geheugenverbruik blijft relatief constant gedurende de uitvoer van het programma.
+Er is een initiële piek wanneer de threads aangemaakt worden en het verbruik zakt pas wanneer het aantal threads daalt.
+De hoeveelheid geheugen dat gebruikt wordt valt op zich ook zeer goed mee: bij 50 of meer toestellen is er een piekverbruik van ongeveer 80 MB.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.40]{figures/ram-100nodes}
+	\caption{Geheugenverbruik bij verschillend aantal nodes}
+	\label{fig-ram-aantalnodes}
+\end{figure}
+
+\subsubsection{Conclusie}
+
+Net als het CPU-gebruik stijgt het geheugengebruik niet verder als er meer dan 50 toestellen bevraagd worden.
+Het geheugengebruik is gedurende de uitvoer vrij constant en met een maximaal verbruik van ongeveer 80 MB kunnen we zeggen dat
+de \nwmretriever{} absoluut niet veel geheugen nodig heeft.
+
+Moest het voorstel om de impact van de databankinteracties te beperken geïmplementeerd worden (\cref{impact-db}) is er duidelijk
+nog genoeg geheugen vrij om een tabel in het geheugen te houden alvorens ze in de databank weg te schrijven. 
+
+
