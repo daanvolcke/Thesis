@@ -94,8 +94,42 @@ Reeds bestaande tabellen moeten echter wel ofwel manueel aangepast worden om de 
 ofwel kan men de tabel verwijderen en de \nwmretriever{} een nieuwe laten aanmaken als de reeds opgeslagen resultaten ook verwijderd mogen worden.
 
 
-\section{Ondersteuning voor de endOfMibView exceptie}
+\section{Ondersteuning voor de endOfMibView-exceptie}
 \label{probleem-endofmibview-exceptie}
+
+Zoals we gezien hebben in de berichtstructuur van een SNMP-bericht in \cref{snmp-berichtstructuur},
+zijn er twee velden voorzien in een SNMP-bericht om aan te geven dat er zich een fout heeft voorgedaan: \textit{Error} en \textit{Error Index}.
+Het eerste veld geeft met een statuscode aan of er zich een fout heeft voorgedaan en zoja, dewelke.
+Het tweede veld bevat in geval van een fout een wijzer naar het object dat de fout veroorzaakt heeft
+
+Een van de nieuwe dingen die SNMPv2c introduceerde zijn SNMP-excepties.
+Er bestaan drie zulke excepties: \textit{EndOfMibView}, \textit{NoSuchInstance} en \textit{NoSuchObject}.
+Het bijzondere aan deze SNMP-excepties is dat ze toegevoegd worden aan de objectlijst (Varbind List) van een bericht
+en het errorveld niet wijzigen als ze zich voordoen\cite{endOfMibView-error-status}.
+
+De reden daarvoor is zodat een exceptie zich kan voordoen samen met andere objecten die wel correct opgehaald zijn.
+Herinner je dat je met GET- en GETNEXT-requests meerdere gegevens kunt ophalen,
+maar dat als er zich een fout voordoet je helemaal geen gegevens terug zal krijgen (\cref{meerdere-gegevens-ophalen-met-GET-en-GETNEXT}).
+Met SNMPv2c werd dit probleem dus opgelost.
+
+De endOfMibView-exceptie doet zich voor bij een SNMP walk\footnote{
+	Zowel bij gebruik van GETNEXT- en GETBULK-requests indien gebruik gemaakt wordt van SNMPv2c of hoger.
+	Bij SNMPv1 met GETNEXT-requests wordt de foutcode \textit{noSuchName} gebruikt\cite{snmp-exceptions-v2c-to-v1}.
+} wanneer er geen verdere data meer op te halen is\cite{snmp-exceptions-explained}.
+Wij kwamen deze exceptie tegen bij het overlopen van een ganse SNMP-agent, waarbij er op het einde natuurlijk geen gegevens meer zijn en de exceptie opgegooid wordt.
+
+Omdat de originele versie van de \nwmretriever{} enkel gebruik maakte van GET- en GETNEXT-requests was SNMPv1 voldoende.
+Bovendien is het overlopen van een ganse SNMP-agent vrij uitzonderlijk dus kwam men nooit in aanraking met deze (en andere) excepties.
+Het resultaat is dat er voor het detecteren van fouten enkel gekeken werd naar het erroveld en er dus geen rekening gehouden werd met excepties.
+
+In de originele versie had dit geen gevolgen omdat excepties zich toch niet voordoen in SNMPv1.
+Bij de nieuwe versie echter zal hier wel op moeten gecontroleerd worden vermits er gebruik gemaakt wordt van SNMPv2c.
+
+De manier om dit aan te pakken is vrij eenvoudig.
+Men controleert net zoals voorheen nog steeds het errorveld, maar bij het overlopen van de objecten in het antwoordbericht
+zal men ook moeten controleren of er een exceptie aanwezig is en de nodige acties ondernemen.
+Bij een endOfMibView-exceptie zal men moeten de SNMP walk staken want ze is immers ten einde gelopen.
+
 
 \section{''DOS-bescherming'' op intern netwerk iMinds}
 \label{probleem-dos-bescherming}
