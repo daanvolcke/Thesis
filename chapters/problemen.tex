@@ -39,6 +39,61 @@ Niet opgelost/niet belangrijk:
 \section{Ondersteuning voor lange OID's}
 \label{probleem-lange-oids}
 
+Een probleem waar we al redelijk vroeg op stootten, was het voorkomen van lange \glspl{oid} met SQL-fouten tot gevolg.
+De grote boosdoener hier was de \textit{inetCidrRouteTable} (1.3.6.1.2.1.4.24.7) die zeer lange indexen heeft,
+zoals te zien is in \cref{lst-inetCidrRouteEntry}.
+
+\begin{lstlisting}[language=asn.1, float=h, caption={Definitie van een inetCidrRouteEntry}, label=lst-inetCidrRouteEntry]
+inetCidrRouteEntry OBJECT-TYPE 
+	 SYNTAX InetCidrRouteEntry
+	 MAX-ACCESS not-accessible
+	 STATUS current
+	 DESCRIPTION "A particular route to a particular destination, under a 
+            particular policy (as reflected in the 
+            inetCidrRoutePolicy object). 
+ 
+            Dynamically created rows will survive an agent reboot. 
+ 
+            Implementers need to be aware that if the total number 
+            of elements (octets or sub-identifiers) in 
+            inetCidrRouteDest, inetCidrRoutePolicy, and 
+            inetCidrRouteNextHop exceeds 111, then OIDs of column 
+            instances in this table will have more than 128 sub- 
+            identifiers and cannot be accessed using SNMPv1, 
+            SNMPv2c, or SNMPv3."
+	 INDEX { inetCidrRouteDestType, inetCidrRouteDest, inetCidrRoutePfxLen, inetCidrRoutePolicy, inetCidrRouteNextHopType, inetCidrRouteNextHop } 
+ 	::= { inetCidrRouteTable 1  }
+\end{lstlisting}
+
+Die index bestaat onder andere uit een IP-adres dat een IPv4- of een IPv6-adres kan zijn.
+Zoals je weet zijn IPv6-adressen vrij lang, 128 bits om precies te zijn.
+Een voorbeeld van een \gls{oid} uit de inetCidrRouteTable zie je in \cref{lst-lange-oids}.
+
+\begin{lstlisting}[float=h, caption={Tekstuele en numerieke notatie van een \gls{oid} uit inetCidrRouteTable}, label=lst-lange-oids]
+IP-FORWARD-MIB::inetCidrRouteIfIndex.ipv6."fe:80:00:00:00:00:00:00:0a:00:27:ff:fe:6d:bd:c5"
+	.128.1.7.ipv6."00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" = INTEGER: 1
+
+1.3.6.1.2.1.4.24.7.1.7.2.16.254.128.0.0.0.0.0.0.10.0.39.255.254.109.189.197
+	.128.1.7.2.16.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0 = INTEGER: 1
+\end{lstlisting}
+
+Omdat de resultaattabel die de originele versie van de \nwmretriever{} aanmaakte slechts 55 karakters voorzag voor een \gls{oid} resulteerde dit natuurlijk
+in SQL-fouten omdat de de \glspl{oid} veel langer waren zoals ook te zien is in \cref{lst-sql-error}.
+
+
+\begin{lstlisting}[float=h, caption={SQL-fout bij te lange \glspl{oid}}, label=lst-sql-error]
+2014/02/24 14:28:54.92	Error		[21/311MB]	Failed to insert result row: 
+ComfunSQLConnectionException: Error executing SQL statement: 'replace into results values(@devname,'1.3.6.1.2.1.4.34.1.5.2.16.254.128.0.0.0.0.0.0.10.0.39.255.254.109.189.197', @attrname,@value,'2014-02-24 14:28:54','OK','2014-02-24 14:28:54')' with parameters '@attrname RFC1213-MIB.ip System.String @devname debian-vm-01 System.String @value 1.3.6.1.2.1.4.32.1.5.2.2.16.254.128.0.0.0.0.0.0.0.0.0.0.0.0.0.0.64 System.String' using connectionstring 'database=snmpdb;data source=localhost;user id=xxxxx;password=xxxxx;port=3306;old syntax=yes'. ---> MySql.Data.MySqlClient.MySqlException: #22001Data too long for column 'OID' at row 1
+\end{lstlisting}
+
+De oplossing is gelukkig eenvoudig: met het vergroten van de kolombreedte voor \glspl{oid} in de resultaattabel is het probleem opgelost.
+Om dat te doen passen we simpelweg de SQL-query aan in de \nwmretriever{} die de tabel aanmaakt.
+We nemen een grote marge voor de kolombreedte en vergroten ze naar 4096 karakters om toekomstige problemen te vermijden en omdat brede kolommen geen grote impact hebben.
+
+Reeds bestaande tabellen moeten echter wel ofwel manueel aangepast worden om de kolom te verbreden,
+ofwel kan men de tabel verwijderen en de \nwmretriever{} een nieuwe laten aanmaken als de reeds opgeslagen resultaten ook verwijderd mogen worden.
+
+
 \section{Ondersteuning voor de endOfMibView exceptie}
 \label{probleem-endofmibview-exceptie}
 
