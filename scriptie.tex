@@ -111,6 +111,10 @@
 \crefname{listing}{codefragment}{codefragmenten}
 \Crefname{listing}{Codefragment}{Codefragmenten}
 
+% Group the listings by chapter like the list of figures and tables
+\let\Chapter\chapter
+\def\chapter{\addtocontents{lol}{\protect\addvspace{10pt}}\Chapter}
+
 % Mogelijke optie om rode kaders rond references te verwijderen.
 % Kleurt references donkerrood -> enkel voor online gebruik, niet om af te drukken.
 %\hypersetup{
