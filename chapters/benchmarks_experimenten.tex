@@ -1565,6 +1565,7 @@ hebben we de resultaten in een grafiek gegooid in \cref{fig-uitvoeringstijd} en 
 
 Het is duidelijk dat er een lineair verband is tussen het aantal toestellen dat moet bevraagd worden en de uitvoeringstijd.
 De trendlijn leert ons dat de toename in uitvoeringstijd in seconden ongeveer gelijk is aan het extra aantal te ondervragen toestellen keer 0,15.
+\todo[inline]{De trendlijn leert ons dat elk extra toestel dat bevraagd moet worden, ongeveer 0,15 seconden extra vergt.}
 
 \begin{figure}[h]
 	\centering
@@ -1685,6 +1686,7 @@ Anderzijds moeten ook nieuwe threads gestart worden van zodra een toestel volled
 maar dat is een probleem dat reeds opgelost werd door NetworkMining.
 
 \subsection{Benchmarks geheugenverbruik}
+\label{benchmarks-geheugengebruik}
 
 Over het geheugenverbruik valt weinig te vertellen.
 We bekijken opnieuw de invloed van het aantal te bevragen toestellen op het geheugengebruik maar
@@ -1718,6 +1720,7 @@ nog genoeg geheugen vrij om een tabel in het geheugen te houden alvorens ze in d
 
 
 \subsection{Benchmarks bandbreedte}
+\label{benchmarks-bandbreedte}
 
 In deze paragraaf bekijken we het bandbreedteverbruik van de \nwmretriever{}.
 We vergelijken het bandbreedteverbruik van een SNMP walk op basis van GETNEXT- en GETBULK-requests.
