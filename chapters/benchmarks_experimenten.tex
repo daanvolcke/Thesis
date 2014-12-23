@@ -1,7 +1,23 @@
 \chapter{Benchmarks en Experimenten}
 % \chaptermark{Een kortere titel voor de paginahoofding (verschillend van titel in TOC)}
 
-\todo[inline]{Inleiding}
+Dit is het hoofdstuk waar het allemaal om te doen is.
+Hier bespreken we alle uitgevoerde experimenten, zowel op kleine- als grote schaal, om de schaalbaarheid van de \nwmretriever{} te onderzoeken.
+
+Op kleine schaal maken we gebruik van virtuele machines en een aantal productieswitches om onze testen uit te voeren.
+We onderzoeken de impact van netwerkvertraging, het nut van het filteren van de gegevens die moeten opgehaald worden en de impact van bulkrequests.
+Verder vergelijken we de performantie van de \nwmretriever{} met de Net-SNMP commandlinetools,
+analyseren we de \nwmretriever{} nader met een profiler, onderzoeken we of het beter is om een tabel rij per rij of kolom per kolom op te vragen
+en gaan we na wat de impact is van de fragmentatie van pakketten op het netwerk.
+
+Bij het identificeren van problemen die de schaalbaarheid belemmeren bespreken en implementeren we oplossingen.
+Achteraf analyseren we ook de effectiviteit van onze oplossingen.
+
+Op grote schaal maken we gebruik van de fameuze Virtual Wall bij iMinds die toelaat om snel geautomatiseerde testnetwerken op te zetten.
+We maken gebruik van virtualisatie om een groot aantal toestellen te creëren die we kunnen bevragen via SNMP.
+Met dat groot aantal toestellen kunnen we de uitvoeringstijd, het CPU-, geheugen- en bandbreedtegebruik analyseren die nodig is op grote schaal.
+We kijken hierbij naar zowel de originele versie als de versie met onze verbeteringen om te zien of ze het gewenste effect hebben op schaal.
+
 
 \section{Terminologie}
 
@@ -19,14 +35,11 @@ Maar omdat je extra gegevens moet opvragen om te weten dat er geen gegevens meer
 hebben we dus ook een aantal \textbf{niet-relevante gegevens}.
 
 Ten slotte zijn er twee retrievers waarvan we gebruik maken om SNMP-gegevens op te halen.
-Enerzijds hebben we de \textbf{\nwmretriever{}} van NetworkMining en anderzijds zijn er de Net-SNMP commandline tools.
+Enerzijds hebben we de \textbf{\nwmretriever{}} van NetworkMining en anderzijds zijn er de Net-SNMP commandlinetools.
 
 \section{Kleinschalige benchmarks en experimenten}
 
-\todo[inline]{Inleiding. Kort uitleggen wat we allemaal doen in deze sectie.}
-
-\todo[inline]{Eigenlijk maakt het weinig uit om wat voor soort toestellen het gaat:
-alhoewel de applicatie voornamelijk bedoeld is voor netwerkapparatuur, voor onze testen hebben we enkel een noodzaak aan voldoende gegevens die via SNMP kunnen opgevraagd worden.}
+\todo[inline]{Geen inleiding nodig?}
 
 \subsection{Virtuele machines}
 \label{virtualbox}
@@ -153,20 +166,6 @@ $ snmpwalk -v1 -cpublic localhost mib-2
 \todo[inline]{Verder eventueel: bridge configuratie, LLDP}
 
 \todo[inline]{SNMP Data Retriever in een Windows XP VM?}
-
-\todo[inline]{\LARGE {Effectieve testen mbv VirtualBox VM's}}
-
-\todo[inline, caption={}]{Tests in VirtualBox:
-
-\begin{itemize}
-	\item Aantal SNMP objecten onder de voornaamste OID's versus het totaal aantal objecten (snmp-objecten.pl) \\
-		Vergelijking tussen de verschillende iMinds switchen wat betreft aantal objecten (vergelijkfracties.pl) \\
-		Zie pg.7, verslag week 9-10
-	\item Reactietijd: tijd per object, SNMP walk vs bulk (verschillende groottes)
-	\item SNMP Data Retriever vs. Net-SNMP
-\end{itemize}
-
-}
 
 
 \subsection{Productieswitches}
@@ -1346,7 +1345,7 @@ We kunnen dus beter meer requests per object opvragen, zelfs als dat een hoge ma
 
 \section{Grootschalige benchmarks en experimenten}
 
-\todo[inline]{Inleiding. Kort uitleggen wat we allemaal doen in deze sectie.}
+\todo[inline]{Inleiding nodig? Reeds uitgelegd in inleiding van het hoofdstuk.}
 
 \subsection{Testopstelling}
 
