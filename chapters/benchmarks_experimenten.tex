@@ -1,15 +1,25 @@
 \chapter{Benchmarks en Experimenten}
 % \chaptermark{Een kortere titel voor de paginahoofding (verschillend van titel in TOC)}
 
-\todo[inline,caption={}]{Terminologie?
+\todo[inline]{Inleiding}
 
-\begin{itemize}
-	\item Object (geretourneerde gegevens.) <-> OID's (kunnen subtakken zijn van meerdere OID's)
-	\item SNMP Data Retriever
-	\item Relevante OID's/objecten/gegevens
-\end{itemize}
+\section{Terminologie}
 
-}
+Alvorens we beginnen met de benchmarks en experimenten, willen we nog eens de gebruikte terminologie verduidelijken zodat er zeker geen verwarring ontstaat.
+
+Om te beginnen worden gegevens die een SNMP-agent aanbiedt voorgesteld door \textbf{objecten}.
+Een object wordt uniek geïdentificeerd door een \textbf{\gls{oid}}.
+Maar omdat \glspl{oid} hiërarchisch zijn opgebouwd wil dit zeggen dat een \gls{oid} niet noodzakelijk overeenkomt met juist een object.
+Als we een hoger gelegen \gls{oid} opvragen krijgen we dus meerdere gegevens terug.
+
+Typisch overlopen we een hoger gelegen \gls{oid} met een SNMP walkopdracht.
+Deze blijft gegevens lexicografisch overlopen totdat de opgehaalde gegevens niet meer onder de originele \gls{oid} vallen.
+Alle gegevens die wel onder de originele \gls{oid} vallen, noemen we \textbf{relevant}.
+Maar omdat je extra gegevens moet opvragen om te weten dat er geen gegevens meer onder de originele \gls{oid} vallen,
+hebben we dus ook een aantal \textbf{niet-relevante gegevens}.
+
+Ten slotte zijn er twee retrievers waarvan we gebruik maken om SNMP-gegevens op te halen.
+Enerzijds hebben we de \textbf{\nwmretriever{}} van NetworkMining en anderzijds zijn er de Net-SNMP commandline tools.
 
 \section{Kleinschalige benchmarks en experimenten}
 
@@ -18,7 +28,7 @@
 \todo[inline]{Eigenlijk maakt het weinig uit om wat voor soort toestellen het gaat:
 alhoewel de applicatie voornamelijk bedoeld is voor netwerkapparatuur, voor onze testen hebben we enkel een noodzaak aan voldoende gegevens die via SNMP kunnen opgevraagd worden.}
 
-\subsection{VirtualBox}
+\subsection{Virtuele machines}
 \label{virtualbox}
 
 \todo[inline]{Betere titel! Virtuele testopstelling van een handvol switches.}
