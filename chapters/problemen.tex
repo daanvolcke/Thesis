@@ -167,7 +167,33 @@ Bij de grootschalige tests was het probleem eenvoudig opgelost door simpelweg oo
 zodat er een directe verbinding was tussen de toestellen.
 
 
-\section{Grootschalige opstelling op de Virtual Wall m.b.v. virtualisatie}
+\section{Virtualisatie op de Virtual Wall}
 \label{probleem-virtualisatie-vwall}
 
-\todo[inline]{Betere/kortere titel?}
+Een netwerkopstelling op de Virtual Wall wordt geconfigureerd aan de hand van een script die de \textit{NS-file} genoemd wordt en
+waarin men de machines en de netwerkverbindingen definieert.
+
+Virtualisatie wordt ondersteund op de \vwall{} maar is nog volop in ontwikkeling volgens de documentatie.
+Men kan hierbij gebruik maken van OpenVZ of Xen\cite{vwall-openvz, vwall-xen}.
+Om hiervan gebruik te maken volstaat het om andere parameters mee te geven met de gedefinieerde machines in de NS-file die aangeven dat het om virtuele machines gaan.
+
+De problemen die wij ondervonden had te maken met compatibiliteitsproblemen met de netwerkencapsulatiemethoden.
+Er zijn twee zulke capsulatiemethoden: \textit{veth-ne} en \textit{vlan}.
+Standaard wordt de eerste gebruikt maar men kan er ook voor kiezen om de tweede te gebruiken.
+Documentatie hierover is echter zo goed als niet te vinden.
+
+Om meerdere toestellen allemaal met elkaar te verbinden definieert men in de NS-file een LAN-netwerk en voegt men daar alle toestellen aan toe.
+In de praktijk wordt dat dan vertaald door een switch waar alle toestellen aanhangen.
+Het probleem is dat als men de standaardencapsulatie gebruikt, de virtuele machines daar niet mee overweg kunnen.
+De foutmelding die gegeven wordt bij het opzetten van de netwerkopstelling ziet er zo uit:
+
+\begin{lstlisting}
+Encapsulation not supported on big-lan since at least one of the nodes in big-lan does not support 'veth-ne' link emulation
+\end{lstlisting}
+
+Hierbij werd het LAN-netwerk \textit{'big-lan'} genoemd.
+Als men de vlan-encapsulatie gebruikt kunnen de niet-virtuele machines daar echter niet mee overweg.
+Het komt er dus op neer dat we alle virtuele machines wel met elkaar kunnen verbinden maar niet met fysieke machines,
+ondanks dat dit volgens de documentatie wel mogelijk zou moeten zijn, zelfs zonder de encapsulatiemethode te wijzigen\cite{vwall-openvz}.
+
+De oplossing die wij dan uiteindelijk hebben gebruikt, was om zelf de virtualisatie te configureren met behulp van \gls{lxc} (zie \cref{lxc}).
