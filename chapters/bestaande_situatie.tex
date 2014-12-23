@@ -174,3 +174,5 @@ Vervolgens worden de request(s) gestuurd naar dat toestel.
 Nadat het antwoord is ontvangen worden alle variabelen die in dat antwoord zitten overlopen.
 Er wordt gecontroleerd of de ontvangen gegevens relevant zijn (als ze onder de originele \gls{oid} vallen bij een SNMP walk),
 en zoja wordt het gegeven weggeschreven in de databank met de \textit{InsertResultRow}-methode.
+De InsertResultRow-methode doet niks meer dan het uivoeren van een SQL insert-query.
+Gegevens worden dus een per een weggeschreven in de databank.

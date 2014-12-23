@@ -1,6 +1,52 @@
 \chapter{Voorstellen voor verdere optimalisaties}
 
-\todo[inline]{Titel OK? Locatie ok? (na problemen)}
+\todo[inline]{Inleiding?}
+
+\section{Bulk inserts bij databankinteracties}
+
+De databankinteracties werden uitvoerig besproken in de \cref{werking,profiling,impact-db}.
+Een verdere optimalisatie die zeker nog gedaan moet worden,
+is het gebruik van bulk inserts bij het wegschrijven van de opgehaalde gegevens in de databank.
+
+In \cref{impact-db} hebben we gezien dat het wegschrijven van de gegevens in de databank een gigantische impact heeft op de uitvoeringstijd,
+dat alleen maar toeneemt met het aantal te bevragen toestellen.
+Het bevragen van slechts 100 toestellen ging zonder het wegschrijven van de resultaten maar liefst 61 keer sneller.
+Sterker nog, de impact van de databankinteracties is zodanig groot dat de performantiewinst van de andere optimalisaties bijna teniet gedaan wordt.
+De nieuwe versie was bij 100 toestellen slechts 5\% sneller dan de oude, maar ruim zeven keer sneller als de gegevens niet weggeschreven moesten worden.
+Het implementeren van bulk inserts is dus absoluut cruciaal om de \nwmretriever{} succesvol te kunnen inzetten op grote schaal.
+
+Het implementeren van bulk requests hoeft zelfs niet zoveel werk en tijd te vereisen.
+Een eenvoudige implementatie houdt een globale tabel bij in het geheugen die de resultaten tijdelijk bijhoudt.
+De InsertResultRow-methode wordt dan aangepast om de gegevens in die tabel in het geheugen weg te schrijven in plaats van rechtstreeks in de databank.
+Eenmaal een bepaalde hoeveelheid gegevens in de databank weggeschreven zijn kan de InsertResultRow-methode dan beslissen om al die data
+in een keer weg te schrijven in de databank met dus een bulk insert.
+
+Het nadeel van deze manier van werken is dat het wegschrijven van de resultaten in dezelfde thread gebeurt als het bevragen van een toestel.
+Als de gegevens weggeschreven worden zal die thread en het bevragen van dat ene toestel een stuk langer duren dan anders.
+Een andere manier van werken die wat meer arbeidsintensief is en meer tijd vraagt werd ook al voorgesteld in \cref{impact-db}.
+
+Daarbij wordt de verantwoordelijkheid van het wegschrijven van de resultaten in de databank overgeheveld naar een aparte thread.
+Deze zal dan instaan om, wanneer de tabel in het geheugen een bepaalde hoeveelheid gegevens bevat de gegevens weg te schrijven naar de databank,
+zonder de andere retrieverthreads daarbij te storen.
+De InsertResultRow-methode is dan enkel nog verantwoordelijk voor het wegschrijven van de gegevens in de tabel in het geheugen.
+
+Men kan dan nagaan of het beter is om periodiek gegevens weg te schrijven tijdens het bevragen van de toestellen,
+of om de gegevens ineens weg te schrijven na het bevragen van de toestellen, of naar het einde toe als het aantal retrieverthreads daalt.
+
+De gegevens hoeven zelfs niet weggeschreven te worden in een databank.
+Men kan verschillende implementaties voorzien die de tabel in het geheugen op verschillende manieren verwerkt.
+Men kan er bijvoorbeeld ook voor kiezen om de gegevens naar een bestand weg te schrijven of een combinatie.
+Het grote voordeel is dat het opslaan van de gegevens los staat van het opvragen ervan, dus dat de snelheidsimpact ervan beperkt blijft.
+
+
+\section{Intelligent threadbeheer}
+
+\todo[inline]{
+	Wanner max \# taken/threads bereikt, wordt er gewacht op de eerste thread om af te ronden.
+	Als de eerste thread vastzit, zit je met een probleem. Mss beter om alle threads te overlopen en te kijken welke vrij is. (geimplementeerd door NWMining) \\
+	Hergebruik van threads mbv threadpool? \\
+	Dynamisch aantal threads schalen naargelang resources (vnml. CPU)
+}
 
 \todo[inline, caption={}]{
 
