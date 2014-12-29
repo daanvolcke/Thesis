@@ -69,7 +69,7 @@ Die index bestaat onder andere uit een IP-adres dat een IPv4- of een IPv6-adres 
 Zoals je weet zijn IPv6-adressen vrij lang, 128 bits om precies te zijn.
 Een voorbeeld van een \gls{oid} uit de inetCidrRouteTable zie je in \cref{lst-lange-oids}.
 
-\begin{lstlisting}[float=h, caption={Tekstuele en numerieke notatie van een \gls{oid} uit inetCidrRouteTable}, label=lst-lange-oids]
+\begin{lstlisting}[float=h, caption={[Tekstuele en numerieke notatie van een OID uit inetCidrRouteTable]Tekstuele en numerieke notatie van een \gls{oid} uit inetCidrRouteTable}, label=lst-lange-oids]
 IP-FORWARD-MIB::inetCidrRouteIfIndex.ipv6."fe:80:00:00:00:00:00:00:0a:00:27:ff:fe:6d:bd:c5"
 	.128.1.7.ipv6."00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" = INTEGER: 1
 
@@ -81,7 +81,7 @@ Omdat de resultaattabel die de originele versie van de \nwmretriever{} aanmaakte
 in SQL-fouten omdat de de \glspl{oid} veel langer waren zoals ook te zien is in \cref{lst-sql-error}.
 
 
-\begin{lstlisting}[float=h, caption={SQL-fout bij te lange \glspl{oid}}, label=lst-sql-error]
+\begin{lstlisting}[float=h, caption={[SQL-fout bij te lange OID]SQL-fout bij te lange \glspl{oid}}, label=lst-sql-error]
 2014/02/24 14:28:54.92	Error		[21/311MB]	Failed to insert result row: 
 ComfunSQLConnectionException: Error executing SQL statement: 'replace into results values(@devname,'1.3.6.1.2.1.4.34.1.5.2.16.254.128.0.0.0.0.0.0.10.0.39.255.254.109.189.197', @attrname,@value,'2014-02-24 14:28:54','OK','2014-02-24 14:28:54')' with parameters '@attrname RFC1213-MIB.ip System.String @devname debian-vm-01 System.String @value 1.3.6.1.2.1.4.32.1.5.2.2.16.254.128.0.0.0.0.0.0.0.0.0.0.0.0.0.0.64 System.String' using connectionstring 'database=snmpdb;data source=localhost;user id=xxxxx;password=xxxxx;port=3306;old syntax=yes'. ---> MySql.Data.MySqlClient.MySqlException: #22001Data too long for column 'OID' at row 1
 \end{lstlisting}
