@@ -1,23 +1,40 @@
 \chapter*{Conclusie}
 \addcontentsline{toc}{chapter}{Conclusie}
 
+Bij de aanvang van deze masterproef werd de \nwmretriever{} enkel ingezet op kleine- en middelgrote netwerken.
+We hebben de belangrijkste aspecten van het SNMP-retrievalproces doorgelicht en hebben daarbij een aantal problemen blootgelegd die
+het gebruik van de retriever op grootschalige netwerken belemmerden.
+We hebben de nodige aanpasingen aangebracht aan de retriever om die problemen op te lossen,
+met name het gebruik van bulkrequests en het gebruik van een alternatief loggingframework,
+en konden besluiten dat de schaalbaarheid sterk verbeterd is.
+
+Er is echter nog een cruciaal probleem die opgelost moet worden alvorens we kunnen besluiten dat de \nwmretriever{} schaalbaar genoeg is om in te kunnen zetten op grootschalige netwerken: de databankinteracties.
+Er zijn verschillende manieren waarop dit probleem aangepakt kan worden,
+en de eenvoudigste zijn gelukkig niet al te ingrijpend en hoeven niet al te veel tijd in beslag te nemen.
+
+Zij we geslaagd in ons opzet om de schaalbaarheid te onderzoeken en te verbeteren?
+Alhoewel er nog wat werk te doen is op het gebied van databankinteracties, kunnen we daar wel al positief op antwoorden:
+als we niet tegengehouden worden door de databankinteracties, dan hebben we de \nwmretriever{} ruim zeven keer sneller gemaakt bij het bevragen van 100 toestellen.
+Een theoretische oefening op de uitvoeringstijd bij nog grotere aantallen toestellen leerde ons dat de impact van extra te bevragen toestellen beperkt blijft.
+
+Ook het geheugen- als bandbreedtegebruik blijft zeer minimaal bij het bevragen van een groot aantal toestellen.
+Voor wat betreft het CPU-gebruik konden we wel nog besluiten dat er nog verbeteringen mogelijk zijn bij het beheren van het aantal threads.
 
 
+\todo[inline,caption={}]{
 
-\todo[inline]{Is dit een hoofdstuk? Conclusie uit de inhoudstafel halen?}
+\begin{itemize}
+	\item Doel masterproef herhalen
+	\item Resultaten bespreken.
+	\item Door gebruik van bulk en log4net \ldots
+	\item Geslaagd in opzet?
+	\item 
+	\item Samenvatting van de conclusies van de tests.
+	\item Verdere optimalisaties.
+	\item 
+	\item Vraag: is de retriever uiteindelijk schaalbaar genoeg?
+	\item 
+	\item antwoord op centrale vraag, korte samenvatting, geen nieuwe elementen \ldots
+\end{itemize}
 
-\todo[inline]{
-
-	Doel masterproef herhalen \\
-	Resultaten bespreken. \\
-	Door gebruik van bulk en log4net... \\
-	Geslaagd in opzet? \\
-	
-	Samenvatting van de conclusies van de tests. \\
-	Verdere optimalisaties. \\
-	
-	Vraag: is de retriever uiteindelijk schaalbaar genoeg? \\
-	
-	antwoord op centrale vraag, korte samenvatting, geen nieuwe elementen \ldots
-	
 }
