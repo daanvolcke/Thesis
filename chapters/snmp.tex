@@ -51,19 +51,20 @@ Zodoende kunnen zelfs toestellen met zeer zwakke hardware, zoals embedded system
 
 
 % Componenten?
-\subsection{Onderdelen van SNMP}
+\subsection{SNMP-toestelrollen}
+\label{snmp-rollen}
 \todo{Betere titel?}
 
-SNMP kent twee soorten toestellen: SNMP-agents en SNMP-managers. In het client-server principe wordt de serverrol verricht door de SNMP-agent
-en de client door de SNMP-manager.
+SNMP kent twee soorten toestellen: \glspl{snmp-agent} en SNMP-managers.
+In het client-server principe wordt de serverrol verricht door de \gls{snmp-agent} en de client door de SNMP-manager.
 
 \begin{itemize}
-	\item De SNMP-agent is een stuk software dat draait op de netwerkcomponenten en informatie bijhoudt over het toestel.
-	Als iemand daar om vraagt zal de agent hem ook die informatie verstrekken.
+	\item De \gls{snmp-agent} is een stuk software dat draait op de netwerkcomponenten en informatie bijhoudt over het toestel.
+	Andere toestellen kunnen dan die gegevens opvragen en de \gls{snmp-agent} zal die aanvraag beantwoorden.
 	
 	% De GLS Reset zorgt ervoor dat de afkorting zeker languit wordt uitgeschreven
 	\item De SNMP-manager, vaak een \glsreset{nms} \gls{nms} genoemd, is de software die de SNMP-requests genereert, verstuurt naar de
-	SNMP-agents en uiteindelijk de antwoorden verwerkt. Een \gls{nms} zal meestal niet één maar meerdere SNMP-agents van verschillende toestellen ondervragen.
+	\glspl{snmp-agent} en uiteindelijk de antwoorden verwerkt. Een \gls{nms} zal meestal niet één maar meerdere \glspl{snmp-agent} van verschillende toestellen ondervragen.
 	Aan de hand van de verkregen informatie kan de \gls{nms} beslissen om verdere acties uitvoeren.
 \end{itemize}
 
@@ -72,12 +73,13 @@ en de client door de SNMP-manager.
 \todo{Betere titel?}
 
 Een van de grootste voordelen van SNMP is het feit dat ze je een uniforme manier aanbiedt om je netwerk te beheren. Fabrikanten van netwerkapparatuur
-bieden graag hun eigen oplossing aan om hun toestellen te beheren, maar het probleem is dat netwerken slechts hoogst uitzonderlijk uit apparatuur
+bieden graag hun eigen oplossing aan om hun toestellen te beheren, maar het probleem is dat netwerken zelden uit apparatuur
 bestaan van slechts een fabrikant. De managementoplossingen van de ene fabrikant werken natuurlijk niet om ook de toestellen van de andere
 fabrikant te beheren. Met SNMP zit je dus niet vast aan een fabrikant en kun je op uniforme wijze gans je netwerk beheren.
 
-SNMP biedt maar weinig functionaliteit aan en dat speelt zowel in zijn voordeel als in zijn nadeel. \todo{Te lange zin?} Het voordeel is zoals eerder vermeld het
-gemak waarmee fabrikanten SNMP kunnen implementeren, maar het nadeel is het gebrek aan features: met SNMP kun je enkel ruwe data opvragen.
+SNMP biedt maar weinig functionaliteit aan en dat speelt zowel in zijn voordeel als in zijn nadeel.
+Het voordeel is zoals eerder vermeld het gemak waarmee fabrikanten SNMP kunnen implementeren,
+maar het nadeel is het gebrek aan features: met SNMP kun je enkel ruwe data opvragen.
 Als je meer uit je data wenst te halen moet je die zelf achteraf verder verwerken. Denk aan het bijhouden van historische data, het combineren
 van verschillende gegevens om verbanden te zien, grafieken opmaken of zelfs ganse rapporten opstellen. Die dingen worden wel ondersteund door de
 managementoplossingen van fabrikanten, maar bij SNMP is het aan de gebruiker om die data uit de SNMP-gegevens te extraheren.
@@ -85,25 +87,26 @@ managementoplossingen van fabrikanten, maar bij SNMP is het aan de gebruiker om 
 
 \subsection{Onderliggende protocols}
 
-SNMP steunt op IP en UDP als transportprotocol. Dankzij de IP laag kan SNMP ook werken op heterogene netwerken.
+SNMP steunt op IP en UDP als transportprotocol. Dankzij de IP-laag kan SNMP ook werken op heterogene netwerken.
 UDP werd verkozen boven TCP vanwege de eenvoudige werking, wat weer handig is voor low-level netwerkcomponenten.
 Bovendien heeft UDP een kleinere impact op het netwerkverkeer dan TCP\cite{moreau}.
 Het nadeel van UDP is wel dat er geen bevestiging gebeurt van verstuurde pakketten.
 Als er een pakket verloren gaat is het dan aan de \gls{nms} om dit te detecteren en op te vangen.
-Normaal zal de \gls{nms} simpelweg de SNMP-query opnieuw versturen.
+Normaal zal een \gls{nms} simpelweg de SNMP-query opnieuw versturen.
 Voor het versturen en ontvangen van SNMP-berichten wordt er standaard gebruik gemaakt van poort 161.
 
 
 \section{Object Identifiers}
-\todo[inline]{Alinea's opsplitsen.}
-Elk mogelijk soort gegeven dat je kunt opvragen van een toestel dat SNMP ondersteunt wordt wereldwijd uniek geïdentificeerd\cite{moreau} door een \gls{oid}.
+
+Elk mogelijk soort gegeven dat je kunt opvragen via SNMP van een toestel wordt wereldwijd uniek geïdentificeerd\cite{moreau} door een \gls{oid}.
 \glspl{oid} worden hiërarchisch ingedeeld in een boomstructuur, net als bij DNS. De eindpunten van de boom stellen objecten voor en de knooppunten van de boom
 worden gebruikt om objecten logisch te groeperen. De namen van de knooppunten bepalen de uiteindelijke \gls{oid}.
 \glspl{oid} hebben een dotted-decimal notatie waarbij de knooppunten en het object van elkaar gescheiden worden door punten. %TODO Citatie?
 Van links naar rechts wordt de \gls{oid} opgebouwd door het hoogste knooppunt tot het uiteindelijk object.
 Een voorbeeld van een \gls{oid} die de uptime van een syteem teruggeeft is iso.org.dod.internet.mgmt.mib-2.system.sysUpTime.
-Het stuk van de boomstructuur waarin die \gls{oid} valt kun je ook zien in figuur \ref{boomstructuur}.
-De tekstuele notatie van een \gls{oid} valt zoals je ziet nogal lang uit en is moeilijk om te onthouden.
+Het stuk van de boomstructuur waarin die \gls{oid} valt kun je ook zien in \cref{boomstructuur}.
+
+De tekstuele notatie van een \gls{oid} valt zoals je ziet nogal lang uit.
 Daarom is het ook mogelijk om van een numerieke notatie gebruik te maken.
 Elk knooppunt heeft behalve de tekstuele naam ook een volgnummer waar gebruik van kan gemaakt worden en een veel kortere \gls{oid} oplevert.
 De \gls{oid} die hiervoor als voorbeeld werd gegeven wordt dan 1.3.6.1.2.1.1.3.
@@ -121,15 +124,31 @@ Een mogelijke hybride voorstelling van het vorig voorbeeld is 1.3.6.1.mgmt.1.1.s
 
 \section{Management Information Base}
 SNMP-agents houden een overzicht bij van alle gegevens die ze moeten bijhouden in een zogeheten \gls{mdb}.
-In die \gls{mdb} zit een verzameling van \gls{mib} bestanden.\footnote{De \gls{mib}-bestanden worden eerst gecompileerd naar een binair formaat
+In die \gls{mdb} zit een verzameling van \gls{mib} bestanden.\footnote{De \gls{mib}-bestanden worden eerst gecompileerd naar een binair formaat %TODO: Koppelteken?
 alvorens ze in de \gls{mdb} opgeslagen worden.\cite{moreau}}
 In die \gls{mib}-bestanden worden de eigenlijke SNMP-objecten gedefiniëerd. Vaak gaat men samenhorende objecten in een \gls{mib}-bestand samen stoppen.
 Bijvoorbeeld alle objecten die bij een bepaald protocol horen, of alle objecten die worden geïmplementeerd door een bepaalde fabrikant.
 Voor elk object wordt de naam en het volgnummer vastgelegd die zullen gebruikt worden in het OID voor dat object, alsook een beschrijving ervan en
 van wat voor soort datastructuur er gebruik gemaakt wordt om de data voor te stellen (bv. een string of integer).
 
+\begin{lstlisting}[language=asn.1, float=h, caption={Definitie van een SNMP-object}, label=lst-definitie-snmp-obj]
+sysUpTime OBJECT-TYPE 
+	 SYNTAX TimeTicks
+	 ACCESS read-only
+	 STATUS mandatory
+	 DESCRIPTION "The time (in hundredths of a second) since the 
+                  network management portion of the system was last 
+                  re-initialized."
+ 	::= { system 3  }
+\end{lstlisting}
+
+Als voorbeeld kun je de definitie van hetzelfde \textit{sysUpTime}-object als eerder zien in \cref{lst-definitie-snmp-obj}.
+Het \textit{ACCESS}-attribuut duidt hierbij aan of een gegeven gewijzigd mag worden of niet.
+\textit{STATUS} geeft aan of het gegeven verplicht geïmplementeerd moet worden.
+Onderaan zie je ook dat het object onder de \textit{system}-tak valt.
+
 Ook voor \glspl{nms} zijn \gls{mib}-bestanden zeer belangrijk. Want ook zij moeten weten welke gegevens ze precies kunnen opvragen van een bepaalde
-agent, en vooral: hoe ze die gegevens moeten interpreteren! Een \gls{nms} zal dus minstens over dezelfde \glspl{mib} moeten beschikken als de
+agent, en vooral: hoe ze die gegevens moeten interpreteren! Een \gls{nms} zal dus minstens \todo{minstens?} over dezelfde \glspl{mib} moeten beschikken als de
 agents die hij ondervraagt. Een groot aantal \glspl{mib} zijn gestandaardiseerd en worden ook standaard meegeleverd met SNMP-software.
 Een aantal van die gestandaardiseerde \glspl{mib} moeten ook verplicht ondersteund worden door SNMP-agents om de stempel 'SNMP compatibel' te mogen dragen.
 Het MIB-2 knooppunt die je kunt zien in \cref{boomstructuur} is daar een voorbeeld van.
@@ -139,7 +158,7 @@ Die minimale set van gegevens zal je dus van ieder SNMP toestel kunnen opvragen.
 \section{Tabellen}
 \label{snmp-tabellen}
 
-Behalve scalaire waarden is het ook mogelijk om tabellen te gebruiken met SNMP.
+Behalve scalaire waarden is het ook mogelijk om tabellen op te vragen met SNMP.
 We maken gebruik van de standaardtabel voor netwerkinterfaces \emph{ifTable} met als \gls{oid} 1.3.6.1.2.1.2.2 ter illustratie.
 Een tabel wordt als volgt gedefiniëerd in een \gls{mib}-bestand: 
 je hebt enerzijds een tabelobject (hier ifTable) en anderzijds een rijobject (hier ifEntry).
@@ -191,9 +210,9 @@ ifEntry OBJECT-TYPE
 	::= { ifTable 1 }
 \end{lstlisting}
 
-Ook belangrijk is het INDEX-attribuut. Deze geeft aan hoe de tabel geïndexeerd moet worden, dus hoe je aan individuele rijen kunt geraken.
+Ook belangrijk is het \textit{INDEX}-attribuut. Deze geeft aan hoe de tabel geïndexeerd moet worden, dus hoe je aan individuele rijen kunt geraken.
 Dit kan een eenvoudige integer zijn of een samenstelling van kolommen die een rij uniek kan identificeren.
-Hier wordt ifIndex gedefiniëerd als een eenvoudige integer.
+Hier wordt de index \textit{ifIndex} gedefiniëerd als een eenvoudige integer.
 
 \begin{lstlisting}[language=asn.1, float=h, caption={Definitie van ifIndex}, label=definitie-ifindex]
 ifIndex OBJECT-TYPE
@@ -212,17 +231,17 @@ ifIndex OBJECT-TYPE
 
 De indexering gebeurt dan als volgt. Om te beginnen heb je de \gls{oid} van de tabel zelf: 1.3.6.1.2.1.2.2.
 Het rijobject heeft ook een eigen \gls{oid}. Zijn volgnummer is 1 dus die komt achter de \gls{oid} van de tabel.
-Daarna komt het volgnummer van de kolom. Laten we als voorbeeld de kolom met de snelheid van de interface nemen (ifSpeed).
+Daarna komt het volgnummer van de kolom. Laten we als voorbeeld de kolom met de snelheid van de interface nemen (\textit{ifSpeed}).
 Deze heeft als volgnummer 5. De \gls{oid} voor die kolom wordt dan 1.3.6.1.2.1.2.2.1.5.
-Als we alle \glspl{oid} overlopen die beginnen met de \gls{oid} van de ifSpeed kolom, dan krijgen we de waarden van alle rijen voor die ene kolom.
+Als we alle \glspl{oid} overlopen die beginnen met de \gls{oid} van de ifSpeed-kolom, dan krijgen we de waarden van alle rijen voor die ene kolom.
 Als we ook nog eens een specifieke rij willen opgeven dan volgt dat na de kolomaanduiding.
 Vermits er hier gebruik gemaakt wordt van een simpele integer als index kunnen we achteraan de \gls{oid} 1 toevoegen om 
 de snelheid van de \emph{eerste} interface te weten te komen. De uiteindelijke \gls{oid} wordt dan 1.3.6.1.2.1.2.2.1.5.1.
-Je kunt dit visueel ook bevestigen in \cref{boomstructuur-tabel}.
+Je kunt dit visueel ook bevestigen in \cref{boomstructuur-tabel,fig-tabel-oid}.
 
 Omdat de kolomaanduiding voor de rijaanduiding komt in een \gls{oid},
 zal het overlopen van alle \glspl{oid} die beginnen met de \gls{oid} van de tabel tot resultaat hebben dat de tabel kolom per kolom wordt overlopen.
-Deze operatie wordt een SNMP walk van een \gls{oid} genoemd en wordt later verder uitgelegd.
+Deze operatie wordt een SNMP walk van een \gls{oid} genoemd en wordt verder uitgelegd in \cref{snmp-getnext,snmp-walk}.
 
 \begin{figure}[h]
 	\centering
@@ -231,10 +250,17 @@ Deze operatie wordt een SNMP walk van een \gls{oid} genoemd en wordt later verde
 	\label{boomstructuur-tabel}
 \end{figure}
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.50]{figures/snmp/oid-tabel}
+	\caption[OID van een cel uit een tabel]{\gls{oid} van een cel uit een SNMP-tabel}
+	\label{fig-tabel-oid}
+\end{figure}
+
 
 \section{SNMP Operaties}
 \label{snmp-operaties}
-SNMP maakt gebruik van het \gls{pdu} berichtformaat voor al het communicatieverkeer tussen SNMP-agents en \glspl{nms}.
+SNMP maakt gebruik van het \gls{pdu}-berichtformaat voor al het communicatieverkeer tussen SNMP-agents en \glspl{nms}.
 Er worden een aantal verschillende operaties ondersteund door SNMP en die hebben elk hun eigen \gls{pdu}-formaat\cite{essentialsnmp}.
 Hieronder worden enkel de belangrijkste SNMP-operaties gegeven die relevant zijn voor de masterproef:
 
@@ -250,8 +276,8 @@ De GET-operatie was de eerste en belangrijkste SNMP operatie.
 De GET-operatie wordt geïnitieerd door de \gls{nms} en laat die toe om een gegeven van een SNMP-agent op te vragen.
 Om te weten welk gegeven de \gls{nms} nu juist wenst te weten te komen geeft die een \gls{oid} mee met de \gls{pdu} die het gegeven uniek zal identificeren.
 Herinner je dat zowel de SNMP-agent als \gls{nms} over dezelfde \gls{mib} beschikken die dat \gls{oid} definiëert zodat ze beiden perfect weten waarover het gaat.
-De SNMP-agent ontvangt de \gls{pdu} en verwerkt deze. Een nieuw GET-response \gls{pdu} wordt opgesteld voor dat \gls{oid} met de waarde ervan ingevuld en
-terug verstuurd door de SNMP-agent. De \gls{nms} ontvangt de GET-response \gls{pdu} en weet nu de waarde voor dat \gls{oid}.
+De SNMP-agent ontvangt de \gls{pdu} en verwerkt deze. Een nieuwe GET-response-\gls{pdu} wordt opgesteld voor dat \gls{oid} met de waarde ervan ingevuld en
+teruggestuurd door de SNMP-agent. De \gls{nms} ontvangt de GET-response-\gls{pdu} en weet nu de waarde voor dat \gls{oid}.
 
 \todo[inline]{Figuur?}
 
@@ -289,9 +315,9 @@ Met de GETBULK-operatie is het dus wel mogelijk om incomplete antwoorden terug t
 \section{Manieren om SNMP gegevens op te vragen}
 \label{manieren-om-snmp-gegevens-op-te-vragen}
 
-Aan de hand van de SNMP operaties besproken in \cref{snmp-operaties} zijn er verschillende mogelijkheden om gegevens op te vragen
-al naar gelang of je een of meerdere gegevens wenst op te vragen en welke gegevens je juist wenst op te vragen (bv. tabellen).
-Met behulp van Net-SNMP zullen deze verschillende mogelijkheden hieronder gedemonstreerd worden.
+Aan de hand van de SNMP-operaties besproken in \cref{snmp-operaties} zijn er verschillende mogelijkheden om gegevens op te vragen
+al naar gelang je een of meerdere gegevens wenst op te vragen en welke gegevens \todo{Sequentiele gegevens?} je juist wenst op te vragen (bv. tabellen).
+Met behulp van Net-SNMP zullen de verschillende mogelijkheden hieronder gedemonstreerd worden.
 Net-SNMP is een gratis en open-source softwarepakket die commando's aanbiedt voor de verschillende SNMP-operaties en
 is beschikbaar voor de meeste besturingssystemen waaronder Windows en Linux.
 Wij maken gebruik van de Linux versie.
@@ -304,32 +330,33 @@ Wij maken gebruik van de Linux versie.
 
 Indien je maar geïnteresseerd bent in slechts een gegeven dan ligt het voor de hand om gebruik te maken van de SNMP GET-operatie.
 Voorwaarde is wel dat je exact de \gls{oid} kent van het gegeven dat je wenst op te vragen.
-Als we gebruik maken van het gratis softwarepakket Net-SNMP dat zowel voor de meeste besturingssystemen beschikbaar is,
-dan ziet een GET-request er ongeveer zo uit:
+Een GET-request in Net-SNMP ziet er zo uit:
 
 \begin{lstlisting}[float=h, caption={SNMP GET-opdracht}, label=netsnmp-get]
 $ snmpget -v 1 -c public 127.0.0.1 sysDescr.0
 SNMPv2-MIB::sysDescr.0 = STRING: Linux debian-vm-01 3.2.0-4-amd64 #1 SMP Debian 3.2.54-2 x86_64
 \end{lstlisting}
 
-Daarbij geeft de -v optie de te gebruiken versie mee en de -c optie de communitystring.
+Daarbij geeft de -v optie de te gebruiken versie mee en de -c optie de \textit{communitystring}.
+De communitystring fungeert als een soort wachtwoord om SNMP-requests te beveiligen.
 De opties worden gevolgd door het IP adres van het te ondervragen toestel en het \gls{oid} van het gegeven dat je wenst op te vragen.
-Zoals je misschien al opgemerkt hebt, wordt de \gls{oid} niet voorafgegaan door iso.org.dod.internet.mgmt.mib-2.system zoals het zou horen
+Zoals je misschien al opgemerkt hebt, wordt de \gls{oid} hier niet voorafgegaan door iso.org.dod.internet.mgmt.mib-2.system zoals het zou horen
 voor een \gls{oid} die in die subtak valt. De reden daarvoor is dat dit niet vereist is als de naam van de tak uniek is, wat het geval is voor sysDescr.
 
 De volgende vraag die je wellicht stelt is waarom er nog een .0 achter de \gls{oid} staat.
 Dit is omdat MIB objecten geïdentificeerd worden door de conventie x.y waarbij x de \gls{oid} is van het object
-en y de instantie aanduidt. Normaal wordt y gebruikt bij tabellen om de rij aan te duiden (1 is de eerste rij, 2 de tweede, enzovoort) zoals
-uitgelegd in \cref{snmp-tabellen}.
+en y de instantie aanduidt. Normaal wordt y gebruikt bij tabellen om de rij aan te duiden (1 is de eerste rij, 2 de tweede, enzovoort),
+zoals uitgelegd in \cref{snmp-tabellen}.
 Maar bij scalaire objecten is y altijd 0. De .0 achterwege laten levert een fout op.\cite{essentialsnmp}
 
 \subsubsection{GETNEXT-operatie}
 
 Je kan ook gebruik maken van de SNMP GETNEXT-operatie als je het \emph{volgende} gegeven wenst te weten te komen.
 Dit wordt hoofdzakelijk gebruikt bij het overlopen van tabellen zonder dat je moet rekening houden met de indexering van de tabel
-die immers niet noodzakelijk sequentieel is.
+die niet noodzakelijk sequentieel is.
 Het is mogelijk om zelf een SNMP GETNEXT-operatie uit te voeren, maar normaliter maak je gebruik van de SNMP walkopdracht die
-hiervan gebruik maakt om een ganse boomtak te overlopen (zie \cref{snmp-getnext}).
+hiervan gebruik maakt om een ganse boomtak te overlopen. Hier gaan we verder op in in \cref{snmp-getnext}.
+
 Als je de indexering van een tabel niet kent, dan zou je het volgende kunnen doen:
 
 \begin{lstlisting}[float=h, caption={SNMP GETNEXT-opdracht op een tabel}, label=netsnmp-getnext]
@@ -337,9 +364,9 @@ $ snmpgetnext -v 1 -c public 127.0.0.1 ifTable
 IF-MIB::ifIndex.1 = INTEGER: 1
 \end{lstlisting}
 
-Dit levert dan de waarde van de eerste kolom (hier ifIndex) in de eerste rij op.
+Dit levert dan de waarde van de eerste kolom (hier ifIndex) van de eerste rij op.
 Herinner je dat de \gls{oid} van een tabelelement eerst het kolomnummer bevat en dan de index van de rij.
-Dus als je de waarde van een andere kolom wenst zonder dat je de index van de eerste rij kent zou je het volgende kunnen doen:
+Dus als je de waarde van een andere kolom wenst zonder dat je de index van de eerste rij kent, zou je het volgende kunnen doen:
 
 \begin{lstlisting}[float=h, caption={SNMP GETNEXT-opdracht op een kolom van een tabel}, label=netsnmp-getnextcol]
 $ snmpgetnext -v 1 -c public 127.0.0.1 ifTable.1.2
@@ -357,7 +384,8 @@ Als je meerdere gegevens wenst op te vragen gebruik je best de SNMP BULK-operati
 Deze combineert meerdere \glspl{oid} in een bericht waardoor je sneller meerdere gegevens kunt opvragen.
 In feite zal de SNMP BULK-operatie simpelweg meerdere GETNEXT-operaties uitvoeren en de resultaten combineren in een bericht.
 
-Om van SNMP BULK-operaties gebruik te maken moet je ten eerste zorgen dat je gebruik maakt van SNMP versie 2c (zie ook \cref{snmp-versies}).
+Om van SNMP BULK-operaties gebruik te maken moet je ten eerste zorgen dat je gebruik maakt van SNMP versie 2c
+(zie ook \cref{snmp-versies} waarin we de verschillende SNMP versies bespreken).
 Ten tweede moet je ook twee extra parameters opgeven: \textit{non-repeaters} en \textit{max-repetitions}.
 Je kunt meerdere \glspl{oid} meegeven met de BULK-operatie en met die parameters kun je opgeven of er slechts een keer
 een GETNEXT-operatie op een \gls{oid} moet uitgevoerd worden of meerdere.
@@ -381,14 +409,15 @@ IP-MIB::ipAdEntIfIndex.10.0.2.11 = INTEGER: 2
 
 Het aantal non-repeaters en het aantal max-repetitions worden ingesteld met respectievelijk de -Cn en de -Cr optie.
 Vermits het aantal non-repeaters op 1 staat wil dit zeggen dat enkel de eerste \gls{oid}, sysDescr, niet herhaald moet worden.
-En omdat max-repetitions op 3 staat, worden alle overige \glspl{oid} 3 keer herhaald (hier ifTable en ipAddrTable).
-Als antwoord zie je het volgende staan: de waarde van sysDescr, de eerste 3 waarden van ifTable en de eerste 3 waarden van ipAddrTable.
+En omdat max-repetitions op 3 staat, worden alle overige \glspl{oid} drie keer herhaald (hier ifTable en ipAddrTable).
+Als antwoord zie je het volgende staan: de waarde van sysDescr, de eerste drie waarden van ifTable en de eerste drie waarden van ipAddrTable.
 
 Merk op dat de versie nu op 2c staat. Verder zie je dat de \gls{oid} voor de scalaire waarde sysDescr nu niet gevolgd wordt door .0,
 want achterliggend maakt de BULK-operatie gebruik van een GETNEXT-operatie.
 Als je toch .0 toevoegt dan zul je niet de waarde van sysDescr terugkrijgen maar die van de volgende \gls{oid}.
 Moest je ten slotte een hoger aantal max-repetitions gebruiken dan een tabel cellen heeft,
-of een scalaire waardere meerdere keren laten herhalen, dan krijg je ook nog de waarden van de \glspl{oid} die volgen op de tabel of de scalaire waarde terug.
+of per ongeluk een scalaire waardere meerdere keren laten herhalen, dan krijg je ook nog de waarden van de \glspl{oid} die volgen op de tabel of de scalaire waarde terug.
+\todo[inline]{Te verwarrend?}
 
 
 \subsubsection{GET- en GETNEXT-opdrachten}
@@ -417,9 +446,10 @@ Om meerdere gegevens op te vragen maak je dus beter gebruik van BULK-opdrachten.
 
 
 \subsubsection{SNMP walk}
+\label{snmp-walk}
 
 Zoals gezegd maak je normaal gezien weinig gebruik van de GETNEXT-operatie maar gebruik je in de plaats de SNMP walkopdracht.
-De SNMP walkopdracht wordt gebruikt om een ganse boomtak te overlopen en maakt achterliggend gebruik van de GETNEXT-operaties.
+De SNMP walkopdracht wordt gebruikt om een ganse boomtak te overlopen en maakt achterliggend gebruik van GETNEXT-operaties.
 Met de volgende SNMP walkopdracht kun je de interfacetabel van een toestel overlopen:
 
 \begin{lstlisting}[caption={SNMP walkopdracht}, label=netsnmp-walk]
@@ -434,11 +464,12 @@ IF-MIB::ifSpecific.6 = OID: SNMPv2-SMI::zeroDotZero
 \end{lstlisting}
 
 Merk op dat we hier geen instantie (de .0 bij scalaire gegevens) na de \gls{oid} hebben opgegeven!
-Moest je hier toch een instantie opgeven (de index van een rij van de tabel) dan zou je enkel die ene rij terugkrijgen
-en had je hetzelfde kunnen bereiken met een SNMP GET-opdracht.
+Moest je hier toch een instantie opgeven (de index van een rij van de tabel) dan zou je slechts een kolomwaarde terugkrijgen,
+horende bij die rij en had je hetzelfde kunnen bereiken met een SNMP GET-opdracht.
+\todo[inline]{Verwarrend?}
 
-Vermits de BULK-operaties ook gebruik maken van GETNEXT-operaties maar die bundelen in een antwoord,
-kun je de SNMP walkopdracht nog sneller laten verlopen door de BULK variant te gebruiken.
+Vermits BULK-operaties ook gebruik maken van GETNEXT-operaties, maar die bundelen in een antwoord,
+kun je de SNMP walkopdracht nog sneller laten verlopen door de BULK-variant te gebruiken.
 Het resultaat blijft natuurlijk hetzelfde.
 
 \begin{lstlisting}[caption={SNMP walkopdracht m.b.v. BULK-operaties}, label=netsnmp-bulkwalk]
@@ -448,20 +479,21 @@ $ snmpbulkwalk -v 2c -c public 127.0.0.1 ifTable
 
 Let erop dat je de versie moet veranderen omdat je gebruik maakt van BULK-operaties!
 
-Net als bij het snmpbulkget commando kun je hier echter nog het aantal herhalingen (max-repetitions) opgeven met de -Cr optie.
+Net als bij het snmpbulkget-commando kun je hier echter nog het aantal herhalingen (max-repetitions) opgeven met de -Cr optie.
 Daarbij komt het erop neer dat we kunnen opgeven hoeveel objecten moeten samengebundeld worden in een pakket.
 Om een SNMP walk zo snel mogelijk te laten verlopen zijn we natuurlijk geneigd om dit aantal zo hoog mogelijk in te stellen.
-We moeten wel rekening houden met twee beperkingen: de maximale grootte van een pakket is beperkt tot de \gls{mtu} van een verbinding.
+We moeten echter wel rekening houden met een aantal zaken.
+Ten eerste is de maximale grootte van een pakket beperkt tot de \gls{mtu} van een verbinding.
 Bij een ethernetverbinding gaat het om 1500 Bytes.
 
-Bij een groot aantal herhalingen is het ook mogelijk dat er redelijk wat data verspild wordt.
+Ten tweede is het bij een groot aantal herhalingen ook mogelijk dat er redelijk wat data verspild wordt.
 Stel dat we het aantal herhalingen instellen op 50, dan zullen de pakketten steeds 50 objecten bevatten.
 Ook het laatste pakket zal er 50 bevatten, ook al valt er slechts een object meer binnen de walk.
 Dan zijn de overige 49 objecten natuurlijk niet relevant voor ons en doen we daar dan ook niks mee.
 
 Als we een walk doen van een deelboom die maar 10 objecten heeft, heeft het ook geen zin om het aantal herhalingen op 50 te zetten.
 Natuurlijk weet je op voorhand niet hoeveel objecten juist onder een \gls{oid} vallen,
-maar je kan meestal wel een schatting doen of dit baseren op het aantal objecten dat in het verleden werd opgehaald voor dat \gls{oid} en voor dat toestel.
+maar je kan meestal wel een schatting doen of dit baseren op het aantal objecten dat in het verleden werd opgehaald voor dat \gls{oid} van een bepaald toestel.
 
 Het aantal herhalingen is uiteindelijk een beslissing die vooral zal afhangen van het geschatte aantal gegevens dat opgevraagd gaat worden.
 Standaard staat het aantal herhalingen daarom op een conservatieve 10 objecten.
@@ -471,7 +503,7 @@ Standaard staat het aantal herhalingen daarom op een conservatieve 10 objecten.
 \label{snmp-versies}
 Er zijn drie grote versies van SNMP die momenteel in gebruik zijn op netwerktoestellen: SNMPv1, SNMPv2c en SNMPv3.
 Ondanks dat SNMPv3 de twee voorgaande versies opvolgt kun je nog steeds veel toestellen vinden die enkel met SNMPv2c of zelfs met SNMPv1 werken.
-Opnieuw is er een afhankelijkheid van de fabrikant om voor de ondersteuning van SNMPv3 te zorgen.
+Het is aan de fabrikant om voor de ondersteuning van SNMPv3 te zorgen op een toestel.
 
 
 \subsection{SNMPv1}
@@ -512,7 +544,7 @@ SNMPv3 is echter op veel toestellen nog steeds niet aanwezig en zeker de SNMP SE
 In deze paragraaf bespreken we de berichtstructuur van een SNMP-bericht.
 In tegenstelling tot bijvoorbeeld IP- en ethernetheaders, hebben de headers van SNMP-berichten geen vaste lengte.
 In de plaats daarvan bestaat een SNMP-bericht uit \gls{tlv} tripletten\cite{moreau}.
-Daarbij geeft de tag aan om wat voor datatype het gaat, de length duidt de lengte aan van de data en value bevat de data zelf.
+Daarbij geeft de tag aan om wat voor datatype het gaat, length duidt de lengte aan van de data en value bevat de data zelf.
 Je hebt primitieve datatypes zoals een integer, een octetstring of een \gls{oid}.
 Maar je hebt ook complexe datatypes zoals een sequentie of een \gls{pdu} voor bijvoorbeeld een GET-request of een GET-response.
 De complexe types zoals de sequentie zijn opgebouwd uit meerdere kleinere velden zodat je een geneste structuur krijgt\cite{snmp-message-format}.
@@ -527,7 +559,7 @@ Octet String         & GetRequest         \\
 Object Identifier    & GetResponse        \\
 Null                 & GetBulkRequest     \\ \bottomrule
 \end{tabular}
-\caption{Enkele SNMP datatypes}
+\caption{Enkele SNMP-datatypes}
 \label{tabel-datatypes}
 \end{table}
 
@@ -545,14 +577,15 @@ de eigenlijke SNMP-\gls{pdu} (zelf een samengesteld type).
 De SNMP-\gls{pdu} bestaat uit de volgende velden:
 
 \begin{itemize}
-	\item Request ID (integer): unieke identificatie van een SNMP-request.
-		Het responsebericht zal dezelfde identificatie gebruiken zodat de ontvanger weer bij welke request het antwoord hoort.
+	\item Request ID (integer): een unieke identificatie van een SNMP-request.
+		Het responsbericht zal dezelfde identificatie gebruiken zodat de ontvanger weet bij welke request het antwoord hoort.
 	\item Error (integer): duidt aan of er een fout is opgetreden.
 		De SNMP-agent zal deze waarde veranderen indien nodig. Als de waarde op nul staat is er geen fout opgetreden.
 	\item Error Index (integer): verwijst naar het object dat de fout heeft veroorzaakt.
 	\item Varbind List (sequentie): de verzameling van alle objecten in de \gls{pdu}.
 		\begin{itemize}
-			\item Varbind (sequentie): komt overeen met een object en bevat zijn \gls{oid} en zijn waarde (enkel ingevuld in het antwoordbericht).
+			\item Varbind (sequentie): komt overeen met een object en bevat zijn \gls{oid} en waarde.
+				De waarde wordt enkel ingevuld in het responsbericht.
 				\begin{itemize}
 					\item Object Identifier (OID)
 					\item Value (integer, octetstring, \ldots)
