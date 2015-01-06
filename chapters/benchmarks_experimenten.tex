@@ -11,21 +11,21 @@ analyseren we de \nwmretriever{} nader met een profiler, onderzoeken we of het b
 en gaan we na wat de impact is van de fragmentatie van pakketten op het netwerk.
 
 Bij het identificeren van problemen die de schaalbaarheid belemmeren bespreken en implementeren we oplossingen.
-Achteraf analyseren we ook de effectiviteit van onze oplossingen.
+Achteraf analyseren we ook de effectiviteit van die oplossingen.
 
 Op grote schaal maken we gebruik van de fameuze Virtual Wall bij iMinds die toelaat om snel geautomatiseerde testnetwerken op te zetten.
 We maken gebruik van virtualisatie om een groot aantal toestellen te creëren die we kunnen bevragen via SNMP.
 Met dat groot aantal toestellen kunnen we de uitvoeringstijd, het CPU-, geheugen- en bandbreedtegebruik analyseren die nodig is op grote schaal.
-We kijken hierbij naar zowel de originele versie als de versie met onze verbeteringen om te zien of ze het gewenste effect hebben op schaal.
+We kijken hierbij naar zowel de originele versie als de versie met onze verbeteringen om te zien of ze het gewenste effect hebben op de schaalbaarheid.
 
 
 \section{Terminologie}
 
 Alvorens we beginnen met de benchmarks en experimenten, willen we nog eens de gebruikte terminologie verduidelijken zodat er zeker geen verwarring ontstaat.
 
-Om te beginnen worden gegevens die een SNMP-agent aanbiedt voorgesteld door \textbf{objecten}.
+Om te beginnen worden gegevens die een \gls{snmp-agent} aanbiedt voorgesteld door \textbf{objecten}.
 Een object wordt uniek geïdentificeerd door een \textbf{\gls{oid}}.
-Maar omdat \glspl{oid} hiërarchisch zijn opgebouwd wil dit zeggen dat een \gls{oid} niet noodzakelijk overeenkomt met juist een object.
+Maar omdat \glspl{oid} hiërarchisch zijn opgebouwd wil dit zeggen dat een \gls{oid} niet noodzakelijk overeenkomt met juist één object.
 Als we een hoger gelegen \gls{oid} opvragen krijgen we dus meerdere gegevens terug.
 
 Typisch overlopen we een hoger gelegen \gls{oid} met een SNMP walkopdracht.
@@ -801,10 +801,10 @@ We laten de oude en nieuwe implementatie 100 maal lopen en vergelijken de result
 \begin{tabular}{@{}lrrr@{}}
 \toprule
                                                                                                  & Objecten & Uitvoeringstijd (s) & Objecten/ms \\ \midrule
-SNMP Walk met GETNEXT-requests                                                                   & 472      & 7.371               & 0.064       \\
-SNMP Walk met GETBULK-requests (50)                                                              & 441      & 3.131               & 0.141       \\
-\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice methode met\\   GETNEXT-requests\end{tabular}      & 472      & 5.060               & 0.093       \\
-\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice methode met\\   GETBULK-requests (50)\end{tabular} & 441      & 0.722               & 0.611       \\ \bottomrule
+SNMP Walk met GETNEXT-requests                                                                   & 472      & 7,371               & 0,064       \\
+SNMP Walk met GETBULK-requests (50)                                                              & 441      & 3,131               & 0,141       \\
+\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice methode met\\   GETNEXT-requests\end{tabular}      & 472      & 5,060               & 0,093       \\
+\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice methode met\\   GETBULK-requests (50)\end{tabular} & 441      & 0,722               & 0,611       \\ \bottomrule
 \end{tabular}
 \caption{SNMP Walk op basis van GETNEXT-requests versus GETBULK-requests in de \nwmretriever{}}
 \label{tabel-nwmretriever-met-bulkrequests}
@@ -987,12 +987,12 @@ Toen ging het wel om meer gegevens.
 \begin{tabular}{@{}lrrr@{}}
 \toprule
                                                                                                  & Objecten & Uitvoeringstijd (s) & Objecten/ms \\ \midrule
-SNMP Walk met GETNEXT-requests                                                                   & 472      & 7.371               & 0.064       \\
-SNMP Walk met GETBULK-requests (50)                                                              & 441      & 3.131               & 0.141       \\
-\begin{tabular}[c]{@{}l@{}}SNMP Walk met GETBULK-requests en\\   log4net (50)\end{tabular}       & 441      & 1.839               & 0.240       \\
-\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice-methode met\\   GETBULK-requests (50)\end{tabular} & 441      & 0.722               & 0.611       \\
-\begin{tabular}[c]{@{}l@{}}SyncRequest-methode met GETBULK-requests\\   (50)\end{tabular}        & 441      & 0.387               & 1.138       \\
-Net-SNMP Bulkwalk (50)                                                                           & 2750     & 1.488               & 1.848       \\ \bottomrule
+SNMP Walk met GETNEXT-requests                                                                   & 472      & 7,371               & 0,064       \\
+SNMP Walk met GETBULK-requests (50)                                                              & 441      & 3,131               & 0,141       \\
+\begin{tabular}[c]{@{}l@{}}SNMP Walk met GETBULK-requests en\\   log4net (50)\end{tabular}       & 441      & 1,839               & 0,240       \\
+\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice-methode met\\   GETBULK-requests (50)\end{tabular} & 441      & 0,722               & 0,611       \\
+\begin{tabular}[c]{@{}l@{}}SyncRequest-methode met GETBULK-requests\\   (50)\end{tabular}        & 441      & 0,387               & 1,138       \\
+Net-SNMP Bulkwalk (50)                                                                           & 2750     & 1,488               & 1,848       \\ \bottomrule
 \end{tabular}
 \caption{Vergelijking van de verschillende implementaties van \nwmretriever{} en Net-SNMP}
 \label{tabel-nwmretriever-met-bulkrequests-en-log4net}
@@ -1116,10 +1116,10 @@ maar het is toch belangrijk om in het achterhoofd te houden dat de resultaten ni
 \begin{tabular}{@{}lrrr@{}}
 \toprule
 Toestel  & Objecten & Uitvoeringstijd rij per rij (s) & Uitvoeringstijd kolom per kolom (s) \\ \midrule
-atlas1a1 & 1315     & 1.09                            & 0.59                                \\
-atlas2a1 & 615      & 0.36                            & 0.25                                \\
-atlas2a2 & 250      & 0.37                            & 0.28                                \\
-atlas3a1 & 250      & 0.32                            & 0.21                                \\ \bottomrule
+atlas1a1 & 1315     & 1,09                            & 0,59                                \\
+atlas2a1 & 615      & 0,36                            & 0,25                                \\
+atlas2a2 & 250      & 0,37                            & 0,28                                \\
+atlas3a1 & 250      & 0,32                            & 0,21                                \\ \bottomrule
 \end{tabular}
 \caption{Tabel rij per rij opvragen versus kolom per kolom}
 \label{tabel-serieel-vs-parallel}
@@ -1161,10 +1161,10 @@ In dit commando voegen we het VLAN met ID 100 toe aan interface \textit{eth3} en
 \begin{tabular}{@{}lrrr@{}}
 \toprule
                 & Objecten & Uitvoeringstijd (ms) & Objecten/ms \\ \midrule
-Rij per rij     & 154      & 109                  & 1.413       \\
-Kolom per kolom & 154      & 30                   & 5.133       \\
-Rij per rij     & 2354     & 1523                 & 1.546       \\
-Kolom per kolom & 2354     & 80                   & 29.425      \\ \bottomrule
+Rij per rij     & 154      & 109                  & 1,413       \\
+Kolom per kolom & 154      & 30                   & 5,133       \\
+Rij per rij     & 2354     & 1523                 & 1,546       \\
+Kolom per kolom & 2354     & 80                   & 29,425      \\ \bottomrule
 \end{tabular}
 \caption{Tabel rij per rij opvragen versus kolom per kolom op dedicated hardware}
 \label{tabel-serieel-vs-parallel-vwall}
@@ -1299,14 +1299,16 @@ We bepalen tenslotte voor beide tests ook het percentage pakketten die gefragmen
 \begin{tabular}{@{}lrrrrr@{}}
 \toprule
                                                                            & Objecten/request & Aantal & Percentage & Tijd (ms) & Tijdsverschil (ms) \\ \midrule
-\begin{tabular}[c]{@{}l@{}}Niet-gefragmenteerde\\   pakketten\end{tabular} & 50               & 22     &            & 6.996     &                    \\
-\begin{tabular}[c]{@{}l@{}}Gefragmenteerd\\   pakketten\end{tabular}       & 50               & 50     & 69.44\%    & 9.822     & 2.826 (+40.39\%)   \\
-\begin{tabular}[c]{@{}l@{}}Niet-gefragmenteerde\\   pakketten\end{tabular} & 34               & 83     &            & 5.843     &                    \\
-\begin{tabular}[c]{@{}l@{}}Gefragmenteerd\\   pakketten\end{tabular}       & 34               & 22     & 20.95\%    & 7.882     & 2.039 (+34.9\%)    \\ \bottomrule
+\begin{tabular}[c]{@{}l@{}}Niet-gefragmenteerde\\   pakketten\end{tabular} & 50               & 22     &            & 6,996     &                    \\
+\begin{tabular}[c]{@{}l@{}}Gefragmenteerd\\   pakketten\end{tabular}       & 50               & 50     & 69,44\%    & 9,822     & 2,826 (+40,39\%)   \\
+\begin{tabular}[c]{@{}l@{}}Niet-gefragmenteerde\\   pakketten\end{tabular} & 34               & 83     &            & 5,843     &                    \\
+\begin{tabular}[c]{@{}l@{}}Gefragmenteerd\\   pakketten\end{tabular}       & 34               & 22     & 20,95\%    & 7,882     & 2,039 (+34,9\%)    \\ \bottomrule
 \end{tabular}
 \caption{Impact en percentage van gefragmenteerde pakketten bij bulkrequests}
 \label{tabel-fragmentatie-impact-percentage}
 \end{table}
+
+\todo[inline]{\Cref{tabel-fragmentatie-impact-percentage}: is het duidelijk dat het hier om tijd PER PAKKET gaat?}
 
 In \cref{tabel-fragmentatie-impact-percentage} zien we het aantal gefragmenteerde- en niet-gefragmenteerde pakketten bij bulkrequests van 34 en 50 objecten per request.
 Ook getoond is de gemiddelde tijd die nodig was om een antwoordbericht te ontvangen en het tijdsverschil tussen de gefragmenteerde- en niet-gefragmenteerde pakketten.
@@ -1323,8 +1325,8 @@ We herhalen de test 100 keer en berekenen de gemiddelde uitvoeringstijd.
 \begin{tabular}{@{}rrrr@{}}
 \toprule
 Objecten/request & Objecten & Uitvoeringstijd (s) & Tijdsverschil (s) \\ \midrule
-50               & 3558     & 17.735              &                   \\
-34               & 3558     & 18.626              & 0.891 (+5.02\%)   \\ \bottomrule
+50               & 3558     & 17,735              &                   \\
+34               & 3558     & 18,626              & 0,891 (+5,02\%)   \\ \bottomrule
 \end{tabular}
 \caption{Gemiddelde uitvoeringstijd van een SNMP walk met 50 en 34 objecten per request}
 \label{tabel-fragmentatie-uitvoeringstijd}
@@ -1535,10 +1537,10 @@ dus nemen we die resultaten er weer bij.
 \begin{tabular}{@{}ccrrr@{}}
 \toprule
 \multicolumn{1}{l}{Nodes} & \multicolumn{1}{l}{Versie} & Insert & Uitvoeringstijd (s) & Factor nieuw vs oud \\ \midrule
-\multirow{4}{*}{100}      & \multirow{2}{*}{Oud}       & Ja     & 1100.418            &                     \\
-                          &                            & Nee    & 125.820             &                     \\
-                          & \multirow{2}{*}{Nieuw}     & Ja     & 1051.373            & 1.05                \\
-                          &                            & Nee    & 17.229              & 7.30                \\ \bottomrule
+\multirow{4}{*}{100}      & \multirow{2}{*}{Oud}       & Ja     & 1100,418            &                     \\
+                          &                            & Nee    & 125,820             &                     \\
+                          & \multirow{2}{*}{Nieuw}     & Ja     & 1051,373            & 1,05                \\
+                          &                            & Nee    & 17,229              & 7,30                \\ \bottomrule
 \end{tabular}
 \caption{Uitvoeringstijd van de \nwmretriever{} op grote schaal}
 \label{tabel-uitvoeringstijd-vwall}
@@ -1561,7 +1563,7 @@ Alhoewel er tot 50 toestellen tegelijkertijd opgevraagd kunnen worden, zien we t
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
                     & 1 node & 10 nodes & 50 nodes & 100 nodes \\ \midrule
-Uitvoeringstijd (s) & 2.669  & 4.013    & 8.590    & 17.351    \\ \bottomrule
+Uitvoeringstijd (s) & 2,669  & 4,013    & 8,590    & 17,351    \\ \bottomrule
 \end{tabular}
 \caption{Uitvoeringstijd bij een verschillend aantal toestellen}
 \label{tabel-uitvoeringstijd-aantalnodes}
@@ -1590,19 +1592,19 @@ De theoretische uitvoeringstijd voor 1000 toestellen bedraagt amper 2,5 minuten 
 \begin{tabular}{@{}rr@{}}
 \toprule
 Toestellen & Uitvoeringstijd (s) \\ \midrule
-1          & 2.669               \\
-2          & 2.815               \\
-3          & 2.961               \\
-4          & 3.107               \\
-5          & 3.253               \\
-10         & 3.984               \\
-20         & 5.445               \\
-30         & 6.906               \\
-40         & 8.367               \\
-50         & 9.828               \\
-100        & 17.133              \\
-1000       & 148.623             \\
-10000      & 1463.523            \\ \bottomrule
+1          & 2,669               \\
+2          & 2,815               \\
+3          & 2,961               \\
+4          & 3,107               \\
+5          & 3,253               \\
+10         & 3,984               \\
+20         & 5,445               \\
+30         & 6,906               \\
+40         & 8,367               \\
+50         & 9,828               \\
+100        & 17,133              \\
+1000       & 148,623             \\
+10000      & 1463,523            \\ \bottomrule
 \end{tabular}
 \caption{Theoretische uitvoeringstijd bij een verschillend aantal toestellen}
 \label{tabel-theoretische-uitvoeringstijd}
@@ -1750,10 +1752,10 @@ En omdat er in totaal minder data is verstuurd en ontvangen, was er ook gemiddel
                            & Walk   & Bulkwalk \\ \midrule
 Pakketten verstuurd        & 2752   & 56       \\
 Pakketten ontvangen        & 2752   & 56       \\
-KiloBytes verstuurd        & 234.86 & 4.78     \\
-KiloBytes ontvangen        & 239.83 & 54.25    \\
-Gem. KiloBytes per seconde & 79.82  & 40.23    \\
-Gem. Megabits per seconde  & 0.65   & 0.33     \\ \bottomrule
+KiloBytes verstuurd        & 234,86 & 4,78     \\
+KiloBytes ontvangen        & 239,83 & 54,25    \\
+Gem. KiloBytes per seconde & 79,82  & 40,23    \\
+Gem. Megabits per seconde  & 0,65   & 0,33     \\ \bottomrule
 \end{tabular}
 \caption{Netwerkstatistieken SNMP walk met GETNEXT- versus GETBULK-requests}
 \label{tabel-bandbreedte-walk-vs-bulk}
@@ -1797,11 +1799,11 @@ Daardoor stijgt het bandbreedteverbruik dus ongeveer maar met factor vijf in pla
                            & 1 node & 10 nodes & 50 nodes & 100 nodes \\ \midrule
 Pakketten verstuurd        & 72     & 648      & 3507     & 7093      \\
 Pakketten ontvangen        & 72     & 648      & 3507     & 7093      \\
-KiloBytes verstuurd        & 6.75   & 60.75    & 328.10   & 663.70    \\
-KiloBytes ontvangen        & 97.82  & 880.44   & 4762.68  & 9633.34   \\
-Gem. KiloBytes per seconde & 84.64  & 398.51   & 730.84   & 655.82    \\
-Gem. Megabits per seconde  & 0.69   & 3.27     & 5.99     & 5.37      \\
-Tijd\textsuperscript{*} (s)& 1.235  & 2.362    & 6.966    & 15.701    \\ \midrule[.5pt]
+KiloBytes verstuurd        & 6,75   & 60,75    & 328,10   & 663,70    \\
+KiloBytes ontvangen        & 97,82  & 880,44   & 4.762,68  & 9.633,34   \\
+Gem. KiloBytes per seconde & 84,64  & 398,51   & 730,84   & 655,82    \\
+Gem. Megabits per seconde  & 0,69   & 3,27     & 5,99     & 5,37      \\
+Tijd\textsuperscript{*} (s)& 1,235  & 2,362    & 6,966    & 15,701    \\ \midrule[.5pt]
 \multicolumn{4}{l}{\textsuperscript{*} \footnotesize{Benodigde tijd enkel voor het SNMP-verkeer}}
 \end{tabular}
 \caption{Netwerkstatistieken voor een verschillend aantal nodes}
