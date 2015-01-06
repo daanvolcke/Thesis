@@ -370,7 +370,7 @@ kunnen we beter eerst testen wat voor snelheidswinsten we mogen verwachten bij h
 Daarna kunnen we beslissen of het de moeite waard is om deze manier van werken te implementeren.
 
 Om dit te testen maken we gebruik van reeds bestaande implementaties:
-de \textit{snmpwalk} en \mbox{\textit{snmpbulkwalk}} tools van Net-SNMP maken respectievelijk gebruik van GETNEXT- en
+de \textit{snmpwalk} en \mbox{\textit{snmpbulkwalk}} tools van Net-SNMP maken gebruik van respectievelijk GETNEXT- en
 GETBULK-requests om een SNMP walk te doen van een gegeven \gls{oid}.
 Uitleg en voorbeelden over hoe je de Net-SNMP tools kunt gebruiken vind je terug in \cref{manieren-om-snmp-gegevens-op-te-vragen}.
 Herinner je dat we het aantal objecten per pakket kunnen bepalen door het aantal max-repetitions te wijzigen.
@@ -379,14 +379,15 @@ Standaard stond die op 10.
 \subsubsection{Meetresultaten}
 
 Om te beginnen bevragen we een virtuele machine vanaf een andere.
-In principe kunnen we ook onszelf bevragen, maar dat is geen realistische situatie want dan is er helemaal geen netwerkvertraging.
+In principe kunnen we ook een virtuele machine zichzelf laten bevragen, maar dat is geen realistische situatie want dan komt er geen netwerkverkeer aan te pas.
 De gemiddelde pingtijd tussen twee virtuele machines is 0,468 ms.
-We doen achtereenvolgens een SNMP walk van de ganse SNMP-agent (goed voor ongeveer 4200 objecten),
+We doen achtereenvolgens een SNMP walk van de ganse \gls{snmp-agent} (goed voor ongeveer 4200 objecten),
 gevolgd door meerdere SNMP walk's met bulk-requests met een verschillende aantal objecten per request.
-Elke test herhalen we 100 keer en van elke test houden we het aantal ontvangen objecten bij alsook de tijd die hiervoor nodig was.
-Omdat het aantal objecten variabel is, sommeren we op het einde alle objecten en alle tijden.
-Uiteindelijk bekomen we twee metrieken: als we het totaal aantal objecten delen door de totale uitvoeringstijd,
-dan bekomen we het gemiddeld aantal objecten per tijdseenheid (hier ms).
+
+We herhalen elke test meermaals en --- omdat het aantal objecten variabel kan zijn over tijd ---
+houden we van elke test het aantal ontvangen objecten bij alsook de tijd die nodig was.
+Als we op het einde alle objecten en alle tijden sommeren zijn er twee metrieken waar we van gebruik kunnen maken.
+Als we het totaal aantal objecten delen door de totale uitvoeringstijd bekomen we het gemiddeld aantal objecten per tijdseenheid.
 Het inverse daarvan is de gemiddelde tijd die nodig is om een object op te vragen.
 Wij zullen gebruik maken van de eerste metriek die wat intuïtiever is.
 
@@ -408,31 +409,33 @@ SNMP Bulkwalk (1000)            & 7,225       & 9,857           & 19           \
 \label{tabel-bulkrequests}
 \end{table}
 
+\todo[inline]{Percentage/winstfactor zou leuk zijn?}
+
 De resultaten zie je in \cref{tabel-bulkrequests}.
 De eerste kolom bevat de operatie met tussen haken het aantal objecten per request indien het om een SNMP bulkwalk gaat.
-De tweede kolom bevat het \emph{gemiddeld} aantal objecten per ms.
+De tweede kolom bevat het gemiddeld aantal objecten per ms.
 De derde kolom bevat weer het gemiddeld aantal objecten per ms, maar zonder uitschieters.
 De laatste kolom ten slotte bevat het aantal uitschieters.
 
 Bij de resultaten van SNMP bulkwalk's met een groot aantal objecten per request zagen we soms een klein aantal uitschieters (telkens op 100 iteraties).
-Hier spreken we van een uitschieter als hij er anderhalf zo lang keer over doet als de meeste anderen.
+Hier spreken we van een uitschieter als een walk er anderhalf keer zo lang over doet als de meeste anderen.
 Bijvoorbeeld bij de SNMP bulkwalk's met 1000 objecten per request deden de meeste er ongeveer 0,44 ms over.
 Een klein aantal deed er echter 1,5 of zelfs 2 ms over.
 Omdat de andere tijdsmetingen zeer dicht bij elkaar liggen (minder dan 0,10 ms afwijking) vermoeden we
 dat de virtuele machine tijdelijk minder rekenkracht toegewezen krijgt door het gastheerbesturingssysteem.
 Wellicht zien we dit verschijnsel vooral bij hoge aantallen objecten per request omdat die meer rekenwerk vereisen.
-Latere tests waarbij de SNMP-agent geen virtuele machine is vertonen dit gedrag niet.
+Latere tests waarbij de \gls{snmp-agent} niet op een virtuele machine draait vertonen dit gedrag niet.
 
 Uit de resultaten kunnen we alvast afleiden dat het samenbundelen van meerdere objecten per request zeer grote snelheidswinsten oplevert,
 zelfs al voor 10 objecten per request.
-Daar zien we dat het al 3,76 keer zo snel gaat als een gewone SNMP walk.
+Daar gaat het al 3,76 keer sneller dan een gewone SNMP walk.
 Bij de andere gaat het 3,92 (1000 objecten/request) tot 4,75 (50 objecten/request) keer zo snel als we de resultaten met uitschieters bekijken.
-Houden we geen rekening met de uitschieters dan loopt het snelheidsverschil weinig uiteen en zien we
-dat het gemiddeld 5,33 keer zo snel gaat voor 50 tot 1000 objecten per request.
+Als we geen rekening houden met de uitschieters loopt het snelheidsverschil weinig uiteen en
+gaat het gemiddeld 5,33 keer zo snel voor 50 tot 1000 objecten per request.
 
 We zien dat het weinig zin heeft om meer dan 100 objecten per request te bundelen.
 Om beter het ideaal aantal objecten per request te schatten testen we het bereik tussen 10 en 100 objecten per request en voegen we er telkens 10 objecten bij.
-De resultaten daarvan zie je in \cref{tabel-bulkrequests-bulksizes}.
+De resultaten daarvan staan in \cref{tabel-bulkrequests-bulksizes}.
 
 \begin{table}[h]
 \centering
@@ -455,14 +458,15 @@ SNMP Bulkwalk (100)             & 8,336       & 9,725         & 9            \\ 
 \label{tabel-bulkrequests-bulksizes}
 \end{table}
 
-Opnieuw zien we een klein aantal uitschieters (opnieuw op 100 iteraties).
+Opnieuw zien we een klein aantal uitschieters (nog steeds op 100 iteraties).
 Verder zien we dat het gemiddeld aantal objecten per ms, althans als we de uitschieters buiten beschouwing laten, stelselmatig toeneemt.
-Houden we wel rekening met de uitschieters, dan zien we een piek bij 80 objecten per request.
+Houden we wel rekening met de uitschieters, dan beschouwen we een maximum bij 80 objecten per request.
 
-Alvorens we onze conclusies trekken, herhalen we de test nogmaals maar op een productieswitch van iMinds.
+Alvorens we onze conclusies trekken, herhalen we de test nogmaals maar op een productieswitch.
 De gemiddelde pingtijd naar deze switch bedraagt 1,831 ms.
+Dat is nog steeds zeer weinig, maar is toch drie keer meer dan bij de tests hierboven op de virtuele machines.
 Omdat we hier problemen ondervonden bij het opvragen van grote aantallen gegevens (zie \cref{probleem-dos-bescherming}),
-hebben we ons beperkt tot het overlopen van de interfacetabel, goed voor ongeveer 2750 objecten.
+hebben we dit aantal beperkt door enkel de interfacetabel te overlopen, wat nog steeds goed is voor ongeveer 2750 objecten.
 De resultaten van deze test zie je in \cref{tabel-bulkrequests-switch}.
 
 \begin{table}[h]
@@ -484,9 +488,9 @@ SNMP Bulkwalk (1000)           & 1,876       & 419,03\%             & 1,61\%    
 \label{tabel-bulkrequests-switch}
 \end{table}
 
-De test werd uitgevoerd vanaf dezelfde virtuele machine, maar er waren deze keer geen uitschieters in de resultaten.
-Hier zien we dat het nog steeds sterk de moeite loont om over te stappen op bulk-requests.
-Alhoewel het hier geen vijf keer sneller gaat zoals bij de vorige test, met ruim vier keer sneller zijn we ook al tevreden.
+De test werd uitgevoerd vanaf dezelfde virtuele machine als de vorige tests, maar er waren deze keer geen uitschieters te zien in de resultaten.
+Hier zien we dat het op een productieswitch nog steeds sterk de moeite loont om over te stappen op bulk-requests.
+Het gaat hier geen vijf keer zo snel als bij de vorige test, maar als het nog steeds vier keer sneller gaat zijn we ook al tevreden.
 De grootste winst zit bij 10 objecten per request, maar er worden nog kleine winsten geboekt bij verdere verhoging.
 Vanaf 50 objecten per request begint de winst af te vlakken.
 
@@ -497,16 +501,16 @@ Het is overduidelijk dat het dan ook sterk de moeite loont om SNMP walk's te imp
 
 Voor wat betreft het ideaal aantal objecten dat we per request opvragen valt er te discussiëren.
 Gezien de resultaten bij de productieswitch uitwijzen dat de snelheidswinsten afvlakken vanaf 50 objecten per request lijkt ons dat een goed aantal
-om te gebruiken bij de implementatie voor \nwmretriever.
+om te gebruiken bij de implementatie voor de \nwmretriever.
 Alhoewel Net-SNMP een veilige 10 objecten per request aanhoudt,
 vinden we het toch de moeite om dit verder te verhogen gezien het toch nog een 25-tal procent sneller kan gaan ten opzichte van GETNEXT-requests.
 
-Als we kijken naar het aantal op te vragen gegevens, de zien we dat de interfacetabel van een van de kleinere productieswitches alleen al bijna 3000 objecten bevat.
+Als we kijken naar het aantal op te vragen gegevens, dan zien we dat de interfacetabel van een van de kleinere productieswitches alleen al bijna 3000 objecten bevat.
 In \cref{fracties} zagen we dat het aantal interessante objecten bij een switch 3 à 5000 bedraagt, tot zelfs ruim 11000 voor een grotere switch.
-Daarom neigen we des te meer naar hogere aantallen objecten per request voor als het over netwerkapparatuur gaat.
+Daarom neigen we des te meer naar hogere aantallen objecten per request als het over netwerkapparatuur gaat.
 
 Natuurlijk kunnen we het aantal objecten per request laten aanpassen door de eindgebruiker,
-maar met hetgeen we hierboven hebben geschreven voelen we ons zelfzeker dat 50 objecten per request een goede standaardwaarde is.
+maar we voelen dat 50 objecten per request een goede standaardwaarde is.
 
 
 \todo[inline]{Nut van bulkrequest? Omzeilen van latency en overhead van pakketten...
