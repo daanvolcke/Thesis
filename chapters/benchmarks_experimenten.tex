@@ -69,10 +69,7 @@ VirtualBox is vrij te verkrijgen voor alle gangbare besturingssystemen en is bov
 
 \subsubsection{Hardwareconfiguratie}
 
-Het gastheerbesturingssysteem is een 64-bit versie van Windows 7.
-Windows en VirtualBox zijn geïnstalleerd op een SSD, maar de virtuele machines zelf staan op een magnetische harde schijf.
-
-Aan elke node wordt 256 MB geheugen en een CPU kern (van een Intel Core i7 3610QM processor) toegewezen.
+Aan elke node wordt 256 MB geheugen en één CPU-\textit{core} toegewezen.
 Op de nodes wordt een minimale versie van Debian 7 geïnstalleerd, zonder grafische schil.
 Hierdoor is zelfs 256 MB een ruime luxe voor de nodes: na het opstarten van een node wordt er amper 70MB geheugen gebruikt.
 
@@ -88,7 +85,7 @@ maar communicatie met het internet is niet mogelijk.
 \subsubsection{Softwareconfiguratie}
 
 Hieronder leggen we kort stap voor stap uit hoe je op een Debianinstallatie de nodige SNMP software kunt installeren en configureren.
-De uitleg is zeer is zeer beknopt gehouden en dient enkel om je op weg te helpen.
+De uitleg is zeer beknopt gehouden en dient enkel om je op weg te helpen.
 In de testopstelling werden de nodes ook nog geconfigureerd als switches die het \gls{stp} draaien alsook het \gls{lldp}.
 Deze extra protocollen bieden informatie aan die via SNMP opgevraagd kan worden en zijn ook gegevens die in een realistische situatie opgevraagd kunnen worden.
 De configuratie als switch en van LLDP wordt hier echter niet besproken. \todo{Dit kan eventueel als bijlage uitgelegd worden.}
@@ -113,12 +110,12 @@ Maak een gebruiker aan en zorg ervoor dat je sudo rechten hebt met behulp van he
 
 Dan installeren we de snmp \textit{daemon} die zal antwoorden op SNMP requests.
 Om te testen is het ook interessant om de client-side SNMP tools te installeren alsook een tool om de belangrijkste \glspl{mib} te downloaden.
-Met die \glspl{mib} worden numerieke \glspl{oid} omgezet naar de leesbare tekstuele voorstelling.
+Met die \glspl{mib} kunnen numerieke \glspl{oid} omgezet worden naar de meer gebruiksvriendelijke tekstuele voorstelling.
 
 Debian laat standaard niet toe dat niet-vrije (non-free) software\footnote{
 	Dit is software die niet volledig vrij is maar op een of andere manier beperkt wordt door zijn licentie. De eisen die gesteld worden aan vrije software voor Debian zijn te vinden in de Debian Free Software Guidelines (DFSG)\cite{dfsg}\cite{dfsg-wiki}.}
-geïnstalleerd wordt. De \textit{snmp-mibs-downloader} tool is daar een voorbeeld van.
-Om dit toch toe te laten moet je voor elke lijn in /etc/apt/sources.list het non-free component achteraan toevoegen.
+geïnstalleerd wordt. De \textit{snmp-mibs-downloader} tool die we nodig hebben om de \glspl{mib} te downloaden is daar een voorbeeld van.
+Om dit toch toe te laten moet je voor elke lijn in /etc/apt/sources.list het non-free-component achteraan toevoegen.
 Dan krijg je zoiets:
 
 \begin{lstlisting}[language=bash]
@@ -157,10 +154,10 @@ Vervolgens herstarten we snmpd om de nieuwe configuratie in te laden.
 $ sudo /etc/init.d/snmpd restart
 \end{lstlisting}
 
-We kunnen testen of alles werkt met het volgende:
+Nu kunnen we testen of alles werkt met het volgende:
 
 \begin{lstlisting}[language=bash]
-$ snmpwalk -v1 -cpublic localhost mib-2
+$ snmpwalk -v 1 -c public localhost mib-2
 \end{lstlisting}
 
 \todo[inline]{Verder eventueel: bridge configuratie, LLDP}
@@ -174,64 +171,53 @@ $ snmpwalk -v1 -cpublic localhost mib-2
 
 Naast een viertal virtuele machines kunnen we ook gebruik maken van tien productieswitches die deel uitmaken van het netwerk van iMinds.
 Deze switches kunnen we gebruiken om na te gaan of de tests met de virtuele machines de realiteit goed kunnen benaderen.
-Er worden drie verschillende modellen gebruikt, allen van HP: een 5412 zl, 4208 vl en acht ProCurve 2650 switches.
-De grootste bevat bijna 300 poorten en bevat ook routerfunctionaliteiten.
+Er worden drie verschillende modellen gebruikt van verschillende grootte en functionaliteit.
+De grootste bevat bijna 300 poorten en functioneert ook als router.
 
 \subsection{Netwerkvertraging}
 \label{latency}
 
 Netwerkvertraging of \textit{latency} definiëren we als de zogenaamde \textit{round-trip time},
 of de tijd die nodig is om een bericht te sturen naar een ander toestel en voor die computer om het antwoord terug naar jou te sturen\footnote{
-	Latency kan ook gedefiniëerd worden als enkel de tijd dat een bericht nodig heeft om in een richting reizen.
+	Latency kan ook gedefiniëerd worden als enkel de tijd dat een bericht nodig heeft om in één richting reizen.
 	Dat is echter moeilijker om te meten. Meestal hanteert men de round-trip time omdat dat gemeten kan worden vanaf slechts een punt. \cite{latency-wiki}
 }.
-De latency tussen twee toestellen kan je gemakkelijk meten vanop een van de twee toestellen met behulp van het \textit{ping} commando.
+De latency tussen twee toestellen kan je gemakkelijk meten vanop een van de twee toestellen met behulp van het \textit{ping}-commando.
 
 Op een LAN-netwerk bedraagt de latency gewoonlijk minder dan 1 ms en valt dus te verwaarlozen.
-Vanaf dat verkeer over het internet gaat, gaat latency een grote rol spelen.
+Vanaf dat netwerkverkeer over het internet moet gaan, gaat latency wel een grote rol spelen.
 Zolang de afstand niet te lang is (als we binnen West-Europa blijven) dan blijft de latency beperkt tot 10-50 ms.
 Als we daarentegen communiceren met bv. Amerika, dan spreken we al over 100-200 ms (afhankelijk of we spreken over de Oost- of Westkust).
-Voor sommige toepassingen (zoals bijvoorbeeld real-time spellen) is dit te hoog om nog te gebruiken.
+Voor sommige toepassingen (zoals bijvoorbeeld real-time spellen) is dit te hoog om nog bruikbaar te zijn.
 
 Het belang voor ons van de latency is voornamelijk bij het opvragen van veel gegevens met GET- en GETNEXT-requests.
 Zoals uitgelegd in \cref{snmp-operaties} wordt er slechts een gegeven in een request gestopt en
 moet je steeds wachten op het antwoord alvoren je de volgende request stuurt.
-Als te maken hebt met een latency van zeg maar 25 ms, wil dat zeggen dat je steeds 25 ms moet wachten alvorens je de volgende request kunt sturen.
+Als je maken hebt met een latency van zeg maar 25 ms, wil dat zeggen dat je steeds 25 ms moet wachten alvorens je de volgende request kunt sturen.
 Stel dat je 200 gegevens wenst op te halen, dan doe je hier 5 seconden over (200 gegevens $*$ 25 ms wachten per gegeven).
 
-Was er een netwerkvertraging van slechts 1 ms, dan zou het ophalen van dezelfde 200 gegevens slechts 200 ms duren.
+Was er een netwerkvertraging van slechts 1 ms, dan zou het ophalen van dezelfde 200 gegevens nog maar 200 ms duren.
 Natuurlijk houden we hier nog geen rekening met de tijd die het toestel zelf nodig heeft om het bericht te verwerken en te antwoorden.
 
-De originele versie van de SNMP Data Retriever maakte effectief gebruik van GET- en GETNEXT-requests.
-Daarom hebben we hier enkele tests op gedaan om te zien of latency inderdaad een grote rol speelt in de tijd nodig om gegevens op te vragen.
+De originele versie van de SNMP Data Retriever maakte gebruik van GET- en GETNEXT-requests en ondervond dus een grote invloed op de uitvoeringstijd door de netwerkvertraging.
+Om na te gaan hoe groot de impact juist is hebben we tests gedaan met en zonder netwerkvertraging.
 
 \subsubsection{Meetresultaten}
 
-Deze tests hebben we gedaan op de virtuele machines met Debian.
-In Linux kun je gemakkelijk een artificiële netwerkvertraging creëren met het volgende commando:
+Deze tests hebben we gedaan op de virtuele machines omdat je in Linux gemakkelijk een artificiële netwerkvertraging kunt creëren.
+Daarvoor gebruik je het volgende commando:
 
-\begin{lstlisting}[language=bash, caption={Artificiële netwerkvertraging van 25ms op de eth0 interface}]
+\begin{lstlisting}[language=bash, caption={Artificiële netwerkvertraging creëren in Linux}]
 $ sudo tc qdisc add dev eth0 root netem delay 25 ms
 \end{lstlisting}
 
-Dit zorgt ervoor dat er een latency van 25 ms gecreëerd wordt op de \textit{eth0} interface.
+Dit commando zorgt ervoor dat er een latency van 25 ms gecreëerd wordt op de \textit{eth0} interface.
 \todo[]{Is een vertraging van 25 ms wel realistisch?}
-We hebben de test gedaan met de originele versie van de SNMP Data Retriever bij het ondervragen van 1 en 4 machines,
-alsook bij een vertraging van 25 ms en zonder vertraging.
-De volgende \glspl{oid} werden opgevraagd (in het XML formaat van SNMP Data Retriever, zie \cref{snmp-data-retriever-configuratie}),
-goed voor ongeveer 217 gegevens per toestel:
-
-\begin{lstlisting}[language=xml]
-<snmpWalk oid="1.3.6.1.2.1.1" mib="RFC1213-MIB" name="system" />
-<snmpWalk oid="1.3.6.1.2.1.2" mib="RFC1213-MIB" name="interfaces" />
-<snmpWalk oid="1.3.6.1.2.1.4" mib="RFC1213-MIB" name="ip" />
-<snmpWalk oid="1.3.6.1.2.1.17.1" mib="BRIDGE-MIB" name="dot1dBase" />
-<snmpWalk oid="1.3.6.1.2.1.17.2" mib="BRIDGE-MIB" name="dot1dStp" />
-\end{lstlisting}
+We hebben de test gedaan met de originele versie van de SNMP Data Retriever bij het ondervragen van een of meerdere machines,
+met en zonder netwerkvertraging.
 
 De resultaten zie je in \cref{tabel-latency}.
-Je ziet de gemiddelde uitvoeringstijd in ms van 10 iteraties.
-Daaronder zie je ook het CPU-gebruik van het (volledige) systeem.
+De eerste rij toont de gemiddelde uitvoeringstijd en de tweede het CPU-gebruik van het (volledige) systeem.
 
 \begin{table}[h]
 \centering
@@ -239,37 +225,40 @@ Daaronder zie je ook het CPU-gebruik van het (volledige) systeem.
 \toprule
                       & \multicolumn{2}{c}{25 ms vertraging} & \multicolumn{2}{c}{geen vertraging} \\
                       & 1 toestel       & 4 toestellen       & 1 toestel       & 4 toestellen      \\ \midrule
-Gemiddelde tijd (ms): & 15.650          & 15.987             & 2.693           & 6.105             \\
-CPU verbruik:         & 10\%            & 35\%               & 80-90\%         & \textbf{100\%}    \\ \bottomrule
+Uitvoeringstijd (s):  & 15,650          & 15,987             & 2,693           & 6,105             \\
+CPU-gebruik:          & 10\%            & 35\%               & 80-90\%         & 100\%    		   \\ \bottomrule
 \end{tabular}
 \caption{De tijd nodig om 1-4 toestellen te ondervragen met en zonder vertraging}
 \label{tabel-latency}
 \end{table}
 
-Jammer genoeg is de resolutie voor het meten van het CPU-gebruik beperkt tot 1 meting per seconde.
-Desondanks is dat toch voldoende om te zien dat het CPU-gebruik een bottleneck is bij het bevragen van vier toestellen zonder vertraging.
-Het moet wel gezegd worden dat het testsysteem waarop de retriever draaide een Windows XP virtuele machine was met slechts 1 CPU core toegewezen\footnote{
-	Dit was omdat er een VirtualBox image werd voorzien waarop alles reeds voorgeconfigureerd was om snel te kunnen beginnen met testen van de retriever.
-	Latere tests maken gebruik van Windows 7 en meerdere cores.
+Jammer genoeg wordt er maar een meting van het CPU-gebruik gedaan per seconde waardoor
+de kortste test van minder dan drie seconden bij een toestel zonder vertraging niet zo nauwkeurig is.
+Desondanks is het toch voldoende om te zien dat het CPU-gebruik een bottleneck vormt bij het bevragen van vier toestellen zonder vertraging.
+Het moet wel gezegd worden dat de retriever in een virtuele machine draaide met slechts een CPU-core toegewezen.\footnote{
+	Dit was omdat er een VirtualBox-\textit{image} werd voorzien waarop alles reeds voorgeconfigureerd was om snel te kunnen beginnen met het testen van de retriever.
+	Bij latere tests draait de \nwmretriever{} niet meer in een virtuele machine en beschikt ze over meerdere cores.
 }.
-Ook bij slechts een toestel zie je dat het CPU-gebruik vrij hoog ligt.
+Ook bij slechts een toestel zonder vertraging zie je dat het CPU-gebruik vrij hoog ligt.
 Wanneer we een vertraging van 25 ms introduceren is het CPU-gebruik een stuk lager.
-Hadden we 50 toestellen bevraagd, het maximum aantal dat de retriever tegelijk doet, met een vertraging van 25 ms, dan hadden we evenwel weer in de problemen gezeten.
+Hadden we 50 toestellen bevraagd --- het maximum aantal dat de retriever tegelijkertijd doet --- met een vertraging van 25 ms,
+dan hadden we evenwel weer in de problemen gezeten.
 
-Hoe dan ook, de belangrijkste reden dat we deze test gedaan hebben is de impact op de uitvoeringstijd.
-We zien dat het opvragen van iets meer dan 200 gegevens van een enkel toestel zonder vertraging geen 200 ms duurt zoals eerst berekend,
-maar ongeveer 2700 ms.
-We zaten er slechts een factor 10 naast.
+Op het CPU-gebruik komen we later nog terug, maar de belangrijkste reden dat we deze test gedaan hebben is de impact op de uitvoeringstijd.
+We vragen ongeveer 217 gegevens op per toestel.
+Voor een enkel toestel zonder vertraging duurde dit ongeveer 2.700 ms.
+Ter vergelijking, volgens onze eerdere rekenformule had dit ongeveer 200 ms moeten duren.
+We zaten er dus slechts een factor 10 naast.
 Er is natuurlijk flink wat meer aan de hand dan enkel het vervoeren van het pakket over de netwerkverbinding.
 De retriever doet namelijk ook een aantal databankinteracties zoals het aanmaken van tabellen en
 het wegschrijven van de resultaten in die databank (zie \cref{snmp-data-retriever-db}).
 
-Als we dan een vertraging van 25 ms invoeren neemt de uitvoeringstijd toe met bijna een factor 6.
-Onze oververeenvoudigde rekensom van daarnet zou uitkomen op een kleine 6 seconden, de realiteit wijst uit dat het ruim 15 seconden duurt.
+Als we dan een vertraging van 25 ms invoeren neemt de uitvoeringstijd toe met bijna een factor 6 tot 15.650 ms.
+Onze duidelijk oververeenvoudigde rekensom van daarnet zou uitkomen op een kleine 6 seconden.
 
 Dezelfde vergelijking maken met vier toestellen is jammer genoeg nutteloos vanwege de CPU-bottleneck.
 Het is wel interessant om te zien dat het ondervragen van extra toestellen slechts een kleine impact heeft op de uitvoeringstijd.
-Logisch, want de vier toestellen worden (gelukkig) tegelijkertijd ondervraagd.
+Logisch, want de vier toestellen worden tegelijkertijd ondervraagd.
 
 
 \subsubsection{Conclusie}
@@ -278,8 +267,8 @@ Het is duidelijk dat de netwerkvertraging een belangrijke rol speelt in de uitvo
 We raden daarom dan ook sterk aan om, indien mogelijk, de bevragingen \textit{on-site} te doen
 (dit wil zeggen op hetzelfde netwerk in plaats van op afstand) om de netwerkvertraging te minimaliseren.
 
-We kunnen het effect van de netwerkvertraging ook beperken door het gebruik van GETBULK-requests,
-waarbij we meteen meerdere gegevens in een pakket stoppen.
+Het effect van de netwerkvertraging kan ook beperkt worden door het gebruik van GETBULK-requests,
+waarbij meerdere gegevens in een pakket worden gestopt.
 Als je 10 gegevens in een pakket stopt, betekent dat theoretisch al een snelheidwinst van factor 10.
 We zullen dit dan ook verder onderzoeken in \cref{bulkrequests-benchmarks}.
 
