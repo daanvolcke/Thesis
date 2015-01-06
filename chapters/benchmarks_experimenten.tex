@@ -277,24 +277,21 @@ Latency komt wel niet opnieuw aan bod in die paragraaf, beter om de laatste zin 
 
 
 
-
 \subsection{Filteren van de op te vragen gegevens}
 \label{fracties}
 
-Een van de vragen die we ons gesteld hebben, is of het wel degelijk de moeite waard is om gegevens te filteren?
+Een van de vragen die we ons gesteld hebben, is of het wel degelijk de moeite waard is om de gegevens die we opvragen te filteren?
 Is het met andere woorden nuttig dat we ons bezighouden met een lijst op te stellen van enkel de \glspl{oid} die ons interesseren,
-of kunnen we evengoed meteen alle gegevens opvragen die een SNMP agent ons aanbiedt?
+of kunnen we evengoed meteen alle gegevens opvragen die een \gls{snmp-agent} ons aanbiedt?
 
 \subsubsection{Meetresultaten}
 
-Voor deze test stellen we een lijst op van \gls{oid} die ons interesseren en vergelijken we het aantal objecten dat dit oplevert
-in vergelijking met het totaal aantal objecten dat een SNMP agent aanbiedt.
-Omdat de virtuele machines die als switch geconfigureerd zijn niet zijn aangesloten op echte computers hebben ze ook maar weinig data.
-Bovendien bevatten de virtuele machines omdat ze een gans besturingssysteem draaien heel wat extra informatie die een gewone switch niet heeft.
+Voor deze test stellen we een lijst op van de typisch meest interessante \glspl{oid} bij netwerkcomponenten.
+We bekijken hoeveel objecten dat die \glspl{oid} ons opleveren en vergelijken we dit met het totaal aantal objecten dat een \gls{snmp-agent} aanbiedt.
+Omdat de virtuele machines die als switch geconfigureerd zijn niet verbonden zijn met echte computers zullen ze minder gegevens bevatten dan een echte switch.
+Anderzijds bevatten de virtuele machines heel wat extra informatie die een gewone switch niet heeft omdat ze een gans besturingssysteem draaien.
 Denk hierbij aan bijvoorbeeld een lijst van alle geïnstalleerde softwarepakketten.
-Anderzijds ontbreken de virtuele machines een aantal extra gegevens die producenten kunnen aanbieden zoals statistieken.
-Omdat het belangrijk is dat deze test de realiteit zo goed mogelijk weergeeft,
-werd deze test dan ook uitgevoerd op de productieswitches van iMinds.
+Omdat het belangrijk is dat deze test de realiteit zo goed mogelijk weergeeft werd deze test dan ook uitgevoerd op productieswitches.
 
 Dit is de lijst van \glspl{oid} die we als interessant beschouwen:
 
@@ -307,12 +304,12 @@ Dit is de lijst van \glspl{oid} die we als interessant beschouwen:
 1.0.8802.1.1.2.1.4.1	(lldpRemTable)
 \end{lstlisting}
 
-De \textit{dot1d} \glspl{oid} hebben betrekking op de switching functionaliteit.
+De twee \glspl{oid} die beginnen met \textit{dot1d} hebben betrekking op de switching functionaliteit.
 \textit{dot1dBase} bevat onder andere de tabel met alle switchpoorten terwijl \textit{dot1dStp} informatie bevat over het Spanning Tree Protocol (STP).
 
 Om te bepalen hoeveel objecten er in totaal aangeboden worden kun je een SNMP walk doen van \gls{oid} '.' of '.1'.
 
-Een voorbeeld van de uitvoer die onze test levert is het volgende:
+Een voorbeeld van de uitvoer die onze test oplevert is het volgende:
 
 \begin{lstlisting}
 Host: atlas1a1.intec.ugent.be
@@ -333,7 +330,7 @@ We zien dus hoeveel objecten we terugkrijgen bij het overlopen van elke \gls{oid
 het totaal aantal objecten we teruggekregen hebben bij alle voor ons interessante \glspl{oid} en
 hoeveel objecten het toestal in totaal aanbiedt (voor alle ondersteunde \glspl{oid}).
 Tenslotte zien we ook nog het percentage van interessante objecten t.o.v. het totaal.
-Een samenvatting van de resultaten voor de verschillende switches zien we in \cref{tabel-fracties}.
+Een samenvatting van de resultaten voor de verschillende productieswitches zien we in \cref{tabel-fracties}.
 Gemiddeld komen we uit op een percentage van 4,48\% interessante gegevens over alle switches heen.
 
 \begin{table}[h]
@@ -359,9 +356,9 @@ atlas3b1.intec.ugent.be & 3.247                 & 70.212                 & 4,62\
 
 Gezien het lage percentage van gegevens die voor ons echt interessant is,
 loont het zeker de moeite om een lijst op te stellen van de \glspl{oid} die interessant zijn.
-Dit zal sowieso al schelen in de uitvoeringstijd omdat er 20 keer minder gegevens moeten opgevraagd worden,
-bovendien scheelt dit ook in de opslag van de gegevens.
-Zeker als er meerdere kopieën van dezelfde gegevens bijgehouden worden over een bepaalde tijdspanne.
+Dit zal sowieso al schelen in de uitvoeringstijd omdat er 20 keer minder gegevens moeten opgevraagd worden.
+Bovendien moeten er dan ook een pak minder gegevens opgeslagen worden,
+zeker als er meerdere kopieën van dezelfde gegevens bijgehouden worden over een bepaalde tijdspanne.
 
 
 \subsection{Bulkrequests}
