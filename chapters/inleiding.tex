@@ -20,19 +20,22 @@
 
 
 \section{Situering}
-Bestaande (open-source) softwaretools voor het opvragen van netwerkinformatie via SNMP beschikken over te weinig intelligentie om
+Bestaande (open-source) softwaretools voor het opvragen van netwerkinformatie via het SNMP-protocol beschikken over te weinig intelligentie om
 grootschalige netwerken te ondervragen.
 Hierdoor is het moeilijk om op frequente basis datamining van het netwerk te doen om bijvoorbeeld de netwerkconnectiviteit of netwerkroutering in kaart te brengen.
-Het efficiënt kunnen nagaan van configuratiefouten van grootschalige Ethernet- en IP-netwerken is nochtans een must voor de netwerkbeheerder.
+Het efficiënt kunnen nagaan van configuratiefouten van grootschalige Ethernet- en IP-netwerken is nochtans een must voor elke netwerkbeheerder.
 
-Bij het bedrijf NetworkMining, dat zich profileert als een onafhankelijke softwareleverancier voor transportnetwerken, wordt er aan netwerkbevraging
-gedaan via het SNMP-protocol met behulp van een intern ontwikkelde tool. Bij het aanvatten van de masterproef beschikte deze tool ook nog niet over veel intelligentie.
-Gegeven een lijst van toestellen en op te vragen gegevens ging ze iteratief elk gegeven gaan opvragen aan de toestellen zonder
-er verder bij stil te staan wat er juist opgevraagd werd.
-Ook voor het bijhouden van historische data kan extra intelligentie goed van pas komen.
+Bij het bedrijf NetworkMining, dat zich profileert als een onafhankelijke softwareleverancier voor transportnetwerken,
+wordt er aan netwerkbevraging gedaan via het SNMP-protocol met behulp van een intern ontwikkelde tool.
+Bij het aanvatten van de masterproef werd deze tool enkel ingezet op kleine en middelgrote netwerken waarbij performantie geen belangrijke rol speelde.
+Daarom werd de tool zo eenvoudig mogelijk gehouden.
+NetworkMining zou echter de tool willen inzetten op grootschalige netwerken waarvoor
+de nodige aanpassingen moeten gedaan worden om de bevraging zo efficiënt mogelijk te maken.
+Naast de omvang van het netwerk komt daar ook bij dat het interessant zou zijn om
+de bevraging frequent te kunnen uitvoeren zodat historische data over het netwerk kan bijgehouden worden.
 
 
-\section{Probleemstelling} %TODO: fix gls{nms}
+\section{Probleemstelling}
 Fabrikanten van routers en switches voorzien nu al network management systemen die het leven van een netwerkbeheerder makkelijker maken.
 Deze systemen kunnen onder andere geaggregeerde informatie van de verschillende netwerkelementen rapporteren.
 Het probleem hierbij echter is dat deze managementsystemen enkel werken voor netwerkelementen van dezelfde fabrikant.
@@ -41,10 +44,10 @@ typisch bepaald door het afwegen van de kostprijs en features die een bepaalde f
 Elke fabrikant biedt zo wel een eigen network management systeem aan voor de eigen apparaten.
 Maar ook het raadplegen van deze systemen is niet uniform: er wordt gebruik gemaakt van verschillende API's en technologieën zoals XML SOAP en CORBA.
 Ze bieden bovendien niet altijd alle informatie aan die de netwerkbeheerder wenst...
-Vandaar dat ervoor geopteerd werd om gebruik te maken van het SNMP protocol voor het opvragen van netwerkinformatie.
+Vanwege dit heterogeen landschap werd ervoor geopteerd om gebruik te maken van het SNMP-protocol voor het opvragen van netwerkinformatie.
 Dit protocol wordt wel door apparatuur van alle fabrikanten ondersteund en biedt een enigszins uniform alternatief.
-Het SNMP-protocol biedt wel niet dezelfde aggregatiemogelijkheden als een network management systeem.
-In de plaats daarvan gaat het over ruwe informatie van individuele netwerkcomponenten die verder verwerkt en geaggregeerd moet worden.
+Via het SNMP-protocol worden echter niet dezelfde aggregatiemogelijkheden aangeboden als door een network management systeem.
+Enkel de ruwe informatie van individuele netwerkcomponenten kan via SNMP opgevraagd worden die dan verder verwerkt en geaggregeerd moet worden.
 
 
 \section{Doelstelling}
@@ -52,7 +55,7 @@ De SNMP Data Retriever die hierboven werd beschreven, wordt vandaag enkel gebrui
 De bedoeling is om deze software ook te kunnen inzetten op grootschalige netwerken waar ze haar nut het meest kan bewijzen.
 Men kan echter niet zondermeer de bestaande software inzetten op die grote netwerken, er komen tal van zaken een rol spelen
 waar dat bij kleinere netwerken niet het geval was. Deze moet men dan vooral zoeken in de richting van performantieproblemen.
-Zoals gezegd is de software niet voorzien van veel intelligentie of zelfs ontwikkeld met performantie in het achterhoofd.
+Zoals gezegd was er in het verleden weinig noodzaak aan performantie en opteerde men eerder voor simpliciteit.
 De bedoeling van de masterproef bestaat erin om de schaalbaarheid te onderzoeken van de SNMP-bevragingen met de bestaande software.
 Hierbij moet er gezocht worden naar mogelijke bottlenecks die zich voordoen.
 Dit kan gaan om de CPU van de client, bandbreedteproblemen, de databank die de opgevraagde gegevens moet opslaan die niet kan volgen of
@@ -60,33 +63,5 @@ het netwerkelement zelf die niet snel genoeg is.
 Eens de bottlenecks geïdentificeerd zijn moet er gezocht worden naar oplossingen om de bottlenecks te verhelpen.
 Denk aan aanpassingen aan de software zoals het implementeren van multithreading, gelijktijdig gebruik van meerdere SNMP clients of
 het opzetten van een databankcluster.
-Om te zien hoe effectief de oplossingen zijn zal er ook een testmethode/benchmark opgesteld moeten worden om dit na te meten. 
+Om te zien hoe effectief de oplossingen zijn zal er ook een testmethode/benchmark opgesteld moeten worden om dit na te meten.
 
-
-\section{Mogelijke uitbreidingen}
-\todo[inline]{
-Misschien lager in de scriptie plaatsen vermits de uitbreidingen niet geïmplementeerd zijn.
-Misschien meer naar het einde toe...}
-Als uitbreiding kan de bestaande software voorzien worden van enige intelligentie bij het opvragen van netwerkinformatie.
-Het is zo dat sommige gegevens zeer dynamisch zijn maar andere gegevens kunnen quasi statisch zijn.
-Denk bijvoorbeeld aan temperatuurmetingen en een overzicht van alle netwerkinterfaces die aanwezig zijn in een toestel.
-Het eerste gegeven verandert constant, het laatste haast nooit.
-Het is dan ook logisch dat het laatste niet zo vaak opgevraagd moet worden als het eerste.
-Zo zouden we kunnen een algoritme of heuristiek ontwikkelen die de veranderlijkheid van gegevens bepaalt en afhankelijk daarvan
-beslist hoe vaak dat gegeven opgehaald moet worden.
-Gegevens kunnen ook meer of minder belangrijk zijn als andere.
-De netwerkbeheerder zou dan ook zelf kunnen de periodiciteit opgeven voor het opvragen van bepaalde gegevens,
-afhankelijk van het belang dat de netwerkbeheerder eraan hecht.
-Ook voor het bijhouden van historische data kan dit een interessante optie zijn.
-
-Een ander idee is om te zien of de netwerkcomponenten SNMP-requests beantwoorden die via broadcast of
-multicast (na het inschrijven op een multicastgroep) verstuurd zijn geweest.
-Bij Linux machines is dit bijvoorbeeld wel het geval.
-Hierdoor zou het netwerkverkeer om SNMP informatie te verzamelen quasi gehalveerd kunnen worden.
-De SNMP retriever moet niet meer elk netwerkelement individueel ondervragen maar ondervraagt ze allemaal tegelijkertijd.
-Het netwerkvolume dat gegenereerd wordt door de netwerkcomponenten als antwoord blijft wel even groot,
-en afhankelijk van de omvang van het netwerk zou dit ook wel eens een zeer zware belasting voor de retriever kunnen zijn.
-De SNMP-retriever moet dan tenslotte de antwoorden van alle netwerkelementen tegelijkertijd kunnen verwerken. %TODO: wordflow met vorige zin
-Toch is het zeker een optie die de moeite waard is om te onderzoeken.
-Er moet dan ook gekeken worden wat voor aanpassingen er nodig zijn aan het netwerk om dit te ondersteunen:
-het inschrijven van de nodes op een multicastgroep, het toestaan van het routeren van multicastverkeer op de routers en het voorzien van bijhorende multicastroutes.

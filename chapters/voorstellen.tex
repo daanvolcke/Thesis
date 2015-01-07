@@ -42,7 +42,7 @@ Men kan er bijvoorbeeld ook voor kiezen om de gegevens naar een bestand weg te s
 Het grote voordeel is dat het opslaan van de gegevens los staat van het opvragen ervan, dus dat de snelheidsimpact ervan beperkt blijft.
 
 
-\section{Intelligent threadbeheer}
+\section{Dynamisch threadbeheer}
 
 Het beheer van threads en het CPU-gebruik werden besproken in \cref{werking,cpu-gebruik}.
 
@@ -70,3 +70,49 @@ Het doel van \gls{tpl} is om het ontwikkelaars gemakkelijker te maken om gebruik
 \Gls{tpl} schaalt dynamisch de mate van parallelisme om zo efficiënt mogelijk gebruik te maken van alle processorcores die beschikbaar zijn.
 \Gls{tpl} verzorgt ook het inplannen van threads in een \textit{thread pool}, ondersteuning voor het annuleren van threads, toestandbeheer en
 andere low-level details\cite{msdn-tpl}.
+
+
+\section{Intelligentie}
+
+Op langere termijn kan de software voorzien worden van enige intelligentie bij het opvragen van netwerkinformatie.
+Sommige gegevens zijn namelijk zeer dynamisch zijn terwijl andere gegevens quasi statisch kunnen zijn.
+Denk bijvoorbeeld aan temperatuurmetingen en een overzicht van alle netwerkinterfaces die aanwezig zijn in een toestel.
+Het eerste gegeven verandert constant, het laatste haast nooit.
+Het is dan ook logisch dat het laatste niet zo vaak opgevraagd moet worden als het eerste.
+Zo zouden we kunnen een algoritme of heuristiek ontwikkelen die de veranderlijkheid van gegevens bepaalt en afhankelijk daarvan
+beslist hoe vaak dat gegeven opgehaald moet worden.
+Gegevens kunnen ook meer of minder belangrijk zijn als andere.
+De netwerkbeheerder zou ook zelf kunnen de periodiciteit opgeven voor het opvragen van bepaalde gegevens,
+afhankelijk van het belang dat de netwerkbeheerder eraan hecht.
+Vooral als er historische data bijgehouden wordt is dit een interessante uitbreiding.
+
+
+%\section{Mogelijke uitbreidingen}
+%\todo[inline]{
+%Misschien lager in de scriptie plaatsen vermits de uitbreidingen niet geïmplementeerd zijn.
+%Misschien meer naar het einde toe...}
+%
+%Als uitbreiding kan de bestaande software voorzien worden van enige intelligentie bij het opvragen van netwerkinformatie.
+%Het is zo dat sommige gegevens zeer dynamisch zijn maar andere gegevens kunnen quasi statisch zijn.
+%Denk bijvoorbeeld aan temperatuurmetingen en een overzicht van alle netwerkinterfaces die aanwezig zijn in een toestel.
+%Het eerste gegeven verandert constant, het laatste haast nooit.
+%Het is dan ook logisch dat het laatste niet zo vaak opgevraagd moet worden als het eerste.
+%Zo zouden we kunnen een algoritme of heuristiek ontwikkelen die de veranderlijkheid van gegevens bepaalt en afhankelijk daarvan
+%beslist hoe vaak dat gegeven opgehaald moet worden.
+%Gegevens kunnen ook meer of minder belangrijk zijn als andere.
+%De netwerkbeheerder zou dan ook zelf kunnen de periodiciteit opgeven voor het opvragen van bepaalde gegevens,
+%afhankelijk van het belang dat de netwerkbeheerder eraan hecht.
+%Ook voor het bijhouden van historische data kan dit een interessante optie zijn.
+%
+%Een ander idee is om te zien of de netwerkcomponenten SNMP-requests beantwoorden die via broadcast of
+%multicast (na het inschrijven op een multicastgroep) verstuurd zijn geweest.
+%Bij Linux machines is dit bijvoorbeeld wel het geval.
+%Hierdoor zou het netwerkverkeer om SNMP informatie te verzamelen quasi gehalveerd kunnen worden.
+%De SNMP retriever moet niet meer elk netwerkelement individueel ondervragen maar ondervraagt ze allemaal tegelijkertijd.
+%Het netwerkvolume dat gegenereerd wordt door de netwerkcomponenten als antwoord blijft wel even groot,
+%en afhankelijk van de omvang van het netwerk zou dit ook wel eens een zeer zware belasting voor de retriever kunnen zijn.
+%De SNMP-retriever moet dan tenslotte de antwoorden van alle netwerkelementen tegelijkertijd kunnen verwerken. %TODO: wordflow met vorige zin
+%Toch is het zeker een optie die de moeite waard is om te onderzoeken.
+%Er moet dan ook gekeken worden wat voor aanpassingen er nodig zijn aan het netwerk om dit te ondersteunen:
+%het inschrijven van de nodes op een multicastgroep, het toestaan van het routeren van multicastverkeer op de routers en het voorzien van bijhorende multicastroutes.
+

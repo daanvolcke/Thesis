@@ -3,8 +3,8 @@
 \section{Inleiding}
 
 SNMP staat voor het Simple Network Management Protocol. De naam vertelt je meteen al waarvoor het protocol dient: het beheren van je netwerk.
-De 'S' van SNMP betekent niet simpel als in simpel in gebruik (alhoewel het niet moeilijk in gebruik is), maar dat het protocol zo simpel mogelijk gehouden is.
-Met SNMP kun je allerhande informatie opvragen van allerhande soorten toestellen. In principe is er geen limiet op hetgeen je kunt opvragen,
+De 'S' van SNMP betekent niet simpel als in simpel in gebruik (alhoewel het niet moeilijk in gebruik is), maar dat het protocol zo eenvoudig mogelijk gehouden is.
+Met SNMP kun je allerhande informatie opvragen van verschillende soorten toestellen. In principe is er geen limiet op hetgeen je kunt opvragen van een toestel,
 maar de functionaliteit om die informatie op te vragen moet wel geïmplementeerd worden. Normaal gezien gebeurt dat door de fabrikant van het toestel.
 
 Er zijn maar een paar voorwaarden om met behulp van SNMP informatie van een toestel op te kunnen vragen. Eerst en vooral moet het toestel natuurlijk SNMP ondersteunen.
@@ -27,7 +27,7 @@ Er zijn een groot aantal use cases te bedenken voor het gebruik van SNMP maar hi
 	
 	\item Performantiebeheer: ook de netwerkverzadiging kun je controleren met SNMP. Zo kun je de huidige toestand in de gaten houden,
 	onregelmatigheden vaststellen en trends volgen. Op basis van deze trends kunnen dan plannen opgesteld worden voor toekomstige uitbreidingen
-	van de netwerkcapaciteit op knelpunten.
+	van de netwerkcapaciteit op knelpunten in het netwerk.
 \end{itemize}
 
 Voor kleine netwerken kan SNMP het leven van een systeembeheerder een stuk gemakkelijker maken. Om grote netwerken te beheren is SNMP quasi een vereiste.
@@ -170,7 +170,7 @@ Het rijobject wordt op zijn beurt gedefiniëerd als een sequentie van kolommen.
 Hiervoor wordt een aparte sequentiedefinitie (IfEntry) gebruikt die 
 bestaat uit een opeenvolging van kolomnamen gevolgd door hun datatype.
 
-\begin{lstlisting}[language=asn.1, float=h, caption={Definitie van ifTable}, label=definitie-iftable]
+\begin{lstlisting}[language=asn.1, float=h, caption={Definitie van een tabel}, label=definitie-iftable]
 ifTable OBJECT-TYPE
 	SYNTAX	SEQUENCE OF IfEntry
 	ACCESS	not-accessible
@@ -181,7 +181,7 @@ ifTable OBJECT-TYPE
 	::= { interfaces 2 }
 \end{lstlisting}
 
-\begin{lstlisting}[language=asn.1, float=h, caption={Sequentiedefinitie voor een tabelrij}, label=definitie-sequentie-rij]
+\begin{lstlisting}[language=asn.1, float=h, caption={Sequentiedefinitie van een tabelrij}, label=definitie-sequentie-rij]
 IfEntry ::=
 	SEQUENCE {
 		ifIndex
@@ -212,9 +212,9 @@ ifEntry OBJECT-TYPE
 
 Ook belangrijk is het \textit{INDEX}-attribuut. Deze geeft aan hoe de tabel geïndexeerd moet worden, dus hoe je aan individuele rijen kunt geraken.
 Dit kan een eenvoudige integer zijn of een samenstelling van kolommen die een rij uniek kan identificeren.
-Hier wordt de index \textit{ifIndex} gedefiniëerd als een eenvoudige integer.
+Hier wordt de index (ifIndex) gedefiniëerd als een eenvoudige integer.
 
-\begin{lstlisting}[language=asn.1, float=h, caption={Definitie van ifIndex}, label=definitie-ifindex]
+\begin{lstlisting}[language=asn.1, float=h, caption={Definitie van een index}, label=definitie-ifindex]
 ifIndex OBJECT-TYPE
 	SYNTAX	INTEGER
 	ACCESS	read-only
