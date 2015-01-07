@@ -1593,8 +1593,8 @@ Die zaken onderzoeken we in de volgende paragrafen.
 \label{cpu-gebruik}
 
 In deze paragraaf bekijken we de invloed van het aantal op te vragen toestellen op het CPU-gebruik van de \nwmretriever{}.
-We bekijken het CPU-gebruik gedurende de uitvoering van het programma en bespreken het gedrag ervan.
-Ook het aantal threads dat toestellen bevraagt gedurende de uitvoering nemen we onder de loep.
+We bekijken ook het CPU-gebruik gedurende de uitvoering van het programma en bespreken het gedrag ervan.
+Ook het aantal threads gedurende de uitvoering die gebruikt worden om de toestellen te bevragen nemen we onder de loep.
 
 \subsubsection{Meetresultaten}
 
@@ -1610,9 +1610,9 @@ Vanaf 50 nodes echter stijgt het CPU-gebruik niet verder voorbij iets meer dan 9
 Dat is logisch, want er worden maar maximaal 50 toestellen tegelijkertijd opgevraagd.
 
 Naar het einde toe zien we iets vreemds.
-We verwachten dat eenmaal het resterend aantal te bevragen toestellen onder de 50 zakt,
-het CPU-gebruik zou moeten zakken tot 0\% wanneer alle toestellen bevraagd zijn en het programma afsluit.
-Wat we echter zien is dat het CPU-gebruik bij 100 nodes vanaf 13 seconden sterk zakt om na 15 seconden weer sterk te stijgen.
+We verwachten dat, eenmaal het resterend aantal te bevragen toestellen onder de 50 zakt,
+het CPU-gebruik geleidelijk aan zou moeten zakken tot 0\% wanneer alle toestellen bevraagd zijn en het programma afsluit.
+Wat we echter zien is dat het CPU-gebruik bij 100 nodes vanaf 13 seconden sterk zakt om kort daarna weer sterk te stijgen.
 
 Met behulp van het logbestand en Wireshark kunnen we de oorzaak vinden.
 Met het logbestand kunnen we zien hoeveel threads er actief zijn om toestellen te bevragen,
@@ -1620,12 +1620,12 @@ en met Wireshark kunnen we zien hoeveel requests onderweg zijn.
 Een grafiek van het aantal retrieverthreads zie je in \cref{fig-retrieverthreads}.
 
 Het probleem dat zich voordoet is het volgende:
-er zijn op het einde nog minder dan 50 toestellen die moeten bevraagd worden dus er zijn minder dan 50 threads actief.
-In de grafiek met het aantal threads zie je rond 13 seconden dat de laatste antwoorden van een aantal toestellen binnenkomen en dat die toestellen afgewerkt zijn.
-Omdat er verder geen toestellen meer zijn worden er geen nieuwe threads meer gestart.
-De threads die wel nog actief zijn blijken allemaal te wachten op een antwoord van de toestellen en hebben dus niks te doen.
-Wanneer de antwoorden kort daarna aankoemen krijg je opnieuw een piek in CPU-gebruik door de gegevens die moeten verwerkt worden.
-Tegelijkertijd zie je dat het aantal threads verder afneemt naar mate de laatste antwoorden binnenkomen.
+er zijn op het einde minder dan 50 toestellen die nog moeten bevraagd worden, dus er zijn minder dan 50 threads actief.
+In de grafiek met het aantal threads zie je rond 13 seconden dat het aantal threads daalt omdat de laatste antwoorden binnenkomen van een aantal toestellen en die dus afgewerkt zijn.
+Omdat er verder geen toestellen meer zijn worden er ook geen nieuwe threads meer gestart.
+De threads die wel nog actief zijn blijken uit Wireshark allemaal nog te wachten op een antwoord van de toestellen en hebben dus tijdelijk niks te doen.
+Wanneer de antwoorden kort daarna aankomen, krijg je opnieuw een piek in het CPU-gebruik door de gegevens die moeten verwerkt worden.
+Tegelijkertijd zie je dat het aantal threads verder afneemt naar mate de laatste toestellen afgewerkt worden.
 
 \begin{figure}[h]
 	\centering
@@ -1642,12 +1642,12 @@ Tegelijkertijd zie je dat het aantal threads verder afneemt naar mate de laatste
 \end{figure}
 
 In de grafiek met het aantal retrieverthreads zien we trouwens ook een probleem met hoe de threads beheerd worden.
-Zoals uitgelegd in \cref{werking} wordt in de oude versie die wij gebruiken de threads in een lijst bijgehouden en wordt er
-gewacht op de eerste thread om te voltooien eer er nieuwe threads gestart worden.
-Het probleem daarbij is dat niet noodzakelijk de eerst gestarte thread niet noodzakelijk eerst klaar is.
-Terwijl we wachten op de eerste thread kunnen er gerust al andere threads klaar zijn en dat zien we ook in de grafiek rond 5 en 10 seconden.
+Zoals uitgelegd in \cref{werking} worden in de oude versie die wij gebruiken de threads in een lijst bijgehouden,
+en wordt er gewacht op de eerste thread om te voltooien eer er nieuwe threads gestart worden.
+Het probleem daarbij is dat het niet noodzakelijk de eerst gestarte thread is die eerst klaar zal zijn.
+Terwijl er gewacht wordt op de eerste thread kunnen er gerust al andere threads klaar zijn en dat zien we ook in de grafiek rond 5 en 10 seconden.
 Het aantal threads daalt maar doordat er gewacht wordt op de eerste thread duurt het even eer er nieuwe threads aangemaakt worden.
-Dit probleem werd doorgegeven aan NetworkMining en dit werd vrij snel opgelost.
+Dit probleem werd doorgegeven aan NetworkMining en werd vrij snel opgelost in een nieuwe versie.
 
 \subsubsection{Conclusie}
 
@@ -1655,10 +1655,10 @@ Doordat er maximaal 50 toestellen tegelijkertijd bevraagd worden blijft het CPU-
 Door het constant houden van het aantal threads zien we echter dat niet alle rekenkracht benut wordt.
 Er zijn 16 cores beschikbaar, maar er is maar een CPU-belasting die overeenkomt met een volledige belasting van iets meer dan 9 cores.
 
-Het beheren van threads zou dus beter aangepakt kunnen worden aangepakt:
-enerzijds in het bepalen van het aantal threads dat moet gebruikt worden, afhankelijk van hoeveel rekenkracht er nog over is
+Het beheren van threads zou dus beter aangepakt kunnen worden:
+enerzijds bij het bepalen van het aantal threads dat moet gebruikt worden, afhankelijk van hoeveel rekenkracht er nog over is
 (en het RAM- en bandbreedtegebruik, maar die spelen een veel kleinere rol zoals we verder zullen zien).
-Anderzijds moeten ook nieuwe threads gestart worden van zodra een toestel volledig bevraagd is,
+Anderzijds moeten ook nieuwe threads gestart worden van zodra een toestel afgewerkt is,
 maar dat is een probleem dat reeds opgelost werd door NetworkMining.
 
 \subsection{Benchmarks geheugenverbruik}
