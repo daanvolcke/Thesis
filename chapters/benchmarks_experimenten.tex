@@ -552,7 +552,7 @@ Omdat de \nwmretriever{} de \textit{endOfMibView}-exceptie niet ondersteunt (zie
 Deze exceptie wordt opgegooid wanneer het einde van een \gls{mib}-bestand bereikt wordt en er dus geen verdere gegevens meer zijn.
 De exceptie is een speciaal geval omdat ze geen gebruik maakt van het error-veld in het antwoordbericht.
 Het error-veld staat dus onterecht op 0, wat aangeeft dat er zich geen fout heeft voorgedaan.
-Daarom, en omdat het ongewoon is om een ganse SNMP-agent te overlopen, is het begrijpelijk dat de \nwmretriever nog geen ondersteuning had voor deze exceptie.
+Daarom, en omdat het vrij ongewoon is om een ganse \gls{snmp-agent} te overlopen, is het begrijpelijk dat de \nwmretriever{} nog geen ondersteuning had voor deze exceptie.
 Dit probleem werd doorgegeven aan NetworkMining en zal in een latere versie opgelost worden.
 
 Omdat we dus geen ganse SNMP-agent kunnen overlopen kiezen we een \gls{oid} die voldoende gegevens bevat.
@@ -686,19 +686,18 @@ In de call tree zie je naast de functienaam een aantal verschillende kolommen. H
 
 \subsubsection{Meetresultaten}
 
-Voor het wegschrijven van de resultaten van de SNMP Data Retriever installeren we een lokale databank.
-\todo{Vertellen we waarom?}
-De retriever verwacht een MySQL databank, maar wij kiezen voor een MariaDB-installatie.
-Omdat MariaDB een drop-in vervanging is voor MySQL is dat echter geen probleem.
-Op het moment van installatie was de laatste stabiele versie 5.5.33a.
+Bij dit experiment is het nodig dat we de \nwmretriever{} lokaal uitvoeren en dus niet meer in een virtuele machine.
+Voor het wegschrijven van de resultaten installeren we een MariaDB-databank, maar MySQL is ook een optie.
 
-We doen een walk van de volgende twee \glspl{oid} op een enkele productieswitch: ip (1.3.6.1.2.1.4) en dot1dBase (1.3.6.1.2.1.17.1).
+We doen een walk van twee \glspl{oid} op een enkele productieswitch.
 Dit zal ons 443 objecten opleveren, waarvan 441 die voor ons relevant zijn.
 Volgens de profiler doet de retriever daar ongeveer 7,4 seconden over.
 De call tree van de retriever hebben we voor de leesbaarheid in een tabel gegoten (zie \cref{call-tree-main}).
 De functies met een extreem kleine uitvoeringstijd (minder dan 0,01\%) hebben we achterwege gelaten.
 De kolommen die je ziet zijn de functie, het aantal oproepen, de \emph{inclusieve} tijd als percentage van de totale uitvoeringstijd en
 de gemiddelde \emph{inclusieve} tijd in milliseconden.
+
+Voor een globaal overzicht van de werking van de \nwmretriever{} verwijzen we naar \cref{werking}.
 
 % Loglevel 2
 \begin{table}[h]
@@ -724,14 +723,12 @@ de gemiddelde \emph{inclusieve} tijd in milliseconden.
 
 \subsubsection{RetrieveFromDevice-methode}
 
-\todo[inline]{Titel: functienaam (RetrieveFromDevice) of oplossing/onderdeel/probleem (Bulk requests). \\
-Hier maakt het weinig uit maar bij het volgende deel wel: Initialize of Logging (wat het probleem meteen weggeeft).}
-
-We beginnen met de functie die het meeste tijd in beslag neemt: de \emph{RetrieveFromDevice} functie. %TODO: Koppelteken
+We beginnen met de functie die het meeste tijd in beslag neemt: de \emph{RetrieveFromDevice}-functie.
 Zoals de naam al verklapt gaat het hier om de methode die de requests stuurt om de gevraagde gegevens op te halen van de verschillende toestellen.
 
 \todo[inline]{Hoort de uitleg over de werking van de SNMP Data Retriever hier?}
-De manier waarop dit gebeurt is als volgt:
+
+De methode werkt als volgt:
 voor elk toestel dat ondervraagd moet worden wordt er een aparte thread gestart, met een maximum van 50 threads.
 Elk van die threads zal alle gegevens opvragen die opgevraagd moeten worden voor dat toesteltype (zie de configuratie van de \nwmretriever, \cref{snmp-data-retriever-configuratie}).
 Wanneer een thread klaar is met gegevens opvragen wordt de thread verwijderd.
@@ -772,38 +769,34 @@ Gemiddeld deed een request er een kleine 10 milliseconden over, allen samen goed
 	\label{call-tree-retrievefromdevice}
 \end{table}
 
-Het versturen van de GETNEXT-requests en wachten op het antwoord voor de SNMP walkopdrachten is dus
+Het versturen van de GETNEXT-requests en het wachten op de antwoorden voor de SNMP walkopdrachten zijn dus
 verantwoordelijk voor meer dan de helft van de totale uitvoeringstijd.
 Gezien de resultaten die we gezien hebben in \cref{bulkrequests-benchmarks} waarbij GETBULK-requests vier keer sneller gingen dan GETNEXT-requests,
 was de keuze dan ook snel gemaakt om de SNMP walkopdracht te implementeren met behulp van GETBULK-requests.
 
 Na het implementeren van de SNMP walkopdracht met behulp van GETBULK-requests doen we een test op basis van dezelfde twee \glspl{oid} als hierboven.
 Zoals we in \cref{bulkrequests-benchmarks} beslist hebben, vragen we 50 objecten per request.
-We laten de oude en nieuwe implementatie 100 maal lopen en vergelijken de resultaten in \cref{tabel-nwmretriever-met-bulkrequests}.
+We vergelijken de resultaten in \cref{tabel-nwmretriever-met-bulkrequests}.
 
 \begin{table}[h]
 \centering
 \begin{tabular}{@{}lrrr@{}}
 \toprule
-                                                                                                 & Objecten & Uitvoeringstijd (s) & Objecten/ms \\ \midrule
-SNMP Walk met GETNEXT-requests                                                                   & 472      & 7,371               & 0,064       \\
-SNMP Walk met GETBULK-requests (50)                                                              & 441      & 3,131               & 0,141       \\
-\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice methode met\\   GETNEXT-requests\end{tabular}      & 472      & 5,060               & 0,093       \\
-\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice methode met\\   GETBULK-requests (50)\end{tabular} & 441      & 0,722               & 0,611       \\ \bottomrule
+                                                                                                 & Uitvoeringstijd (s) & Objecten/ms \\ \midrule
+SNMP Walk met GETNEXT-requests                                                                   & 7,371               & 0,064       \\
+SNMP Walk met GETBULK-requests (50)                                                              & 3,131               & 0,141       \\
+\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice-methode met\\   GETNEXT-requests\end{tabular}      & 5,060               & 0,093       \\
+\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice-methode met\\   GETBULK-requests (50)\end{tabular} & 0,722               & 0,611       \\ \bottomrule
 \end{tabular}
 \caption{SNMP Walk op basis van GETNEXT-requests versus GETBULK-requests in de \nwmretriever{}}
 \label{tabel-nwmretriever-met-bulkrequests}
 \end{table}
 
 De eerste twee rijen geven de totale uitvoeringstijd weer van de \nwmretriever{},
-de laatste twee tonen de uitvoeringstijd van de RetrieveFromDevice methode gemeten met de profiler.
-Het verschil in het aantal objecten tussen de SNMP walk met GETNEXT- en GETBULK-requests valt te verklaren door het feit dat er gebruik gemaakt wordt van
-respectievelijk SNMP versie 1 en 2c. Versie 1 ondersteunt geen objecten van het type Counter64, dus die kunnen niet opgehaald worden\cite{snmp-counters-faq}.
-
-\todo[inline]{Dit klopt niet!!! De v1 geeft MEER resultaten dan v2c! Dus er is iets anders aan de hand bij deze test...}
+de laatste twee tonen de uitvoeringstijd van enkel de RetrieveFromDevice-methode gemeten met de profiler.
 
 We zien dat gemiddelde uitvoeringstijd met ruim vier seconden ingekort wordt, goed voor een ruime verdubbeling van de snelheid.
-Als we met de profiler echter enkel en alleen kijken naar methode voor de retrieval zien we dat de methode net zever keer sneller is
+Als we echter enkel kijken naar de RetrieveFromDevice-methode zien we dat de methode zelf zeven keer sneller is
 geworden dankzij het gebruik van BULK-requests.
 
 \todo[inline]{Vergelijken met de theoretische resultaten? (Adhv. testen met VirtualBox \& iMinds Switchen)}
@@ -829,8 +822,8 @@ SnmpSource.SnmpVariable.CreateSnmpVariable               & 11    & 0,04      & 0
 \label{call-tree-retrievefromdevice-bulk}
 \end{table}
 
-In \cref{call-tree-retrievefromdevice-bulk} zie je hoe de call tree van de RetrieveFromDevice methode er nu uitziet.
-In de nieuwe implementatie doen de SyncRequest oproepen er drie keer zo lang over,
+In \cref{call-tree-retrievefromdevice-bulk} zie je hoe de call tree van de RetrieveFromDevice methode er met de nieuwe implementatie uitziet.
+Nu doen de SyncRequest oproepen er drie keer zo lang over,
 maar er moeten maar 11 requests meer verstuurd worden in plaats van 443.
 Twee derde van de uitvoeringstijd van de RetrieveFromDevice-methode wordt besteed aan het ophalen van de gegevens en een derde aan het wegschrijven ervan.
 De requests zelf zijn nu nog maar voor 11\% i.p.v. 58\% verantwoordelijk van de totale uitvoeringstijd.
@@ -856,23 +849,22 @@ ComFunSQLConnection.TableExists                          & 3     & 0,06      & 0
 \label{call-tree-main-bulk}
 \end{table}
 
-De call tree van de Main methode met de nieuwe implementatie zien we in \cref{call-tree-main-bulk}.
-Voor de nieuwe implementatie hebben we een aparte methode geschreven gebaseerd op de oude: RetrieveFromDevice2.
-Deze heeft dezelfde functionaliteit als voorheen maar maakt dus gebruik van GETBULK-requests.
+De call tree van de Main-methode met de nieuwe implementatie zien we in \cref{call-tree-main-bulk}.
+De retrievalmethode die gebruik maakt van GETBULK-requests hebben we in een andere methode gestoken die de originele vervangt: RetrieveFromDevice2.
 De methode die zowel de gegevens ophaalt als wegschrijft is nu nog verantwoordelijk voor minder dan 22\% i.p.v. ruim 64\% van de totale uitvoeringstijd
-en is zoals eerder gezegd zeven keer sneller dan de vorige methode.
+en is zoals eerder gezegd zeven keer sneller dan de vorige implementatie.
 
 De InsertResultRow-methode in de RetrieveFromDevice-methode hebben we nog niet bekeken.
 Die is verantwoordelijk voor het wegschrijven van een gegeven in de databank.
 Omdat er dus 441 gegevens zijn die binnen de SNMP walk vallen, werd de methode dus 441 keer opgeroepen.
 
-Telkens een gegeven per keer in de databank klinkt even inefficiënt als het ophalen van een gegeven per keer.
+Een gegeven per keer in de databank wegschrijven klinkt even inefficiënt als het ophalen van een gegeven per keer.
 Ook het invoegen van gegevens in een databank kan in bulk gebeuren met behulp van een zogeheten \textit{bulk insert} in plaats van een gewone \textit{insert}.
-Maar als we kijken naar de tijd die nodig is om alle gegevens in de databank weg te schrijven dan zien we dat
-dit slechts iets meer dan 200 ms of 6,5\% van de totale uitvoeringstijd bedraagt.
+Maar als we kijken naar de tijd die nodig is om alle gegevens in de databank weg te schrijven zien we dat
+dit slechts iets meer dan 200 ms of 6,5\% van de totale uitvoeringstijd vereist.
 We beslissen dan ook dat het niet de moeite is om dit te implementeren omdat er nog veel grotere winsten elders kunnen gehaald worden\footnote{
-	Wat we echter over het hoofd hebben gezien is dat we de databank geïnstalleerd hebben op een SSD.
-	Een databank heeft enorm veel baat bij het gebruik van een SSD en heeft weinig moeite om een groot aantal inserts bij te houden zoals onze test.
+	Wat we echter over het hoofd hebben gezien is dat we de lokale databankinstallatie geïnstalleerd hebben op een SSD.
+	Een databank heeft enorm veel baat bij het gebruik van een SSD door de lage \textit{random access} tijd en heeft weinig moeite om een groot aantal inserts bij te houden zoals onze test.
 	Pas bij de grootschalige tests ontdekken we onze fout, en daar komen we er dan ook op terug.
 }.
 
@@ -884,9 +876,9 @@ die logischerwijs een belangrijke factor is in de uitvoeringstijd,
 er nog een methode is die voor een groot stuk medeverantwoordelijk is voor de uitvoeringstijd: de \textit{Initialize}-methode.
 
 In de originele implementatie was ze verantwoordelijk voor 25\% van de uitvoeringstijd, in de nieuwe is dit opgelopen tot bijna 56\%!
-De Initialize-methode doet er bijna 2 seconden over, dus zijn we erg niewsgierig wat er juist in deze methode gebeurt dat zoveel tijd nodig zou hebben.
+De Initialize-methode doet er bijna 2 seconden over, dus zijn we erg niewsgierig wat er juist in deze methode gebeurt waardoor deze zoveel tijd nodig heeft.
 Dus beginnen we met het analyseren van de call tree van de functie, te zien in \cref{call-tree-initialize}.
-Wat we zien zijn twee oproepen naar een \emph{Log} methode die er gemiddeld bijna een seconde over doet \emph{per oproep}! %TODO: Koppelteken
+Wat we zien zijn twee oproepen naar een \emph{Log}-methode die er gemiddeld bijna een seconde over doet \emph{per oproep}! %TODO: Koppelteken
 
 \begin{table}[h]
 \centering
@@ -929,55 +921,50 @@ De ComFunLogger gebruikt ze om het geheugengebruik te meten en weg te schrijven 
 
 \todo[inline]{Herlees mij.}
 
-Als oplossing werd ervoor gekozen om een alternatieve \emph{logging framework} te gebruiken.
+Als oplossing werd ervoor gekozen om een alternatief \emph{logging framework} te gebruiken.
 Dit lijkt een drastische maatregel (en dat is het ook), maar daar zijn goede redenen voor.
-Er zijn een heleboel gratis en open-source logging frameworks die reeds hun nut en kunnen bewezen hebben.
-Zij zijn \emph{tried and true} oplossingen voor een algemeen probleem. \todo{Het zijn...}
-Het is dus ook in de beste interesse voor een bedrijf om hiervoor te kiezen. \todo{Correcte zin?}
-Financiëel is het een goede oplossing want de software is al ontwikkeld en is bewezen dat ze werkt.
-Dit spaart tijd en geld uit voor de ontwikkeling van een eigen oplossing.
-De software is gratis in gebruik dus er zijn geen licentiekosten aan verbonden.
-Er zijn ook geen of lage onderhoudskosten. De software wordt al ingezet in zeer diverse omgevingen dus is al zeer uitgebreid.
-De kans dat de software een bepaalde functionaliteit mist is dus klein.
-En als er iets moet toegevoegd worden beschik je ook over de broncode.
+De noodzaak aan een tool om informatie te loggen is een algemeen probleem.
+Er zijn dan ook een heleboel gratis en open-source logging frameworks die reeds hun nut en kunnen bewezen hebben.
+Ontwikkelaars doen er goed aan om deze bestaande tools te hergebruiken in hun projecten.
 
-Ook vanuit technisch opzicht is het een goede keuze.
-Zoals gezegd heeft de software al zijn nut bewezen in diverse omgevingen.
-In het specifieke geval van de ComFunLogger biedt een \emph{third party} oplossing ook een heleboel
-extra flexibiliteit en features. Zo kan je loggen naar meerdere outputs en zijn er meerdere mogelijke outputs beschikbaar.
+Financiëel is het een goede keuze want de software is al ontwikkeld en werd al grondig getesten door vele anderen.
+Dit spaart tijd en geld uit voor de ontwikkeling van een eigen oplossing.
+De software is gratis in gebruik dus er zijn ook geen licentiekosten aan verbonden.
+Er zijn ook geen of lage onderhoudskosten.
+
+Ook vanuit het technisch perspectief is het een goede keuze.
+Omdat de software reeds ingezet wordt in verschillende projecten werd ze zo flexibel mogelijk gemaakt en bevat ze reeds een resem aan extra functionaliteit.
+Zo kan je loggen naar meerdere outputs en zijn er meerdere mogelijke outputs beschikbaar.
 Je kunt bijvoorbeeld loggen naar tekstbestanden, consolevensters, databanken, enzovoort.
+Moest er toch iets toegevoegd dienen te worden, worden beschik je over de broncode om dit gemakkelijk zelf te kunnen doen.
 
 De twee belangrijkste redenen echter zijn het feit dat ze ontwikkeld zijn om een zo klein mogelijke performantieimpact te hebben en
-dat de implementatie zeer simpel is.
-Zo was het veel sneller om een ander logging framework te gebruiken dan om bekend te raken met de bestaande loggingcode en die te optimaliseren.
+dat de integratie ervan in een project zeer eenvoudig is.
+Zo was het veel sneller om een ander logging framework te gebruiken dan om de bestaande loggingcode te doorspitten op zoek naar problemen en mogelijke optimalisaties.
 
-De keuze is uiteindelijk gevallen op Apache log4net en is gebaseerd op waarschijnlijk het bekendste logging framework voor java: Apache log4j.
+De keuze uit de verschillende logging frameworks is uiteindelijk gevallen op Apache log4net en is gebaseerd op waarschijnlijk het bekendste logging framework voor java: Apache log4j.
 Bij de keuze werd rekening gehouden met de performantieimpact en de features van de verschillende logging frameworks.\footnote{
 	Een vergelijking tussen de bekendste logging frameworks voor .NET vind je 
 	terug in de bronnenlijst bij bron \cite{logging-frameworks-and-performance} en \cite{logging-frameworks}.
 }
 
-\todo[inline]{De meest belangrijke reden zou toch moeten het feit zijn dat
-log4net ervoor geoptimaliseerd is om zo weinig mogelijk impact te hebben op de uitvoeringstijd.}
-
 Net als bij het implementeren van GETBULK-requests laten we opnieuw de \nwmretriever{} dezelfde \glspl{oid} opvragen van een productieswitch.
-We herhalen de test 100 keer en berekenen de gemiddelde uitvoeringstijd en vergelijken met de vorige resultaten
-in \cref{tabel-nwmretriever-met-bulkrequests-en-log4net}.
-Om een zicht te hebben op de overhead van de \nwmretriever{} bekijken we ook de performantie van enkel de RetrieveFromDevice-methode (ophalen en wegschrijven in databank) en alle SyncRequest-methoden samen (enkel het ophalen van de gegevens).
+We vergelijken de resultaten met de vorige testen in \cref{tabel-nwmretriever-met-bulkrequests-en-log4net}.
+Om zicht te hebben op de overhead van de \nwmretriever{} bekijken we ook de performantie van enkel de RetrieveFromDevice-methode (ophalen en wegschrijven in databank) en alle SyncRequest-methoden samen (enkel het ophalen van de gegevens).
 Ten slotte vergelijken we ook met de resultaten die we in het verleden behaalden met Net-SNMP bij het bevragen van dezelfde switch.
-Toen ging het wel om meer gegevens.
+Toen ging het wel om een pak meer gegevens: ongeveer 2750 tegenover ongeveer 441 hier.
 
 \begin{table}[h]
 \centering
 \begin{tabular}{@{}lrrr@{}}
 \toprule
-                                                                                                 & Objecten & Uitvoeringstijd (s) & Objecten/ms \\ \midrule
-SNMP Walk met GETNEXT-requests                                                                   & 472      & 7,371               & 0,064       \\
-SNMP Walk met GETBULK-requests (50)                                                              & 441      & 3,131               & 0,141       \\
-\begin{tabular}[c]{@{}l@{}}SNMP Walk met GETBULK-requests en\\   log4net (50)\end{tabular}       & 441      & 1,839               & 0,240       \\
-\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice-methode met\\   GETBULK-requests (50)\end{tabular} & 441      & 0,722               & 0,611       \\
-\begin{tabular}[c]{@{}l@{}}SyncRequest-methode met GETBULK-requests\\   (50)\end{tabular}        & 441      & 0,387               & 1,138       \\
-Net-SNMP Bulkwalk (50)                                                                           & 2750     & 1,488               & 1,848       \\ \bottomrule
+                                                                                                 & Uitvoeringstijd (s) & Objecten/ms \\ \midrule
+SNMP Walk met GETNEXT-requests                                                                   & 7,371               & 0,064       \\
+SNMP Walk met GETBULK-requests (50)                                                              & 3,131               & 0,141       \\
+\begin{tabular}[c]{@{}l@{}}SNMP Walk met GETBULK-requests en\\   log4net (50)\end{tabular}       & 1,839               & 0,240       \\
+\begin{tabular}[c]{@{}l@{}}RetrieveFromDevice-methode met\\   GETBULK-requests (50)\end{tabular} & 0,722               & 0,611       \\
+\begin{tabular}[c]{@{}l@{}}SyncRequest-methode met GETBULK-requests\\   (50)\end{tabular}        & 0,387               & 1,138       \\
+Net-SNMP Bulkwalk (50)                                                                           & 1,488               & 1,848       \\ \bottomrule
 \end{tabular}
 \caption{Vergelijking van de verschillende implementaties van \nwmretriever{} en Net-SNMP}
 \label{tabel-nwmretriever-met-bulkrequests-en-log4net}
@@ -986,9 +973,9 @@ Net-SNMP Bulkwalk (50)                                                          
 Opnieuw zien we een grote verbetering: de uitvoeringstijd is nu 1,7 keer sneller ten opzichte van de vorige versie,
 en vier keer sneller dan de originele versie!
 Alhoewel we zeer grote performantiewinsten behaald hebben ten opzichte van de originel versie van de \nwmretriever{},
-als we kijken naar enkel naar het ophalen van de gegevens door de SyncRequest-methode,
-dan is dit nog steeds 38\% trager dan Net-SNMP.
-Maar omdat deze methode onderdeel is van de third-party bibliotheek SnmpSource kunnen we daar verder meer aan verbeteren.
+als we enkel kijken naar naar het ophalen van de gegevens door de SyncRequest-methode,
+dan is dit nog steeds 38\% trager dan bij Net-SNMP.
+Maar omdat deze methode onderdeel is van de third-party bibliotheek SnmpSource kunnen we daar verder geen verbeteringen meer aan brengen.
 
 \begin{table}[h]
 \centering
@@ -1016,12 +1003,12 @@ De call tree van de Main-methode van de nieuwste versie zie je in \cref{call-tre
 De totale uitvoeringstijd wordt nu voornamelijk bepaald door de volgende onderdelen:
 
 \begin{itemize}
-	\item 38,80\% (725 ms): bevragen van het toestel en het wegschrijven van de gegevens in de databank.
+	\item 38,80\% (725 ms): het bevragen van het toestel en het wegschrijven van de gegevens in de databank.
 	\item 17,20\% (322 ms): het inlezen van de toesteltypes uit het XML-configuratiebestand.
 		Het gebruik van reguliere expressies heeft hier de meeste impact op.
 	\item 17,02\% (318 ms): het initialiseren,
-		de meeste tijd wordt hier besteed aan de constructie van een SQL Connection-object (250 ms).
-	\item 10,25\% (192 ms): het inlezen van het log4net configuratiebestand.
+		de meeste tijd wordt hier besteed aan de constructie van een SQL \textit{Connection}-object (250 ms).
+	\item 10,25\% (192 ms): het inlezen van het log4net-configuratiebestand.
 	\item 8,28\% (155 ms): het aanmaken van de databanktabellen.
 	\item 2,50\% (47 ms): het inlezen van de te bevragen toestellen uit het XML-configuratiebestand.
 \end{itemize}
@@ -1030,8 +1017,8 @@ De totale uitvoeringstijd wordt nu voornamelijk bepaald door de volgende onderde
 
 Het implementeren van de SNMP walkopdracht met behulp van GETBULK-requests en het vervangen van het logging framework
 door log4net heeft ervoor gezorgd dat de \nwmretriever{} vier keer sneller werkt in vergelijking met de originele versie.
-Alhoewel we het hier niet bekeken hebben, valt er nog te verbeteren bij het invoeren van de opgehaalde gegevens in de databank.
-Daar kunnen gegevens best in bulk weggeschreven worden in plaats van gegeven per gegeven zoals nu.
+Alhoewel we het hier niet bekeken hebben, is er nog een optimalisatiemogelijkheid bij het wegschrijven van de gegevens in de databank.
+Daar kunnen de gegevens best in bulk weggeschreven worden in plaats van gegeven per gegeven zoals nu.
 
 \todo[inline, caption={}]{
 
