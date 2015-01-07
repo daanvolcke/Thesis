@@ -1420,22 +1420,21 @@ en met onze truc met het aanmaken van VLAN's (\cref{rij-per-rij}) kunnen we dat 
 
 Als je de voetnoten gelezen hebt in onze tests met de profiler in \cref{profiling},
 dan weet je dat we daar een fout hebben gemaakt waarbij we de databank geïnstalleerd hadden op een SSD.
-Daardoor werd het probleem van het wegschrijven van de opgehaalde gegevens in de databank zwaar geminimaliseerd.
+Daardoor werd het probleem van het wegschrijven van de opgehaalde gegevens in de databank sterk geminimaliseerd.
 Omdat de \nwmretriever{} en de databank in de \vwall{}opstelling geïnstalleerd werden op een mechanische harde schijf,
 merkten we dan ook snel op dat we bijlange niet dezelfde performantiewinsten behaalden als bij onze kleinschalige tests.
-Ook NetworkMining ondervond performantieproblemen met de databank en hadden daarop een nieuwe versie ontwikkeld die als alternatief
+Ook NetworkMining ondervond dezelfde performantieproblemen bij het wegschrijven naar de databank en hadden daarop een nieuwe versie ontwikkeld die als alternatief
 de opgehaalde gegevens naar een XML-bestand kan wegschrijven.
 
-Wegens tijdsgebrek hebben we het gebruik van bulk inserts niet meer kunnen implementeren.
+Wegens tijdsgebrek hebben we het gebruik van bulk inserts echter niet meer kunnen implementeren.
 Om toch de impact van het wegschrijven van de gegevens te kunnen meten hebben we wel vlug een optie ingebouwd
-die het wegschrijven van de gegevens simpelweg achterwege laat.
+die deze databankinteracties simpelweg achterwege laat.
 
 \subsubsection{Meetresultaten}
 
 We doen de test met 1, 10 en 100 nodes en dat zowel voor de originele versie als de nieuwe versie die gebruik maakt van bulkrequests en log4net als loggingframework.
 Om de tabelgrootte te beperken vermelden we echter niet elke combinatie.
 We doen opnieuw een SNMP walk van de mib-2- en enterprises-\glspl{oid}, nog steeds goed voor 3558 objecten.
-We herhalen elke test 100 keer, behalve de tests waarbij een enkele iteratie extreem lang duurt (meer dan 1000 seconden, of ruim een kwartier).
 
 \begin{table}[h]
 \centering
@@ -1455,8 +1454,8 @@ We herhalen elke test 100 keer, behalve de tests waarbij een enkele iteratie ext
 \label{tabel-impact-db}
 \end{table}
 
-We zien de resultaten in \cref{tabel-impact-db}.
-De eerste kolom duidt het aantal nodes aan, de tweede de versie waarbij oud de originele versie is en nieuw de versie die gebruik maakt van bulkrequests en log4net.
+De resultaten zie je in \cref{tabel-impact-db}.
+De eerste kolom duidt het aantal nodes aan, de tweede de versie, waarbij ''oud'' de originele versie aanduidt en ''nieuw'' de versie die gebruik maakt van bulkrequests en log4net.
 De derde kolom geeft aan of de resultaten worden weggeschreven in de databank of niet, de vierde de gemiddelde uitvoeringstijd en de vijfde geeft aan hoeveel keer
 sneller de versie zonder inserts is.
 De laatste kolom tenslotte geeft aan hoeveel keer sneller de nieuwe versie is tegenover de oude versie, met en zonder inserts.
@@ -1466,10 +1465,9 @@ er is een gigantisch verschil in uitvoeringstijd indien men wel of niet de gegev
 Gaande van 2,5 keer bij een tot tien nodes, tot ruim 60 keer sneller bij de nieuwe versie!
 Het is duidelijk dat het aanpakken van de inserts een zeer hoge prioriteit moet krijgen en dat het gebruik van bulk inserts sterk aangeraden is.
 
-We zien ook dat het verschil tussen de oude versie en de nieuwe versie verwaarloosbaar is bij een groot aantal nodes als men de databankinserts niet aanpakt,
-de nieuwe versie is daarbij slechts 5\% sneller.
-Maar als de uitvoeringstijd niet tegengehouden wordt door de databaseinserts,
-dan is de nieuwe versie ruim zeven keer sneller als er veel toestellen bevraagd moeten worden!
+We zien ook dat het verschil tussen de oude versie en de nieuwe versie verwaarloosbaar is bij een groot aantal nodes als men de databankinserts niet aanpakt:
+de nieuwe versie is daar slechts 5\% sneller.
+Maar als de retriever niet belemmerd wordt door de databaseinserts is de nieuwe versie ruim zeven keer sneller als er veel toestellen bevraagd moeten worden!
 Het is dus belangrijk om de databankinteracties aan te pakken om de nieuwe versie van de \nwmretriever{} volledig tot zijn recht te laten komen.
 \todo[inline]{Bij de kleinschalige tests zagen we al dat de nieuwe versie bij slechts een toestel al vier keer sneller was.
 De snelheidswinst neemt dus sterk toe naarmate het aantal toestellen toeneemt dat bevraagd moet worden.}
@@ -1479,12 +1477,12 @@ De snelheidswinst neemt dus sterk toe naarmate het aantal toestellen toeneemt da
 Zowel bij kleine, maar vooral bij grote aantallen toestellen die bevraagd moet worden is er een grote impact op de uitvoeringstijd door de databankinteracties.
 Het gebruik van bulk inserts moet dan ook een topprioriteit gemaakt worden.
 Een mogelijke manier van werken zou zijn om het wegschrijven van gegevens in een aparte thread te laten verlopen.
-Zo zijn er geen 50 threads die tegelijkertijd proberen hun data weg te schrijven in de databank.
-Men kan een tabel in het geheugen bijhouden om initieel de resultaten in bij te houden om dan met die ene thread
-de data uit de tabel met bulk inserts in zo groot mogelijke blokken weg te schrijven in de databank.
+Zo zijn er geen 50 threads die tegelijkertijd proberen hun data weg te schrijven naar de databank.
+Men kan een tabel in het geheugen bijhouden om initieel de resultaten in bij te houden.
+In een aparte thread kan men dan de data uit die tabel weg schrijven naar de databank in zo groot mogelijke blokken met bulk inserts.
 
 Omdat het implementeren en testen van die functionaliteit redelijk wat tijd in beslag kan nemen,
-kan men overwegen om in afwachting de databank op te slaan op een SSD om zo het effect van de databankinteracties te minimaliseren.
+kan men overwegen om op korte termijn de databank op te slaan op een SSD om zo het effect van de databankinteracties te minimaliseren.
 
 
 \subsection{Benchmarks uitvoeringstijd}
