@@ -1490,7 +1490,7 @@ kan men overwegen om op korte termijn de databank op te slaan op een SSD om zo h
 
 Om de schaalbaarheid van de \nwmretriever{} te verbeteren hebben we al twee grote aanpassingen gedaan aan de \nwmretriever{},
 namelijk het gebruik van bulkrequests en een alternatief loggingframework.
-In deze paragraaf beoordelen we de uitvoeringstijd van de nieuwe versie van de \nwmretriever{} met de aanpassingen ten opzichte van de oude.
+In deze paragraaf beoordelen we de uitvoeringstijd van de nieuwe versie van de \nwmretriever{} met onze aanpassingen ten opzichte van de oude.
 In \cref{impact-db} hebben we ook gezien dat de databankinteracties een grote negatieve impact hebben op de uitvoeringstijd.
 Omdat we daarvoor geen oplossing hebben geïmplementeerd, moeten we het stellen bij het vergelijken van de uitvoeringstijd met en zonder databankinteracties.
 Ten slotte bekijken we ook de invloed van het aantal te bevragen toestellen op de uitvoeringstijd en op basis daarvan
@@ -1500,6 +1500,12 @@ doen we een schatting voor het opvragen van tot 10.000 toestellen.
 
 De uitvoeringstijd van de \nwmretriever{} op grote schaal hebben we al gemeten in de paragraaf over de impact van de databankinteracties,
 dus nemen we die resultaten er weer bij.
+In die paragraaf hebben we al gezien dat het verschil tussen de oude versie en de nieuwe slechts 5\% bedraagt
+als de gegevens in de databank weggeschreven moeten worden.
+Wanneer dat niet het geval is, is de nieuwe versie ruim zever keer sneller dan de oude!
+Het is dus van absoluut belang dat dit probleem aangepakt wordt, of er gebruik gemaakt wordt van een SSD om de databank op te slaan.
+Natuurlijk zal een alternatieve implementatie met bulk inserts niet exact 7,3 keer sneller zijn, maar het geeft wel een goed idee
+van hoeveel sneller de \nwmretriever{} zou kunnen gaan.
 
 \begin{table}[h]
 \centering
@@ -1515,16 +1521,9 @@ dus nemen we die resultaten er weer bij.
 \label{tabel-uitvoeringstijd-vwall}
 \end{table}
 
-In die paragraaf hebben we al gezien dat het verschil tussen de oude versie en de nieuwe slechts 5\% bedraagt
-als de gegevens in de databank weggeschreven moeten worden.
-Wanneer dat niet het geval is, is de nieuwe versie ruim zever keer sneller dan de oude!
-Het is dus van absoluut belang dat dit probleem aangepakt wordt, of er gebruik gemaakt wordt van een SSD om de databank op te slaan
-Natuurlijk zal een alternatieve implementatie niet exact 7,3 keer sneller zijn, maar het geeft wel een goed idee
-van hoeveel sneller de \nwmretriever{} zou kunnen gaan.
-
 \subsubsection{Invloed aantal bevraagde toestellen}
 
-In \cref{tabel-uitvoeringstijd-aantalnodes} zien we de gemiddelde uitvoeringstijd van de \nwmretriever{} bij 1, 10, 50 en 100 nodes (zonder databankinteracties).
+In \cref{tabel-uitvoeringstijd-aantalnodes} zien we de gemiddelde uitvoeringstijd van de \nwmretriever{} bij 1, 10, 50 en 100 nodes, zonder databankinteracties.
 Alhoewel er tot 50 toestellen tegelijkertijd opgevraagd kunnen worden, zien we toch dat de uitvoeringstijd ook bij minder dan 50 toestellen toeneemt.
 
 \begin{table}[h]
@@ -1542,8 +1541,7 @@ Om te zien hoe sterk de uitvoeringstijd juist toeneemt met het aantal te bevrage
 hebben we de resultaten in een grafiek gegooid in \cref{fig-uitvoeringstijd} en de trendlijn getekend.
 
 Het is duidelijk dat er een lineair verband is tussen het aantal toestellen dat moet bevraagd worden en de uitvoeringstijd.
-De trendlijn leert ons dat de toename in uitvoeringstijd in seconden ongeveer gelijk is aan het extra aantal te ondervragen toestellen keer 0,15.
-\todo[inline]{De trendlijn leert ons dat elk extra toestel dat bevraagd moet worden, ongeveer 0,15 seconden extra vergt.}
+De trendlijn leert ons dat elk \textit{extra} toestel dat bevraagd moet worden ongeveer 0,15 seconden extra vraagt.
 
 \begin{figure}[h]
 	\centering
