@@ -1327,11 +1327,11 @@ Ze ondersteunt het onderzoek naar de schaalbaarheid van toepassingen.
 De Virtual Wall bestaat uit een kleine 200 zware servers met processoren gaande van vier tot twaalf cores,
 tot 24 GB geheugen en hebben tot zes gigabit netwerkinterfaces.
 De servers zijn verbonden met grote switches die als schakelbord functioneren.
-Zo kunnen de servers op afstand op elke mogelijke wijze met elkaar verbonden worden.
-De servers zelf kunnen ook vanop afstand voorzien worden van voorgeconfigureerde software images.
-Zo kunnen servers geconfigureerd worden als server, klant of zelfs een netwerkelement.
+Zo kunnen de servers vanop afstand op elke mogelijke wijze met elkaar verbonden worden.
+De servers zelf kunnen ook op afstand voorzien worden van voorgeconfigureerde software images.
+Zo kunnen servers geconfigureerd worden als server, klant of zelfs als een netwerkelement.
 Op het netwerk kan men ook testen doen met verbindingen die pakketten verliezen, beperkte bandbreedte hebben of
-een grote netwerkvertraging\cite{virtual-wall-uitleg, virtual-wall-specs}.
+een grote netwerkvertraging ondervinden\cite{virtual-wall-uitleg, virtual-wall-specs}.
 
 \begin{figure}[h]
 	\centering
@@ -1345,14 +1345,14 @@ een grote netwerkvertraging\cite{virtual-wall-uitleg, virtual-wall-specs}.
 
 De bedoeling van de opstelling op de \vwall{}  is om een situatie na te bootsen waarbij een groot aantal toestellen ondervraagd moet worden.
 Omdat de \vwall{} gedeeld wordt door meerdere onderzoekers kunnen we natuurlijk niet zomaar de helft van de servers gebruiken voor ons experiment.
-Bovendien hebben we al gezien dat een virtuele machine met een core en 256 MB geheugen al meer dan voldoende is voor een SNMP-agent,
-dan zou een machine met twaalf cores en 24 GB geheugen zware \textit{overkill} zijn.
+Bovendien hadden onze virtuele machine in VirtualBox genoeg met een core en 256 MB geheugen voor een \gls{snmp-agent}.
+Dan zou een machine met twaalf cores en 24 GB geheugen natuurlijk zware \textit{overkill} zijn.
 Wat we dus doen is een groot aantal virtuele machines opzetten op een paar van die servers.
 Er zijn verschillende virtualisatietechnologieën die we kunnen aanwenden waaronder OpenVZ en Xen.
 Maar vanwege problemen die verder besproken worden in \cref{probleem-virtualisatie-vwall} werd er geopteerd voor \gls{lxc}.
 Met \gls{lxc} kunnen we een 50-tal virtuele machines laten draaien op een enkele server.
 We hebben dan uiteindelijk maar drie servers nodig: twee waarop de virtuele machines draaien en een waarop de \nwmretriever{} draait.
-Elk van die 100 virtuele machines zal dan een eigen SNMP-agent draaien.
+Elk van die 100 virtuele machines zal dan een eigen \gls{snmp-agent} draaien.
 
 \subsubsection{Linux Containers}
 \label{lxc}
@@ -1377,7 +1377,7 @@ Daarvoor moet er op elk van de twee hostmachines een bridge\footnote{
 } geconfigureerd worden met enerzijds zijn eigen netwerkinterface
 en anderzijds alle nodes die op die machine draaien.
 Daarvoor moet je voor elke node twee virtuele interfaces aanmaken die met elkaar verbonden zijn.
-Een interface wijs je dan toe aan de bridge en de ander aan de node\cite{lxc-config}.
+Eén interface wijs je dan toe aan de bridge en de ander aan de node\cite{lxc-config}.
 De commando's daarvoor zien er als volgt uit:
 
 \begin{lstlisting}[caption={Linux containers verbinden met een bridge\cite{lxc-config}}]
@@ -1409,7 +1409,7 @@ Schematisch ziet de combinatie van de fysieke netwerkopstelling en de netwerkcon
 \subsubsection{Softwareconfiguratie containers}
 
 Alle 100 nodes hebben een gelijkaardige softwareconfiguratie als van onze virtuele machines in VirtualBox van \cref{virtualbox}.
-De nodes draaien elk hun eigen SNMP-agent en draaien het \gls{lldp}-protocol,
+De nodes zijn voorzien van hun eigen \gls{snmp-agent} en draaien het \gls{lldp}-protocol,
 maar waar ze verschillen van de kleinschalige opstelling is dat ze niet als bridge geconfigureerd zijn.
 Het belangrijkste is dat elke node over voldoende gegevens beschikt die we kunnen opvragen,
 en met onze truc met het aanmaken van VLAN's (\cref{rij-per-rij}) kunnen we dat aantal makkelijk verhogen indien nodig.
