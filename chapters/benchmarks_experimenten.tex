@@ -1704,9 +1704,9 @@ Ook gaan we na wat de invloed is van het aantal te bevragen toestellen op het ba
 
 \subsubsection{SNMP Walk met GETNEXT- versus GETBULK-requests}
 
-In \cref{tabel-bandbreedte-walk-vs-bulk} staan de netwerkstatistieken voor een SNMP walk op basis van GETNEXT- en GETBULK-request.
-Weinig verrassend is dat er een stuk minder pakketten verstuurd als ontvangen zijn:
-vermits we 50 objecten per request opvragen, hebben we ook 50 keer minder pakketten die moeten verstuurd worden.
+In \cref{tabel-bandbreedte-walk-vs-bulk} staan de netwerkstatistieken voor een SNMP walk op basis van GETNEXT- en GETBULK-requests.
+Weinig verrassend is dat er met bulkrequests een stuk minder pakketten verstuurd worden dan ontvangen.
+Vermits we 50 objecten per request opvragen, zijn erook ongeveer 50 keer minder pakketten die moeten verstuurd worden.
 Omdat er veel minder pakketten zijn verstuurd en ontvangen zijn er natuurlijk ook minder bytes verstuurd en ontvangen.
 Minder pakketten wil ook zeggen minder overhead door de headers van de pakketten.
 En omdat er in totaal minder data is verstuurd en ontvangen, was er ook gemiddeld minder bandbreedte nodig.
@@ -1730,8 +1730,8 @@ Gem. Megabits per seconde  & 0,65   & 0,33     \\ \bottomrule
 
 We zien dit ook terug in \cref{fig-bandbreedte-walk,fig-bandbreedte-bulkwalk} die de bandbreedte tonen gedurende
 de SNMP walk met respectievelijk GETNEXT- en GETBULK-requests.
-De fluctuatie die je ziet in beide grafieken is trouwens enkel te wijten aan de fluctuatie in responsetijd van de SNMP-agent.
-De verwerkingstijd aan de kant van de retriever, of de tijd die nodig is om een nieuwe request te versturen, is zeer stabiel.
+De fluctuatie die je ziet in beide grafieken is trouwens enkel te wijten aan de fluctuatie in responstijd van de \gls{snmp-agent}.
+De verwerkingstijd aan de kant van de retriever, of de tijd die nodig is om een nieuwe request te versturen, is daarentegen zeer consistent.
 We hebben hierbij wel de resultaten niet weggeschreven in de databank.
 
 \begin{figure}[h]
@@ -1753,7 +1753,7 @@ We hebben hierbij wel de resultaten niet weggeschreven in de databank.
 
 In \cref{tabel-bandbreedte-aantalnodes} zien we de netwerkstatistieken voor 1, 10, 50 en 100 nodes.
 Omdat de toestellen quasi gelijk zijn aan elkaar zien we dat het aantal pakketten en de hoeveelheid data lineair stijgt met het aantal nodes.
-Bij het bandbreedteverbruik is dat echter niet het geval door het tijdsverschil.
+Bij het gemiddelde bandbreedteverbruik is dat echter niet het geval doordat meer nodes opvragen langer duurt.
 Ondanks het feit dat de toestellen tegelijkertijd opgevraagd worden, duurt het toch iets langer om meerdere toestellen op te vragen.
 Laat ons als voorbeeld het verschil tussen een en tien nodes nemen.
 Er zijn wel tien keer meer toestellen op te vragen, maar er wordt er bijna twee keer langer over gedaan.
@@ -1796,7 +1796,7 @@ Vandaar dus dat het gemiddelde bandbreedteverbruik lager uitvalt.
 De mediaan van het bandbreedteverbruik valt bij 100 nodes op bijna 6 Mbps wat wel overeenkomt met het verbruik van 50 nodes.
 
 Het bandbreedteverbruik valt op zich ook zeer goed mee als je rekening houdt met het feit dat netwerkverbindingen meestal 100 Mbps of zelfs al 1 Gbps zijn.
-In geval van een verbinding van 100 Mbps gaat het om een belasting van 6\%, bij een verbinding van 1 Gbps zelfs maar 0,6\%.
+In geval van een verbinding van 100 Mbps gaat het om een belasting van 6\%, bij een verbinding van 1 Gbps zelfs maar van 0,6\%.
 
 \subsubsection{Conclusie}
 
@@ -1804,5 +1804,5 @@ Naast de uitvoeringstijd is er nog een voordeel bij het gebruik van bulkrequests
 zowel het totale dataverkeer als de benodigde bandbreedte vallen een stuk lager uit dan bij GETNEXT-requests.
 
 Net als bij het CPU- en geheugengebruik kunnen we opnieuw vaststellen dat het bandbreedteverbruik niet verder stijgt als er meer dan 50 toestellen bevraagd worden.
-Ook over het bandbreedteverbruik hoeven we ons weinig zorgen te maken.
-De bevragingen kunnen ook 's nachts ingepland worden zodat er helemaal geen impact is op het netwerkverkeer.
+Ook over het bandbreedteverbruik hoeven we ons dus weinig zorgen te maken.
+De bevragingen zelfs 's nachts ingepland worden zodat er helemaal geen impact is op het netwerkverkeer tijdens de werkuren.
