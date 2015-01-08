@@ -47,29 +47,29 @@ Het grote voordeel is dat het opslaan van de gegevens los staat van het opvragen
 
 Het beheer van threads en het CPU-gebruik werden besproken in \cref{werking,cpu-gebruik}.
 
-Er was al gebleken dat het beheer van de threads in de originele versie van de \nwmretriever{} beter kon.
-Het probleem was dat er gewacht werd tot de eerst gestarte thread klaar was alvorens nieuwe threads aan te maken voor het bevragen van toestellen.
-Dat leidde tot korte periodes waarbij het aantal retrieverthreads zakte en er geen neiuwe threads werden aangemaakt.
+Er was al gebleken dat het beheer van de threads voor het bevragen van de toestellen beter kon in de originele versie van de \nwmretriever{}.
+Het probleem was dat er gewacht werd tot de eerst gestarte thread klaar was alvorens er nieuwe threads werden aangemaakt voor de volgende toestellen.
+Dat leidde tot korte periodes waarbij het aantal retrieverthreads zakte en er geen nieuwe threads werden aangemaakt.
 Maar zoals gezegd werd dit probleem reeds aangepakt door NetwerkMining tijdens de masterproef en
-wordt er gebruik gemaakt van een andere implementatie in de nieuwe versies van de \nwmretriever{}.
+wordt er nu gebruik gemaakt van een andere implementatie in nieuwere versies.
 
 We hebben ook gezien dat het aantal threads vaststond op 50 threads.
-Een betere manier van werken zou het aantal threads dynamisch bepalen aan de hand van de beschikbare resources (zowel CPU-, RAM- als bandbreedtegebruik).
+Een betere manier van werken zou het aantal threads dynamisch bepalen aan de hand van de beschikbare resources, zowel van CPU-, RAM- als bandbreedtegebruik.
 Uit de tests in \cref{benchmarks-geheugengebruik,benchmarks-bandbreedte} bleek echter dat het geheugen- en bandbreedtegebruik beperkt blijft
-en er dus meer dan genoeg reserve over is voor die resources.
+en er dus meer dan genoeg reserve over is wat betreft geheugen en bandbreedte.
 Het aantal threads zou dus voornamelijk afhangen van het CPU-gebruik.
 
-Op de server van de Virtual Wall was er nog een overschot aan CPU-rekenkracht,
+Op de server van de Virtual Wall met de retriever was er nog een overschot aan CPU-rekenkracht,
 maar het omgekeerde is ook mogelijk.
 Bij een tekort aan rekenkracht heeft het geen zin om meer threads aan te maken en kan het mogelijk zelfs een averechts effect hebben.
 
 Het dynamisch beheren van threads is een algemeen probleem waar veel softwareprojecten mee geconfronteerd worden.
-Gelukkig betekent dit ook dat er reeds vele oplossingen voor zijn ontwikkeld die vrij te gebruiken zijn.
-Het .NET-platform biedt hiervoor een eigen oplossing onder de vorm van de \gls{tpl} sinds versie 4 van het .NET-framework.
+Gelukkig betekent dat ook dat er reeds vele oplossingen voor zijn ontwikkeld die vrij te gebruiken zijn.
+Het .NET-platform biedt hiervoor sinds versie 4 een eigen oplossing aan onder de vorm van de \gls{tpl}.
 
 Het doel van \gls{tpl} is om het ontwikkelaars gemakkelijker te maken om gebruik te maken van parallelisme en multithreading in applicaties.
-\Gls{tpl} schaalt dynamisch de mate van parallelisme om zo efficiënt mogelijk gebruik te maken van alle processorcores die beschikbaar zijn.
-\Gls{tpl} verzorgt ook het inplannen van threads in een \textit{thread pool}, ondersteuning voor het annuleren van threads, toestandbeheer en
+Om zo efficiënt mogelijk gebruik te maken van alle processorcores die beschikbaar zijn schaalt \gls{tpl} dynamisch de mate van parallelisme.
+\Gls{tpl} verzorgt ook het inplannen van threads in een \textit{thread pool}, de ondersteuning voor het annuleren van threads, toestandsbeheer en
 andere low-level details\cite{msdn-tpl}.
 
 
