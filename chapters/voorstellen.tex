@@ -1,8 +1,9 @@
 \chapter{Voorstellen voor verdere optimalisaties}
 
-In dit hoofdstuk bespreken we de verdere optimalisaties die nog kunnen (en moeten) gebeuren om de \nwmretriever{} op grote schaal te kunnen inzetten.
+In dit hoofdstuk bespreken we de verdere optimalisaties die nog kunnen (en in een geval moeten) gebeuren om de \nwmretriever{} op grote schaal te kunnen inzetten.
 De belangrijkste optimalisatie wellicht die nog moet gebeuren is het gebruik van bulk inserts bij het wegschrijven van de opgehaalde resultaten in de databank.
-Ook bij het beheer van de retrieverthreads is er nog ruimte voor verbetering.
+Ook bij het beheer van de retrieverthreads is er nog ruimte voor verbetering,
+en op lange termijn kan men ook denken aan het inbouwen van intelligentie die bij het opvragen rekening houdt met de veranderlijkheid van gegevens.
 
 
 \section{Bulk inserts bij databankinteracties}
@@ -18,28 +19,28 @@ Sterker nog, de impact van de databankinteracties is zodanig groot dat de perfor
 De nieuwe versie was bij 100 toestellen slechts 5\% sneller dan de oude, maar ruim zeven keer sneller als de gegevens niet weggeschreven moesten worden.
 Het implementeren van bulk inserts is dus absoluut cruciaal om de \nwmretriever{} succesvol te kunnen inzetten op grote schaal.
 
-Het implementeren van bulk requests hoeft zelfs niet zoveel werk en tijd te vereisen.
-Een eenvoudige implementatie houdt een globale tabel bij in het geheugen die de resultaten tijdelijk bijhoudt.
-De InsertResultRow-methode wordt dan aangepast om de gegevens in die tabel in het geheugen weg te schrijven in plaats van rechtstreeks in de databank.
-Eenmaal een bepaalde hoeveelheid gegevens in de databank weggeschreven zijn kan de InsertResultRow-methode dan beslissen om al die data
-in een keer weg te schrijven in de databank met dus een bulk insert.
+Het implementeren van bulkrequests hoeft zelfs niet eens zoveel tijd en werk te vereisen.\todo{eisen?}
+Een eenvoudige implementatie houdt een tabel bij in het geheugen die de resultaten tijdelijk bijhoudt.
+De InsertResultRow-methode moet dan aangepast worden om de gegevens in de tabel in het geheugen weg te schrijven in plaats van rechtstreeks naar de databank.
+Eenmaal een bepaalde hoeveelheid gegevens in de tabel in het geheugen zitten, kan de InsertResultRow-methode beslissen om al die data
+in een keer weg te schrijven naar de databank met een bulk insert.
 
 Het nadeel van deze manier van werken is dat het wegschrijven van de resultaten in dezelfde thread gebeurt als het bevragen van een toestel.
 Als de gegevens weggeschreven worden zal die thread en het bevragen van dat ene toestel een stuk langer duren dan anders.
-Een andere manier van werken die wat meer arbeidsintensief is en meer tijd vraagt werd ook al voorgesteld in \cref{impact-db}.
 
+Een andere manier van werken die wat meer tijd en werk vraagt om te implementeren werd ook al voorgesteld in \cref{impact-db}.
 Daarbij wordt de verantwoordelijkheid van het wegschrijven van de resultaten in de databank overgeheveld naar een aparte thread.
-Deze zal dan instaan om, wanneer de tabel in het geheugen een bepaalde hoeveelheid gegevens bevat de gegevens weg te schrijven naar de databank,
-zonder de andere retrieverthreads daarbij te storen.
-De InsertResultRow-methode is dan enkel nog verantwoordelijk voor het wegschrijven van de gegevens in de tabel in het geheugen.
+Deze zal dan instaan om, wanneer het aantal gegevens in de tabel in het geheugen een bepaalde drempelwaarde overschrijdt,
+de gegevens weg te schrijven naar de databank, zonder de andere retrieverthreads daarbij te storen.
+De InsertResultRow-methode is dan enkel nog verantwoordelijk voor het wegschrijven van de gegevens in de tabel in het geheugen en heeft een minimale impact op de bevraging.
 
-Men kan dan nagaan of het beter is om periodiek gegevens weg te schrijven tijdens het bevragen van de toestellen,
-of om de gegevens ineens weg te schrijven na het bevragen van de toestellen, of naar het einde toe als het aantal retrieverthreads daalt.
+Men kan dan nagaan of het beter is om periodiek de gegevens weg te schrijven tijdens het bevragen van de toestellen,
+of om de gegevens ineens weg te schrijven eens alle toestellen bevraagd zijn, of iets vroeger wanneer het aantal retrieverthreads begint te dalen.
 
 De gegevens hoeven zelfs niet weggeschreven te worden in een databank.
-Men kan verschillende implementaties voorzien die de tabel in het geheugen op verschillende manieren verwerkt.
-Men kan er bijvoorbeeld ook voor kiezen om de gegevens naar een bestand weg te schrijven of een combinatie.
-Het grote voordeel is dat het opslaan van de gegevens los staat van het opvragen ervan, dus dat de snelheidsimpact ervan beperkt blijft.
+Men zou kunnen verschillende implementaties voorzien die de gegevens in de tabel in het geheugen op verschillende manieren verwerken.
+Men kan er bijvoorbeeld voor kiezen om de gegevens naar een bestand weg te schrijven of zelfs naar beide.
+Het grote voordeel is dat het opslaan van de gegevens los staat van het opvragen ervan, zodat de snelheidsimpact ervan beperkt blijft.
 
 
 \section{Dynamisch threadbeheer}
