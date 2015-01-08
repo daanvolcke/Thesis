@@ -135,19 +135,19 @@ zal men ook moeten controleren of er een exceptie aanwezig is en de nodige actie
 Bij een endOfMibView-exceptie zal men moeten de SNMP walk staken want ze is immers ten einde gelopen.
 
 
-\section{''DOS-bescherming'' op intern netwerk iMinds}
+\section{''DoS-bescherming'' op intern netwerk iMinds}
 \label{probleem-dos-bescherming}
 
 \todo[inline]{Betere titel? Alhoewel de oorzaak nooit is vastgelegd...}
 
 Een van de problemen waar we veel hinder van ondervonden hebben was een schijnbare \gls{dos} bescherming op het netwerk van iMinds.
 Een \gls{dos}-aanval probeert een systeem buiten werking te stellen door bijvoorbeeld een server te overrompelen met een zo groot mogelijke hoeveelheid data.
-Het gaat echter slechts om een vermoeden want de precieze oorzaak hebben we nooit gevonden.
+Het gaat echter slechts om een vermoeden want de precieze oorzaak hebben we nooit kunnen vaststellen.
 
-Het probleem doet zich voor als we een toestel bevragen op via het iMinds netwerk.
+Het probleem doet zich voor als we een toestel bevragen in het iMinds netwerk of via het iMinds netwerk.
 Dit gebeurde zowel bij het bevragen van de iMinds productieswitches als bij toestellen op de \vwall{}.
-Na een korte tijd ''te veel'' verkeer te genereren werd alle verkeer geblokkeerd gedurende 20 seconden.
-Het feit dat het verkeer er iedere keer quasi exact 20 seconden niet doorkon is een sterke aanwijzing voor een of andere netwerkbescherming die in actie treedt.
+Wanneer we op korte tijd ''te veel'' verkeer genereerden --- de juiste hoeveelheid of de tijdspanne waarin dit gemeten werd hebben we niet kunnen vaststellen ---, werd alle verkeer geblokkeerd gedurende exact 20 seconden.
+Het feit dat er iedere keer exact 20 seconden geen verkeer doorkon is een sterke aanwijzing dat een of andere netwerkbescherming in actie treedt.
 In \cref{fig-dos-bescherming} zie je een bandbreedtegrafiek die het fenomeen toont.
 
 \begin{figure}[h]
@@ -157,18 +157,18 @@ In \cref{fig-dos-bescherming} zie je een bandbreedtegrafiek die het fenomeen too
 	\label{fig-dos-bescherming}
 \end{figure}
 
-De omstandigheden waarbij de bescherming in werking treedde konden we echter niet exact bepalen.
+De omstandigheden waarbij de bescherming in werking treedde konden we niet bepalen.
 Er was geen bandbreedtedrempel of een limiet op het aantal pakketten per seconde die overschreden werd.
 Het probleem deed zich voor bij de \nwmretriever{} maar niet bij een Net-SNMP bulkwalk,
-maar dan weer wel bij onze eigen walkimplementatie die rij per rij overloopt en daarvoor Net-SNMP GETBULK-requests gebruikt.
+maar dan weer wel bij onze eigen SNMP walkimplementatie die tabellen rij per rij overloopt en daarvoor Net-SNMP GETBULK-requests gebruikt.
 
 We zijn ook bij de netwerkbeheerders van iMinds ten rade gegaan maar zij hadden geen weet van wat er verantwoordelijk zou kunnen zijn hiervoor.
 
 Bij de kleinschalige tests die gebruik maakten van de productieswitches konden we wel nog resultaten bekomen als we zeer weinig iteraties uitvoerden.
-Op die manier konden we toch nog een idee krijgen van of de tests op de virtuele machines een realistisch beeld gaven van de werkelijkheid.
+Op die manier konden we toch nog een idee krijgen of de tests op de virtuele machines een realistisch beeld gaven van de werkelijkheid.
 
-Bij de grootschalige tests was het probleem eenvoudig opgelost door simpelweg ook het toestel waarop de \nwmretriever{} draaide ook in de \vwall{} te plaatsen
-zodat er een directe verbinding was tussen de toestellen.
+Bij de grootschalige tests was het probleem eenvoudig opgelost door simpelweg ook het toestel waarop de \nwmretriever{} draaide ook in de \vwall{} te plaatsen.
+Door een directe verbinding te leggen tussen de retriever en de toestellen ging het verkeer niet meer over het iMinds netwerk maar bleef het geïsoleerd in de \vwall{} waarop geen netwerkbeperkingen van toepassing zijn.
 
 
 \section{Virtualisatie op de Virtual Wall}
