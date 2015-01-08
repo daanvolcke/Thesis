@@ -1,6 +1,6 @@
 \chapter{Problemen}
 
-\todo[inline]{Zou dit niet beter een apart hoofdstuk zijn?}
+\todo[inline]{Inleiding?}
 
 \todo[inline,caption={}]{
 
@@ -100,31 +100,34 @@ ofwel kan men de tabel verwijderen en de \nwmretriever{} een nieuwe laten aanmak
 
 Zoals we gezien hebben in de berichtstructuur van een SNMP-bericht in \cref{snmp-berichtstructuur},
 zijn er twee velden voorzien in een SNMP-bericht om aan te geven dat er zich een fout heeft voorgedaan: \textit{Error} en \textit{Error Index}.
-Het eerste veld geeft met een statuscode aan of er zich een fout heeft voorgedaan en zoja, dewelke.
+Het eerste veld geeft met een statuscode aan of er zich een fout heeft voorgedaan, en zoja, dewelke.
 Het tweede veld bevat in geval van een fout een wijzer naar het object dat de fout veroorzaakt heeft
 
 Een van de nieuwe dingen die SNMPv2c introduceerde zijn SNMP-excepties.
 Er bestaan drie zulke excepties: \textit{EndOfMibView}, \textit{NoSuchInstance} en \textit{NoSuchObject}.
 Het bijzondere aan deze SNMP-excepties is dat ze toegevoegd worden aan de objectlijst (Varbind List) van een bericht
 en het errorveld niet wijzigen als ze zich voordoen\cite{endOfMibView-error-status}.
+Een SNMP-bericht waarin een fout is opgetreden dat aangeduidt wordt door een exceptie heeft dus nog steeds nul als waarde voor het errorveld,
+wat aangeeft dat er geen fout is opgetreden.
 
-De reden daarvoor is zodat een exceptie zich kan voordoen samen met andere objecten die wel correct opgehaald zijn.
+De reden daarvoor is om het mogelijk te maken dat een exceptie zich kan voordoen samen met andere objecten die wel correct opgehaald zijn.
 Herinner je dat je met GET- en GETNEXT-requests meerdere gegevens kunt ophalen,
-maar dat als er zich een fout voordoet je helemaal geen gegevens terug zal krijgen (\cref{meerdere-gegevens-ophalen-met-GET-en-GETNEXT}).
-Met SNMPv2c werd dit probleem dus opgelost.
+maar dat als er zich een fout voordoet je helemaal geen gegevens terug zal krijgen met SNMPv1 (\cref{meerdere-gegevens-ophalen-met-GET-en-GETNEXT}).
+Met SNMPv2c werd dit probleem dus met SNMP-excepties opgelost.
 
-De endOfMibView-exceptie doet zich voor bij een SNMP walk\footnote{
-	Zowel bij gebruik van GETNEXT- en GETBULK-requests indien gebruik gemaakt wordt van SNMPv2c of hoger.
-	Bij SNMPv1 met GETNEXT-requests wordt de foutcode \textit{noSuchName} gebruikt\cite{snmp-exceptions-v2c-to-v1}.
-} wanneer er geen verdere data meer op te halen is\cite{snmp-exceptions-explained}.
-Wij kwamen deze exceptie tegen bij het overlopen van een ganse SNMP-agent, waarbij er op het einde natuurlijk geen gegevens meer zijn en de exceptie opgegooid wordt.
+De endOfMibView-exceptie doet zich voor bij een SNMP walk wanneer er geen verdere data meer op te halen is\footnote{
+	Zowel bij het gebruik van GETNEXT- en GETBULK-requests, indien gebruik gemaakt wordt van SNMPv2c of hoger.
+	Bij SNMPv1 met GETNEXT-requests wordt de foutcode \textit{noSuchName} gebruikt om aan te geven dat er geen data meer is\cite{snmp-exceptions-v2c-to-v1}.
+}\cite{snmp-exceptions-explained}.
+Wij kwamen deze exceptie tegen bij het overlopen van een ganse SNMP-agent met de \nwmretriever{},
+waarbij er op het einde natuurlijk geen gegevens meer zijn en de exceptie opgegooid wordt.
 
 Omdat de originele versie van de \nwmretriever{} enkel gebruik maakte van GET- en GETNEXT-requests was SNMPv1 voldoende.
-Bovendien is het overlopen van een ganse SNMP-agent vrij uitzonderlijk dus kwam men nooit in aanraking met deze (en andere) excepties.
-Het resultaat is dat er voor het detecteren van fouten enkel gekeken werd naar het erroveld en er dus geen rekening gehouden werd met excepties.
+Bovendien is het overlopen van een ganse SNMP-agent vrij uitzonderlijk dus kwam men nooit in aanraking met deze (en de andere) excepties.
+Bijgevolg werd er voor het detecteren van fouten enkel gekeken naar het erroveld en werd er dus geen rekening gehouden met excepties.
 
 In de originele versie had dit geen gevolgen omdat excepties zich toch niet voordoen in SNMPv1.
-Bij de nieuwe versie echter zal hier wel op moeten gecontroleerd worden vermits er gebruik gemaakt wordt van SNMPv2c.
+Bij de nieuwe versie zal hier echter wel op moeten gecontroleerd worden vermits er voor bulkrequests gebruik gemaakt moet worden van SNMPv2c.
 
 De manier om dit aan te pakken is vrij eenvoudig.
 Men controleert net zoals voorheen nog steeds het errorveld, maar bij het overlopen van de objecten in het antwoordbericht
