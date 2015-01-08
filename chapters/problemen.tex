@@ -39,9 +39,8 @@ Niet opgelost/niet belangrijk:
 \section{Ondersteuning voor lange OID's}
 \label{probleem-lange-oids}
 
-Een probleem waar we al redelijk vroeg op stootten, was het voorkomen van lange \glspl{oid} met SQL-fouten tot gevolg.
-De grote boosdoener hier was de \textit{inetCidrRouteTable} (1.3.6.1.2.1.4.24.7) die zeer lange indexen heeft,
-zoals te zien is in \cref{lst-inetCidrRouteEntry}.
+Een probleem waar we al redelijk vroeg op stootten, was het voorkomen van SQL-fouten bij het wegschrijven van gegevens met een lange \gls{oid} in de databank.
+De grote boosdoeners hier waren de zeer lange indexen van de tabel \textit{inetCidrRouteTable} (1.3.6.1.2.1.4.24.7).
 
 \begin{lstlisting}[language=asn.1, float=h, caption={Definitie van een inetCidrRouteEntry}, label=lst-inetCidrRouteEntry]
 inetCidrRouteEntry OBJECT-TYPE 
@@ -65,9 +64,10 @@ inetCidrRouteEntry OBJECT-TYPE
  	::= { inetCidrRouteTable 1  }
 \end{lstlisting}
 
-Die index bestaat onder andere uit een IP-adres dat een IPv4- of een IPv6-adres kan zijn.
-Zoals je weet zijn IPv6-adressen vrij lang, 128 bits om precies te zijn.
-Een voorbeeld van een \gls{oid} uit de inetCidrRouteTable zie je in \cref{lst-lange-oids}.
+\Cref{lst-inetCidrRouteEntry} laat de definitie zien van een index uit die tabel en toont dat ze bestaat uit een samenstelling van maar liefst zes velden.
+Een van die velden is een IP-adres, dat een IPv4- of een IPv6-adres kan zijn.
+Zoals je weet zijn IPv6-adressen echter vrij lang, 128 bits om precies te zijn.
+Een voorbeeld van een \gls{oid} uit de inetCidrRouteTable die een IPv6-adres bevat zie je in \cref{lst-lange-oids}.
 
 \begin{lstlisting}[float=h, caption={[Tekstuele en numerieke notatie van een OID uit inetCidrRouteTable]Tekstuele en numerieke notatie van een \gls{oid} uit inetCidrRouteTable}, label=lst-lange-oids]
 IP-FORWARD-MIB::inetCidrRouteIfIndex.ipv6."fe:80:00:00:00:00:00:00:0a:00:27:ff:fe:6d:bd:c5"
@@ -77,8 +77,8 @@ IP-FORWARD-MIB::inetCidrRouteIfIndex.ipv6."fe:80:00:00:00:00:00:00:0a:00:27:ff:f
 	.128.1.7.2.16.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0 = INTEGER: 1
 \end{lstlisting}
 
-Omdat de resultaattabel die de originele versie van de \nwmretriever{} aanmaakte slechts 55 karakters voorzag voor een \gls{oid} resulteerde dit natuurlijk
-in SQL-fouten omdat de de \glspl{oid} veel langer waren zoals ook te zien is in \cref{lst-sql-error}.
+Omdat de resultaattabel die de \nwmretriever{} aanmaakte slechts 55 karakters voorzag voor een \gls{oid} resulteerde dit
+in SQL-fouten bij \glspl{oid} die te lang waren, zoals ook te zien is in \cref{lst-sql-error}.
 
 
 \begin{lstlisting}[float=h, caption={[SQL-fout bij te lange OID]SQL-fout bij te lange \glspl{oid}}, label=lst-sql-error]
@@ -86,12 +86,13 @@ in SQL-fouten omdat de de \glspl{oid} veel langer waren zoals ook te zien is in 
 ComfunSQLConnectionException: Error executing SQL statement: 'replace into results values(@devname,'1.3.6.1.2.1.4.34.1.5.2.16.254.128.0.0.0.0.0.0.10.0.39.255.254.109.189.197', @attrname,@value,'2014-02-24 14:28:54','OK','2014-02-24 14:28:54')' with parameters '@attrname RFC1213-MIB.ip System.String @devname debian-vm-01 System.String @value 1.3.6.1.2.1.4.32.1.5.2.2.16.254.128.0.0.0.0.0.0.0.0.0.0.0.0.0.0.64 System.String' using connectionstring 'database=snmpdb;data source=localhost;user id=xxxxx;password=xxxxx;port=3306;old syntax=yes'. ---> MySql.Data.MySqlClient.MySqlException: #22001Data too long for column 'OID' at row 1
 \end{lstlisting}
 
-De oplossing is gelukkig eenvoudig: met het vergroten van de kolombreedte voor \glspl{oid} in de resultaattabel is het probleem opgelost.
+De oplossing is gelukkig eenvoudig: met het vergroten van de toegelaten lengte van de \gls{oid}-kolom in de resultaattabel is het probleem opgelost.
 Om dat te doen passen we simpelweg de SQL-query aan in de \nwmretriever{} die de tabel aanmaakt.
-We nemen een grote marge voor de kolombreedte en vergroten ze naar 4096 karakters om toekomstige problemen te vermijden en omdat brede kolommen geen grote impact hebben.
+We nemen een grote marge voor de kolombreedte en vergroten ze naar 4096 karakters om toekomstige problemen te vermijden,
+en omdat brede kolommen toch geen grote impact hebben.
 
-Reeds bestaande tabellen moeten echter wel ofwel manueel aangepast worden om de kolom te verbreden,
-ofwel kan men de tabel verwijderen en de \nwmretriever{} een nieuwe laten aanmaken als de reeds opgeslagen resultaten ook verwijderd mogen worden.
+Reeds bestaande tabellen moeten echter ofwel manueel aangepast worden om de kolom te verbreden,
+ofwel kan men de tabel verwijderen en de \nwmretriever{} een nieuwe laten aanmaken indien de reeds opgeslagen resultaten verwijderd mogen worden.
 
 
 \section{Ondersteuning voor de endOfMibView-exceptie}
