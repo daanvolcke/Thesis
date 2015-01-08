@@ -179,10 +179,12 @@ waarin men de machines en de netwerkverbindingen definieert.
 
 Virtualisatie wordt ondersteund op de \vwall{} maar is nog volop in ontwikkeling volgens de documentatie.
 Men kan hierbij gebruik maken van OpenVZ of Xen\cite{vwall-openvz, vwall-xen}.
-Om hiervan gebruik te maken volstaat het om andere parameters mee te geven met de gedefinieerde machines in de NS-file die aangeven dat het om virtuele machines gaan.
+Om hiervan gebruik te maken volstaat het om andere parameters mee te geven met de gedefinieerde machines in de NS-file,
+zodat aangeven wordt dat het om virtuele machines gaat.
+De \vwall{} zorgt er dan voor dat de nodige hostmachines voorzien worden en de gevraagde toestellen gevirtualiseerd worden.
 
-De problemen die wij ondervonden had te maken met compatibiliteitsproblemen met de netwerkencapsulatiemethoden.
-Er zijn twee zulke capsulatiemethoden: \textit{veth-ne} en \textit{vlan}.
+De problemen die wij ondervonden hadden te maken met compatibiliteitsproblemen met de netwerkencapsulatiemethoden.
+Er zijn twee zulke encapsulatiemethoden: \textit{veth-ne} en \textit{vlan}.
 Standaard wordt de eerste gebruikt maar men kan er ook voor kiezen om de tweede te gebruiken.
 Documentatie hierover is echter zo goed als niet te vinden.
 
@@ -196,7 +198,7 @@ Encapsulation not supported on big-lan since at least one of the nodes in big-la
 \end{lstlisting}
 
 Hierbij werd het LAN-netwerk \textit{'big-lan'} genoemd.
-Als men de vlan-encapsulatie gebruikt kunnen de niet-virtuele machines daar echter niet mee overweg.
+Als men de vlan-encapsulatiemethode gebruikt, kunnen de niet-gevirtualiseerde machines daar op hun beurt niet mee overweg.
 Het komt er dus op neer dat we alle virtuele machines wel met elkaar kunnen verbinden maar niet met fysieke machines,
 ondanks dat dit volgens de documentatie wel mogelijk zou moeten zijn, zelfs zonder de encapsulatiemethode te wijzigen\cite{vwall-openvz}.
 
