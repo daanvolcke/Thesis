@@ -22,46 +22,46 @@
 \section{Situering}
 Bestaande (open-source) softwaretools voor het opvragen van netwerkinformatie via het SNMP-protocol beschikken over te weinig intelligentie om
 grootschalige netwerken te ondervragen.
-Hierdoor is het moeilijk om op frequente basis datamining van het netwerk te doen om bijvoorbeeld de netwerkconnectiviteit of netwerkroutering in kaart te brengen.
+Hierdoor is het moeilijk om op frequente basis datamining van het netwerk te doen, om bijvoorbeeld de netwerkconnectiviteit of netwerkroutering in kaart te brengen.
 Het efficiënt kunnen nagaan van configuratiefouten van grootschalige Ethernet- en IP-netwerken is nochtans een must voor elke netwerkbeheerder.
 
 Bij het bedrijf NetworkMining, dat zich profileert als een onafhankelijke softwareleverancier voor transportnetwerken,
 wordt er aan netwerkbevraging gedaan via het SNMP-protocol met behulp van een intern ontwikkelde tool.
 Bij het aanvatten van de masterproef werd deze tool enkel ingezet op kleine en middelgrote netwerken waarbij performantie geen belangrijke rol speelde.
 Daarom werd de tool zo eenvoudig mogelijk gehouden.
-NetworkMining zou echter de tool willen inzetten op grootschalige netwerken waarvoor
-de nodige aanpassingen moeten gedaan worden om de bevraging zo efficiënt mogelijk te maken.
+NetworkMining zou echter de tool willen inzetten op grootschalige netwerken,
+waardoor de nodige aanpassingen moeten gedaan worden om de bevraging zo efficiënt mogelijk te maken.
 Naast de omvang van het netwerk komt daar ook bij dat het interessant zou zijn om
-de bevraging frequent te kunnen uitvoeren zodat historische data over het netwerk kan bijgehouden worden.
+de bevraging periodiek te kunnen uitvoeren, zodat historische data over het netwerk kan bijgehouden worden.
 
 
 \section{Probleemstelling}
 Fabrikanten van routers en switches voorzien nu al network management systemen die het leven van een netwerkbeheerder makkelijker maken.
 Deze systemen kunnen onder andere geaggregeerde informatie van de verschillende netwerkelementen rapporteren.
-Het probleem hierbij echter is dat deze managementsystemen enkel werken voor netwerkelementen van dezelfde fabrikant.
-Grootschalige netwerken bestaan echter uit apparatuur van verschillende fabrikanten,
+Het probleem hierbij echter is dat deze managementsystemen meestal enkel werken voor netwerkelementen van dezelfde fabrikant.
+Grootschalige netwerken bestaan doorgaans echter\todo{echter doorgaans?} uit apparatuur van verschillende fabrikanten,
 typisch bepaald door het afwegen van de kostprijs en features die een bepaalde fabrikant aanbiedt op het moment dat een netwerk uitgebreid wordt. %TODO: lange zin
-Elke fabrikant biedt zo wel een eigen network management systeem aan voor de eigen apparaten.
-Maar ook het raadplegen van deze systemen is niet uniform: er wordt gebruik gemaakt van verschillende API's en technologieën zoals XML SOAP en CORBA.
-Ze bieden bovendien niet altijd alle informatie aan die de netwerkbeheerder wenst...
+Maar ook het raadplegen van verschillende network management systemen is niet uniform:
+er wordt gebruik gemaakt van verschillende API's en technologieën zoals XML SOAP en CORBA.
+Ze bieden bovendien niet altijd alle informatie aan die de netwerkbeheerder wenst.
 Vanwege dit heterogeen landschap werd ervoor geopteerd om gebruik te maken van het SNMP-protocol voor het opvragen van netwerkinformatie.
 Dit protocol wordt wel door apparatuur van alle fabrikanten ondersteund en biedt een enigszins uniform alternatief.
 Via het SNMP-protocol worden echter niet dezelfde aggregatiemogelijkheden aangeboden als door een network management systeem.
-Enkel de ruwe informatie van individuele netwerkcomponenten kan via SNMP opgevraagd worden die dan verder verwerkt en geaggregeerd moet worden.
+Enkel de ruwe informatie van individuele netwerkcomponenten kan via SNMP opgevraagd worden, die dan verder verwerkt en geaggregeerd moet worden.
 
 
 \section{Doelstelling}
 De SNMP Data Retriever die hierboven werd beschreven, wordt vandaag enkel gebruikt op kleine- tot middelgrote netwerken.
-De bedoeling is om deze software ook te kunnen inzetten op grootschalige netwerken waar ze haar nut het meest kan bewijzen.
-Men kan echter niet zondermeer de bestaande software inzetten op die grote netwerken, er komen tal van zaken een rol spelen
+De bedoeling is om deze software ook te kunnen inzetten op grootschalige netwerken, waar ze haar nut het meest kan bewijzen.
+Men kan echter niet zondermeer de bestaande software inzetten op die grote netwerken: er komen veel zaken bij kijken
 waar dat bij kleinere netwerken niet het geval was. Deze moet men dan vooral zoeken in de richting van performantieproblemen.
-Zoals gezegd was er in het verleden weinig noodzaak aan performantie en opteerde men eerder voor simpliciteit.
+In het verleden was er weinig noodzaak aan performantie en opteerde men eerder voor simpliciteit.
 De bedoeling van de masterproef bestaat erin om de schaalbaarheid te onderzoeken van de SNMP-bevragingen met de bestaande software.
 Hierbij moet er gezocht worden naar mogelijke bottlenecks die zich voordoen.
-Dit kan gaan om de CPU van de client, bandbreedteproblemen, de databank die de opgevraagde gegevens moet opslaan die niet kan volgen of
-het netwerkelement zelf die niet snel genoeg is.
-Eens de bottlenecks geïdentificeerd zijn moet er gezocht worden naar oplossingen om de bottlenecks te verhelpen.
-Denk aan aanpassingen aan de software zoals het implementeren van multithreading, gelijktijdig gebruik van meerdere SNMP clients of
+Dit kan gaan om de CPU van de client, bandbreedteproblemen, de databank die de opgevraagde gegevens moet opslaan maar niet kan volgen,
+of het netwerkelement zelf die niet snel genoeg is.
+Eens de bottlenecks geïdentificeerd zijn, moet er gezocht worden naar oplossingen om de bottlenecks te verhelpen.
+Denk aan aanpassingen aan de software, zoals het implementeren van multithreading, gelijktijdig gebruik van meerdere SNMP clients of
 het opzetten van een databankcluster.
-Om te zien hoe effectief de oplossingen zijn zal er ook een testmethode/benchmark opgesteld moeten worden om dit na te meten.
+Om te zien hoe effectief de oplossingen zijn, zal er ook een testmethode/benchmark opgesteld moeten worden om dit na te meten.
 
