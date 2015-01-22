@@ -8,14 +8,14 @@ We hebben de nodige aanpasingen aangebracht aan de retriever om die problemen op
 waaronder het gebruik van bulkrequests en de implementatie van een alternatief loggingframework.
 Met die aanpassingen konden we besluiten dat de schaalbaarheid van de applicatie er sterk op vooruit is gegaan.
 
-Er is echter nog een cruciaal probleem die opgelost moet worden alvorens we de \nwmretriever{} kunnen zegenen voor het gebruik ervan op grootschalige netwerken:
+Er is echter nog een cruciaal probleem dat opgelost moet worden alvorens we de \nwmretriever{} kunnen aanbevelen voor het gebruik ervan op grootschalige netwerken:
 de databankinteracties.
 We hebben verschillende manieren besproken waarop dit probleem aangepakt kan worden,
 en de eenvoudigste zijn gelukkig niet al te ingrijpend en hoeven niet al te veel tijd in beslag te nemen.
 
 Zijn we geslaagd in onze opzet om de schaalbaarheid te onderzoeken en te verbeteren?
 Zeker, alhoewel er wel nog wat werk te doen is op het gebied van databankinteracties.
-Als we niet tegengehouden worden door de databankinteracties, dan hebben we de \nwmretriever{} ruim zeven keer sneller gemaakt bij het bevragen van 100 toestellen.
+Als we niet vertraagd zouden worden door de databankinteracties, dan hebben we de \nwmretriever{} ruim zeven keer sneller gemaakt bij het bevragen van 100 toestellen.
 Een theoretische oefening op de uitvoeringstijd bij nog grotere aantallen toestellen leerde ons dat de impact van extra te bevragen toestellen beperkt genoeg blijft
 om de retriever te kunnen inzetten op zeer grote netwerken.
 
