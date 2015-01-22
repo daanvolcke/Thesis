@@ -8,7 +8,7 @@ de problemen op het iMinds netwerk en problemen bij het toepassen van virtualisa
 \section{Ondersteuning voor lange OID's}
 \label{probleem-lange-oids}
 
-Een probleem waar we al redelijk vroeg op stootten, was het voorkomen van SQL-fouten bij het wegschrijven van gegevens met een lange \gls{oid} in de databank.
+Een probleem waar we al redelijk vroeg op stootten, was het optreden van SQL-fouten bij het wegschrijven van gegevens met een lange \gls{oid} in de databank.
 De grote boosdoeners hier waren de zeer lange indexen van de tabel \textit{inetCidrRouteTable} (1.3.6.1.2.1.4.24.7).
 
 \begin{lstlisting}[language=asn.1, float=h, caption={Definitie van een inetCidrRouteEntry}, label=lst-inetCidrRouteEntry]
@@ -46,7 +46,7 @@ IP-FORWARD-MIB::inetCidrRouteIfIndex.ipv6."fe:80:00:00:00:00:00:00:0a:00:27:ff:f
 	.128.1.7.2.16.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0 = INTEGER: 1
 \end{lstlisting}
 
-Omdat de resultaattabel die de \nwmretriever{} aanmaakte slechts 55 karakters voorzag voor een \gls{oid} resulteerde dit
+Omdat de resultaattabel die de \nwmretriever{} aanmaakte slechts 55 karakters voorzag voor een \gls{oid}, resulteerde dit
 in SQL-fouten bij \glspl{oid} die te lang waren, zoals ook te zien is in \cref{lst-sql-error}.
 
 
@@ -76,8 +76,8 @@ Een van de nieuwe dingen die SNMPv2c introduceerde zijn SNMP-excepties.
 Er bestaan drie zulke excepties: \textit{EndOfMibView}, \textit{NoSuchInstance} en \textit{NoSuchObject}.
 Het bijzondere aan deze SNMP-excepties is dat ze toegevoegd worden aan de objectlijst (Varbind List) van een bericht
 en het errorveld niet wijzigen als ze zich voordoen\cite{endOfMibView-error-status}.
-Een SNMP-bericht waarin een fout is opgetreden dat aangeduidt wordt door een exceptie heeft dus nog steeds nul als waarde voor het errorveld,
-wat aangeeft dat er geen fout is opgetreden.
+Een SNMP-bericht waarin een fout is opgetreden dat aangeduid wordt door een exceptie, heeft dus nog steeds nul als waarde voor het errorveld,
+wat aangeeft dat er geen fout zou opgetreden zijn.
 
 De reden daarvoor is om het mogelijk te maken dat een exceptie zich kan voordoen samen met andere objecten die wel correct opgehaald zijn.
 Herinner je dat je met GET- en GETNEXT-requests meerdere gegevens kunt ophalen,
@@ -92,8 +92,8 @@ Wij kwamen deze exceptie tegen bij het overlopen van een ganse SNMP-agent met de
 waarbij er op het einde natuurlijk geen gegevens meer zijn en de exceptie opgegooid wordt.
 
 Omdat de originele versie van de \nwmretriever{} enkel gebruik maakte van GET- en GETNEXT-requests was SNMPv1 voldoende.
-Bovendien is het overlopen van een ganse SNMP-agent vrij uitzonderlijk dus kwam men nooit in aanraking met deze (en de andere) excepties.
-Bijgevolg werd er voor het detecteren van fouten enkel gekeken naar het erroveld en werd er dus geen rekening gehouden met excepties.
+Bovendien is het overlopen van een ganse SNMP-agent vrij uitzonderlijk. Men kwam dus nooit in aanraking met deze (en de andere) excepties.
+Bijgevolg werd er voor het detecteren van fouten enkel gekeken naar het erroveld en werd er geen rekening gehouden met excepties.
 
 In de originele versie had dit geen gevolgen omdat excepties zich toch niet voordoen in SNMPv1.
 Bij de nieuwe versie zal hier echter wel op moeten gecontroleerd worden vermits er voor bulkrequests gebruik gemaakt moet worden van SNMPv2c.
@@ -101,7 +101,7 @@ Bij de nieuwe versie zal hier echter wel op moeten gecontroleerd worden vermits 
 De manier om dit aan te pakken is vrij eenvoudig.
 Men controleert net zoals voorheen nog steeds het errorveld, maar bij het overlopen van de objecten in het antwoordbericht
 zal men ook moeten controleren of er een exceptie aanwezig is en de nodige acties ondernemen.
-Bij een endOfMibView-exceptie zal men moeten de SNMP walk staken want ze is immers ten einde gelopen.
+Bij een endOfMibView-exceptie zal men de SNMP walk moeten staken.
 
 
 \section{''DoS-bescherming'' op intern netwerk iMinds}
@@ -113,9 +113,10 @@ Een van de problemen waar we veel hinder van ondervonden hebben was een schijnba
 Een \gls{dos}-aanval probeert een systeem buiten werking te stellen door bijvoorbeeld een server te overrompelen met een zo groot mogelijke hoeveelheid data.
 Het gaat echter slechts om een vermoeden want de precieze oorzaak hebben we nooit kunnen vaststellen.
 
-Het probleem doet zich voor als we een toestel bevragen in het iMinds netwerk of via het iMinds netwerk.
+Het probleem doet zich voor als we een toestel bevragen in of via het iMinds netwerk.
 Dit gebeurde zowel bij het bevragen van de iMinds productieswitches als bij toestellen op de \vwall{}.
-Wanneer we op korte tijd ''te veel'' verkeer genereerden --- de juiste hoeveelheid of de tijdspanne waarin dit gemeten werd hebben we niet kunnen vaststellen ---, werd alle verkeer geblokkeerd gedurende exact 20 seconden.
+Wanneer we op korte tijd ''te veel'' verkeer genereerden --- de juiste hoeveelheid of de tijdspanne hebben we niet kunnen vaststellen ---,
+werd alle verkeer geblokkeerd gedurende exact 20 seconden.
 Het feit dat er iedere keer exact 20 seconden geen verkeer doorkon is een sterke aanwijzing dat een of andere netwerkbescherming in actie treedt.
 In \cref{fig-dos-bescherming} zie je een bandbreedtegrafiek die het fenomeen toont.
 
@@ -126,12 +127,12 @@ In \cref{fig-dos-bescherming} zie je een bandbreedtegrafiek die het fenomeen too
 	\label{fig-dos-bescherming}
 \end{figure}
 
-De omstandigheden waarbij de bescherming in werking treedde konden we niet bepalen.
+De omstandigheden waarbij de bescherming in werking trad konden we niet bepalen.
 Er was geen bandbreedtedrempel of een limiet op het aantal pakketten per seconde die overschreden werd.
-Het probleem deed zich voor bij de \nwmretriever{} maar niet bij een Net-SNMP bulkwalk,
-maar dan weer wel bij onze eigen SNMP walkimplementatie die tabellen rij per rij overloopt en daarvoor Net-SNMP GETBULK-requests gebruikt.
+Het probleem deed zich voor bij de \nwmretriever{}, maar niet bij een Net-SNMP bulkwalk,
+en dan weer wel bij onze eigen SNMP walkimplementatie, die tabellen rij per rij overloopt en daarvoor Net-SNMP GETBULK-requests gebruikt.
 
-We zijn ook bij de netwerkbeheerders van iMinds ten rade gegaan maar zij hadden geen weet van wat er verantwoordelijk zou kunnen zijn hiervoor.
+We zijn ook bij de netwerkbeheerders van iMinds ten rade gegaan, maar zij hadden geen weet van wat er verantwoordelijk zou kunnen zijn hiervoor.
 
 Bij de kleinschalige tests die gebruik maakten van de productieswitches konden we wel nog resultaten bekomen als we zeer weinig iteraties uitvoerden.
 Op die manier konden we toch nog een idee krijgen of de tests op de virtuele machines een realistisch beeld gaven van de werkelijkheid.
@@ -143,23 +144,23 @@ Door een directe verbinding te leggen tussen de retriever en de toestellen ging 
 \section{Virtualisatie op de Virtual Wall}
 \label{probleem-virtualisatie-vwall}
 
-Een netwerkopstelling op de Virtual Wall wordt geconfigureerd aan de hand van een script die de \textit{NS-file} genoemd wordt en
+Een netwerkopstelling op de Virtual Wall wordt geconfigureerd aan de hand van een script dat de \textit{NS-file} genoemd wordt en
 waarin men de machines en de netwerkverbindingen definieert.
 
-Virtualisatie wordt ondersteund op de \vwall{} maar is nog volop in ontwikkeling volgens de documentatie.
-Men kan hierbij gebruik maken van OpenVZ of Xen\cite{vwall-openvz, vwall-xen}.
+Virtualisatie wordt ondersteund op de \vwall{}, maar is volgens de documentatie nog volop in ontwikkeling.
+Men kan hiervoor gebruik maken van OpenVZ of Xen\cite{vwall-openvz, vwall-xen}.
 Om hiervan gebruik te maken volstaat het om andere parameters mee te geven met de gedefinieerde machines in de NS-file,
 zodat aangeven wordt dat het om virtuele machines gaat.
 De \vwall{} zorgt er dan voor dat de nodige hostmachines voorzien worden en de gevraagde toestellen gevirtualiseerd worden.
 
-De problemen die wij ondervonden hadden te maken met compatibiliteitsproblemen met de netwerkencapsulatiemethoden.
+De problemen die wij ondervonden, hadden te maken met compatibiliteitsproblemen met de netwerkencapsulatiemethoden.
 Er zijn twee zulke encapsulatiemethoden: \textit{veth-ne} en \textit{vlan}.
-Standaard wordt de eerste gebruikt maar men kan er ook voor kiezen om de tweede te gebruiken.
+Standaard wordt de eerste gebruikt, maar men kan er ook voor kiezen om de tweede te gebruiken.
 Documentatie hierover is echter zo goed als niet te vinden.
 
 Om meerdere toestellen allemaal met elkaar te verbinden definieert men in de NS-file een LAN-netwerk en voegt men daar alle toestellen aan toe.
-In de praktijk wordt dat dan vertaald door een switch waar alle toestellen aanhangen.
-Het probleem is dat als men de standaardencapsulatie gebruikt, de virtuele machines daar niet mee overweg kunnen.
+In de praktijk wordt dat dan vertaald door een switch waarmee alle toestellen verbonden zijn.
+Het probleem is dat, als men de standaardencapsulatie gebruikt, de virtuele machines daar niet mee overweg kunnen.
 De foutmelding die gegeven wordt bij het opzetten van de netwerkopstelling ziet er zo uit:
 
 \begin{lstlisting}
