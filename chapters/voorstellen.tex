@@ -1,6 +1,6 @@
 \chapter{Voorstellen voor verdere optimalisaties}
 
-In dit hoofdstuk bespreken we de verdere optimalisaties die nog kunnen (en in een geval moeten) gebeuren om de \nwmretriever{} op grote schaal te kunnen inzetten.
+In dit hoofdstuk bespreken we de verdere optimalisaties die nog kunnen (en in één geval moeten) gebeuren om de \nwmretriever{} op grote schaal te kunnen inzetten.
 De belangrijkste optimalisatie wellicht die nog moet gebeuren is het gebruik van bulk inserts bij het wegschrijven van de opgehaalde resultaten in de databank.
 Ook bij het beheer van de retrieverthreads is er nog ruimte voor verbetering,
 en op lange termijn kan men ook denken aan het inbouwen van intelligentie die bij het opvragen rekening houdt met de veranderlijkheid van gegevens.
@@ -13,13 +13,13 @@ Een verdere optimalisatie die zeker nog gedaan moet worden,
 is het gebruik van bulk inserts bij het wegschrijven van de opgehaalde gegevens in de databank.
 
 In \cref{impact-db} hebben we gezien dat het wegschrijven van de gegevens in de databank een gigantische impact heeft op de uitvoeringstijd,
-dat alleen maar toeneemt met het aantal te bevragen toestellen.
+die alleen maar toeneemt met het aantal te bevragen toestellen.
 Het bevragen van slechts 100 toestellen ging zonder het wegschrijven van de resultaten maar liefst 61 keer sneller.
 Sterker nog, de impact van de databankinteracties is zodanig groot dat de performantiewinst van de andere optimalisaties bijna teniet gedaan wordt.
 De nieuwe versie was bij 100 toestellen slechts 5\% sneller dan de oude, maar ruim zeven keer sneller als de gegevens niet weggeschreven moesten worden.
 Het implementeren van bulk inserts is dus absoluut cruciaal om de \nwmretriever{} succesvol te kunnen inzetten op grote schaal.
 
-Het implementeren van bulkrequests hoeft zelfs niet eens zoveel tijd en werk te vereisen.\todo{eisen?}
+Het implementeren van bulkrequests hoeft zelfs niet eens zoveel tijd en werk te vereisen.{\todo{eisen?}}
 Een eenvoudige implementatie houdt een tabel bij in het geheugen die de resultaten tijdelijk bijhoudt.
 De InsertResultRow-methode moet dan aangepast worden om de gegevens in de tabel in het geheugen weg te schrijven in plaats van rechtstreeks naar de databank.
 Eenmaal een bepaalde hoeveelheid gegevens in de tabel in het geheugen zitten, kan de InsertResultRow-methode beslissen om al die data
@@ -34,7 +34,7 @@ Deze zal dan instaan om, wanneer het aantal gegevens in de tabel in het geheugen
 de gegevens weg te schrijven naar de databank, zonder de andere retrieverthreads daarbij te storen.
 De InsertResultRow-methode is dan enkel nog verantwoordelijk voor het wegschrijven van de gegevens in de tabel in het geheugen en heeft een minimale impact op de bevraging.
 
-Men kan dan nagaan of het beter is om periodiek de gegevens weg te schrijven tijdens het bevragen van de toestellen,
+Men kan vervolgens nagaan of het beter is om periodiek de gegevens weg te schrijven tijdens het bevragen van de toestellen,
 of om de gegevens ineens weg te schrijven eens alle toestellen bevraagd zijn, of iets vroeger wanneer het aantal retrieverthreads begint te dalen.
 
 De gegevens hoeven zelfs niet weggeschreven te worden in een databank.
@@ -47,7 +47,7 @@ Het grote voordeel is dat het opslaan van de gegevens los staat van het opvragen
 
 Het beheer van threads en het CPU-gebruik werden besproken in \cref{werking,cpu-gebruik}.
 
-Er was al gebleken dat het beheer van de threads voor het bevragen van de toestellen beter kon in de originele versie van de \nwmretriever{}.
+Er was al gebleken dat het beheer van de threads voor het bevragen van de toestellen in de originele versie van de \nwmretriever{} beter kon.
 Het probleem was dat er gewacht werd tot de eerst gestarte thread klaar was alvorens er nieuwe threads werden aangemaakt voor de volgende toestellen.
 Dat leidde tot korte periodes waarbij het aantal retrieverthreads zakte en er geen nieuwe threads werden aangemaakt.
 Maar zoals gezegd werd dit probleem reeds aangepakt door NetwerkMining tijdens de masterproef en
@@ -67,7 +67,7 @@ Het dynamisch beheren van threads is een algemeen probleem waar veel softwarepro
 Gelukkig betekent dat ook dat er reeds vele oplossingen voor zijn ontwikkeld die vrij te gebruiken zijn.
 Het .NET-platform biedt hiervoor sinds versie 4 een eigen oplossing aan onder de vorm van de \gls{tpl}.
 
-Het doel van \gls{tpl} is om het ontwikkelaars gemakkelijker te maken om gebruik te maken van parallelisme en multithreading in applicaties.
+Het doel van \gls{tpl} is om het ontwikkelaars gemakkelijker te maken om van parallelisme en multithreading in applicaties gebruik te maken.
 Om zo efficiënt mogelijk gebruik te maken van alle processorcores die beschikbaar zijn schaalt \gls{tpl} dynamisch de mate van parallelisme.
 \Gls{tpl} verzorgt ook het inplannen van threads in een \textit{thread pool}, de ondersteuning voor het annuleren van threads, toestandsbeheer en
 andere low-level details\cite{msdn-tpl}.
