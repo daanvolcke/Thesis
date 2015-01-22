@@ -12,7 +12,7 @@ Om te weten welke gegevens moeten opgevraagd worden bij elk toestel, moet aan el
 De toesteltypes maak je zelf aan en bevatten een lijst van de op te vragen gegevens voor dat type.
 Hieronder geven we een overzicht van de verschillende configuratiemogelijkheden die de \nwmretriever{} aanbiedt.
 
-We bespreken ook de databankstructuur die door de \nwmretriever{} gebruikt wordt om de resultaten in weg te schrijven
+We bespreken ook de databankstructuur die door de \nwmretriever{} gebruikt wordt om de resultaten weg te schrijven
 en geven ook een globaal overzicht van hoe de software te werk gaat.
 
 \todo[inline]{Relevant om dit hier nog eens te herhalen? V}
@@ -41,8 +41,8 @@ zullen hoogstwaarschijnlijk eenmalig geconfigureerd worden bij de installatie va
 \todo[inline]{3 manieren om de retriever te configureren, zie de puntjes hieronder.}
 
 \subsubsection{XML-configuratiebestand}
-Zoals gezegd is dit de belangrijkste manier om de retriever te configureren.
-De twee belangrijkste dingen die je kunt configureren zijn wat voor types toestellen er zijn en de lijst van IP-adressen van die toestellen.
+
+De twee belangrijkste dingen die je kunt configureren in het XML-configuratiebestand, zijn wat voor types toestellen er zijn en de lijst van IP-adressen van die toestellen.
 Een voorbeeld van een definitie van een toesteltype zie je in \cref{xmlconfig-typedefinition}.
 Het toesteltype heet \emph{General} en als er een toestel van dat type bevraagd wordt,
 moet er een SNMP walk gedaan worden van de \textit{system} boomtak met als \gls{oid} 1.3.6.1.2.1.1.
@@ -60,7 +60,7 @@ of zelfs een SNMP GET-opdracht voor een enkele \gls{oid}.
 </deviceType>
 \end{lstlisting}
 
-Nadat de toesteltypes gedefiniëerd zijn kun je de IP-adressen opgeven van alle toestellen die opgevraagd moeten worden.
+Nadat de toesteltypes gedefiniëerd zijn, kun je de IP-adressen opgeven van alle toestellen die opgevraagd moeten worden.
 Bij de opsomming van de toestellen hoort natuurlijk ook hun toesteltype die we eerder gedefiniëerd hebben.
 In \cref{xmlconfig-devicedefinition} zie je dat de definitie van een toestel bestaat uit drie attributen: een arbitrair gekozen naam, zijn IP-adres of hostnaam en zijn toesteltype. 
 
@@ -108,10 +108,10 @@ Zie ParseCommandLineAttributes():
 }
 
 \subsubsection{AppConfig}
-Met het AppConfig-bestand zal de eindgebruiker normaal niet mee in contact komen.
-Ze bevat de mogelijkheid om het loglevel te veranderen zodat meer of minder logging informatie wordt weggeschreven in het logbestand.
+Met het AppConfig-bestand zal de eindgebruiker normaal niet in contact komen.
+Het bevat de mogelijkheid om het loglevel te veranderen zodat meer of minder logging informatie wordt weggeschreven in het logbestand.
 De databaseconfiguratiestring kan hier ook opgegeven worden,
-maar indien er in het XML-configuratiebestand ook een databank opgegeven wordt, dan wordt de laatste gebruikt.
+maar, indien er in het XML-configuratiebestand ook een databank opgegeven wordt, dan wordt de laatste gebruikt.
 Na het vervangen van het loggingframework (zie \cref{profiling}) komen er enkele loggingopties bij in dit bestand.
 Zo kun je naast het loglevel ook extra uitvoermogelijkheden opgeven: naar een tekstbestand, naar het consolescherm, naar een databank of een combinatie.
 Ook het logformaat kan hier desgewenst aangepast worden.
@@ -160,30 +160,32 @@ de waarde van het resultaat en de datum waarop ze werd opgehaald.
 In deze paragraaf geven we een \textit{high-level} overzicht van de werking van de \nwmretriever{}.
 Bij het analyseren van de applicatie met een profiler wordt hier ook naar verwezen om te weten wat elke methode juist doet.
 
-De \nwmretriever{} begint eerst en vooral met de \textit{Initialize}-methode op te roepen,
-die verantwoordelijk is voor de configuratie en het opzetten van de databankverbinding.
+De \nwmretriever{} begint eerst en vooral met de \textit{Initialize}-methode op te roepen.
+Deze is verantwoordelijk voor de configuratie en het opzetten van de databankverbinding.
 Zowel de commandlineparameters als het XML-configuratiebestand worden hier verwerkt.
 Na het inlezen van de configuratie wordt de databankverbinding opgezet met de gegevens uit de configuratie.
 
 Nadat de basisconfiguratie werd ingelezen door de Initialize-methode worden de toesteltypes (devicetypes) ingelezen uit het XML-configuratiebestand.
 Indien nodig wordt er in de databank een nieuwe devicetypestabel aangemaakt en worden de toesteltypes daarin opgeslagen.
 Hetzelfde gebeurt voor de te bevragen toestellen.
-Ten slotte wordt er ook, indien nodig de results tabel aangemaakt om de opgehaalde gegevens in weg te schrijven.
+Ten slotte wordt ook de results tabel aangemaakt, indien die nog niet bestond, om de opgehaalde gegevens in weg te schrijven.
 
 Daarna kan het ophalen van de gegevens beginnen.
-De lijst van de te bevragen toestellen wordt overlopen, en om meerdere toestellen tegelijkertijd op te vragen
-wordt voor elk toestel wordt een nieuwe thread gestart.
+De lijst van de te bevragen toestellen wordt overlopen, en, om meerdere toestellen tegelijkertijd op te vragen,
+wordt voor elk toestel een nieuwe thread gestart.
 Het ophalen zelf gebeurt in de \textit{RetrieveFromDevice}-methode en elke thread voert die methode uit voor een toestel.
 
-Er worden maximaal 50 threads aangemaakt dus er kunnen maar 50 toestellen tegelijkertijd opgevraagd worden.
-Eens er 50 threads aangemaakt zijn wordt er gewacht tot een vorige thread klaar is om een nieuwe te starten.
-De threads worden in een lijst bijgehouden en in een oude versie van de \nwmretriever{} werd na het starten van de eerste 50 threads gewacht op
+Er worden maximaal 50 threads aangemaakt.
+Bijgevolg kunnen er maar 50 toestellen tegelijkertijd opgevraagd worden.
+Eens er 50 threads aangemaakt zijn, wordt er gewacht tot een vorige thread klaar is om een nieuwe te starten.
+De threads worden in een lijst bijgehouden.
+In een oude versie van de \nwmretriever{} werd, na het starten van de eerste 50 threads, gewacht op
 de eerste thread om nieuwe threads aan te maken.
 
 De RetrieveFromDevice-methode overloopt de lijst van instructies die moeten afgehandeld worden voor een bepaald toestel(type).
-Dat kunnen ofwel enkelvoudige gegevens zijn die opgehaald moeten worden met een GET-request ofwel moet een SNMP walk gedaan worden van een bepaalde \gls{oid}.
+Dat kunnen ofwel enkelvoudige gegevens zijn, die opgehaald moeten worden met een GET-request, ofwel moet een SNMP walk gedaan worden van een bepaalde \gls{oid}.
 Vervolgens worden de request(s) gestuurd naar dat toestel.
-Nadat het antwoord is ontvangen worden alle variabelen die in dat antwoord zitten overlopen.
+Nadat het antwoord is ontvangen, worden alle variabelen die in dat antwoord zitten overlopen.
 Er wordt gecontroleerd of de ontvangen gegevens relevant zijn (als ze onder de originele \gls{oid} vallen bij een SNMP walk),
 en zoja wordt het gegeven weggeschreven in de databank met de \textit{InsertResultRow}-methode.
 De InsertResultRow-methode doet niks meer dan het uivoeren van een SQL insert-query.
