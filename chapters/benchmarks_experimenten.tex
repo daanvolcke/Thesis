@@ -1,38 +1,38 @@
 \chapter{Benchmarks en Experimenten}
 % \chaptermark{Een kortere titel voor de paginahoofding (verschillend van titel in TOC)}
 
-Dit is het hoofdstuk waar het allemaal om te doen is.
-Hier bespreken we alle uitgevoerde experimenten, zowel op kleine- als grote schaal, om de schaalbaarheid van de \nwmretriever{} te onderzoeken.
+In dit hoofdstuk bespreken we alle uitgevoerde experimenten, zowel op kleine- als grote schaal, om de schaalbaarheid van de \nwmretriever{} te onderzoeken.
 
 Op kleine schaal maken we gebruik van virtuele machines en een aantal productieswitches om onze testen uit te voeren.
-We onderzoeken de impact van netwerkvertraging, het nut van het filteren van de gegevens die moeten opgehaald worden en de impact van bulkrequests.
+We onderzoeken de impact van netwerkvertraging, het nut van het filteren van de gegevens die moeten opgehaald worden, en de impact van bulkrequests.
 Verder vergelijken we de performantie van de \nwmretriever{} met de Net-SNMP commandlinetools,
-analyseren we de \nwmretriever{} nader met een profiler, onderzoeken we of het beter is om een tabel rij per rij of kolom per kolom op te vragen
+analyseren we de \nwmretriever{} nader met een profiler, onderzoeken we of het beter is om een tabel rij per rij of kolom per kolom op te vragen,
 en gaan we na wat de impact is van de fragmentatie van pakketten op het netwerk.
 
-Bij het identificeren van problemen die de schaalbaarheid belemmeren bespreken en implementeren we oplossingen.
+Bij het identificeren van problemen die de schaalbaarheid belemmeren, bespreken en implementeren we oplossingen.
 Achteraf analyseren we ook de effectiviteit van die oplossingen.
 
-Dankzij de samenwerking met het iMinds onderzoekscentrum kunnen we op grote schaal gebruik maken van de fameuze Virtual Wall die toelaat om snel geautomatiseerde testnetwerken op te zetten.
+Dankzij de samenwerking met het iMinds onderzoekscentrum kunnen we op grote schaal gebruik maken van de Virtual Wall die toelaat om snel geautomatiseerde testnetwerken op te zetten.
 We maken gebruik van virtualisatie om een groot aantal toestellen te creëren die we kunnen bevragen via SNMP.
-Met dat groot aantal toestellen kunnen we de uitvoeringstijd, het CPU-, geheugen- en bandbreedtegebruik analyseren die nodig is op grote schaal.
-We kijken hierbij naar zowel de originele versie als de versie met onze verbeteringen om te zien of ze het gewenste effect hebben op de schaalbaarheid.
+Met dat groot aantal toestellen kunnen we de uitvoeringstijd, het CPU-, geheugen- en bandbreedtegebruik analyseren die op grote schaal nodig is.
+We kijken hierbij naar zowel de originele versie van de \nwmretriever{}, als de versie met onze verbeteringen,
+om te zien of ze het gewenste effect hebben op de schaalbaarheid.
 
 
 \section{Terminologie}
 
-Alvorens we beginnen met de benchmarks en experimenten, willen we nog eens de gebruikte terminologie verduidelijken zodat er zeker geen verwarring ontstaat.
+Alvorens we beginnen met de benchmarks en experimenten, willen we nog eens de gebruikte terminologie verduidelijken, zodat er zeker geen verwarring ontstaat.
 
-Om te beginnen worden gegevens die een \gls{snmp-agent} aanbiedt voorgesteld door \textbf{objecten}.
+Om te beginnen worden gegevens die een \gls{snmp-agent} aanbiedt, voorgesteld door \textbf{objecten}.
 Een object wordt uniek geïdentificeerd door een \textbf{\gls{oid}}.
-Maar omdat \glspl{oid} hiërarchisch zijn opgebouwd wil dit zeggen dat een \gls{oid} niet noodzakelijk overeenkomt met juist één object.
-Als we een hoger gelegen \gls{oid} opvragen krijgen we dus meerdere gegevens terug.
+Omdat \glspl{oid} hiërarchisch zijn opgebouwd, komt een \gls{oid} niet noodzakelijk overeen met juist één object.
+Als we een hoger gelegen \gls{oid} opvragen, krijgen we dus meerdere gegevens terug.
 
 Typisch overlopen we een hoger gelegen \gls{oid} met een SNMP walkopdracht.
 Deze blijft gegevens lexicografisch overlopen totdat de opgehaalde gegevens niet meer onder de originele \gls{oid} vallen.
 Alle gegevens die wel onder de originele \gls{oid} vallen, noemen we \textbf{relevant}.
 Maar omdat je extra gegevens moet opvragen om te weten dat er geen gegevens meer onder de originele \gls{oid} vallen,
-hebben we dus ook een aantal \textbf{niet-relevante gegevens}.
+hebben we ook een aantal \textbf{niet-relevante gegevens}.
 
 Ten slotte zijn er twee retrievers waarvan we gebruik maken om SNMP-gegevens op te halen.
 Enerzijds hebben we de \textbf{\nwmretriever{}} van NetworkMining en anderzijds zijn er de Net-SNMP commandlinetools.
@@ -76,9 +76,9 @@ Hierdoor is zelfs 256 MB een ruime luxe voor de nodes: na het opstarten van een 
 Alle toestellen zijn rechtstreeks met elkaar verbonden in een privénetwerk.
 Via \gls{nat} kunnen ze via de gastheer toch nog het internet bereiken.
 Dit werd bewerkstelligd met de \textit{NAT Network mode},
-een nieuwe feature in VirtualBox die nog niet in de documentatie staat maar wel kort beschreven wordt in een nieuwspost (zie\cite{vbox-nat-network-mode}).
+een nieuwe feature in VirtualBox die nog niet in de documentatie staat, maar wel kort beschreven wordt in een nieuwspost (zie\cite{vbox-nat-network-mode}).
 Ter vergelijking:
-\textit{NAT mode} laat gastsystemen toe om met het internet te communiceren via \gls{nat} maar zitten elk in een apart privénetwerk en kunnen dus niet met elkaar praten.
+\textit{NAT mode} laat gastsystemen toe om met het internet te communiceren via \gls{nat}, maar zitten elk in een apart privénetwerk en kunnen dus niet met elkaar praten.
 \textit{Host-only mode} laat gastsystemen met elkaar (en het gastheersysteem) communiceren door ze in een gezamelijk privénetwerk te plaatsen, 
 maar communicatie met het internet is niet mogelijk.
 
@@ -86,14 +86,13 @@ maar communicatie met het internet is niet mogelijk.
 
 Hieronder leggen we kort stap voor stap uit hoe je op een Debianinstallatie de nodige SNMP software kunt installeren en configureren.
 De uitleg is zeer beknopt gehouden en dient enkel om je op weg te helpen.
-In de testopstelling werden de nodes ook nog geconfigureerd als switches die het \gls{stp} draaien alsook het \gls{lldp}.
+In de testopstelling werden de nodes ook nog geconfigureerd als switches die het \gls{stp} uitvoeren, alsook het \gls{lldp}.
 Deze extra protocollen bieden informatie aan die via SNMP opgevraagd kan worden en zijn ook gegevens die in een realistische situatie opgevraagd kunnen worden.
 De configuratie als switch en van LLDP wordt hier echter niet besproken. \todo{Dit kan eventueel als bijlage uitgelegd worden.}
 
-Zoals gezegd worden alle nodes voorzien van een minimale Debian 7 installatie.
-Dit wil zeggen dat er geen extra softwarepakketten worden geselecteerd bij installatie.
+Om de nodes van een minimale Debian 7 installatie te voorzien, werden geen extra softwarepakketten geselecteerd bij de installatie.
 
-In de veronderstelling dat het internet werkt beginnen we na de installatie met het updaten van het systeem en het installeren van \textit{sudo}:
+In de veronderstelling dat het internet werkt, beginnen we na de installatie met het updaten van het systeem en het installeren van \textit{sudo}:
 
 \begin{lstlisting}[language=bash]
 # apt-get update
@@ -109,7 +108,7 @@ Maak een gebruiker aan en zorg ervoor dat je sudo rechten hebt met behulp van he
 \end{lstlisting}
 
 Dan installeren we de snmp \textit{daemon} die zal antwoorden op SNMP requests.
-Om te testen is het ook interessant om de client-side SNMP tools te installeren alsook een tool om de belangrijkste \glspl{mib} te downloaden.
+Om te testen is het ook interessant om de client-side SNMP tools te installeren, alsook een tool om de belangrijkste \glspl{mib} te downloaden.
 Met die \glspl{mib} kunnen numerieke \glspl{oid} omgezet worden naar de meer gebruiksvriendelijke tekstuele voorstelling.
 
 Debian laat standaard niet toe dat niet-vrije (non-free) software\footnote{
@@ -141,7 +140,7 @@ Het gebruik van de \glspl{mib} kun je aanzetten door de volgende regel in commen
 mibs :
 \end{lstlisting}
 
-Om \textit{snmpd} te configureren kun je gebruik maken van het \textit{snmpconf} commando die op interactieve wijze configuratiebestanden aanmaakt.
+Om \textit{snmpd} te configureren, kun je gebruik maken van het \textit{snmpconf} commando, dat op interactieve wijze configuratiebestanden aanmaakt.
 We moeten ook nog de locatie van de \gls{mib}-bestanden opgeven. Voeg daarom het volgende toe aan /etc/default/snmpd:
 
 \begin{lstlisting}[language=bash]
@@ -154,7 +153,7 @@ Vervolgens herstarten we snmpd om de nieuwe configuratie in te laden.
 $ sudo /etc/init.d/snmpd restart
 \end{lstlisting}
 
-Nu kunnen we testen of alles werkt met het volgende:
+Om te testen of alles werkt, gebruiken we het volgende commando:
 
 \begin{lstlisting}[language=bash]
 $ snmpwalk -v 1 -c public localhost mib-2
@@ -178,29 +177,29 @@ De grootste bevat bijna 300 poorten en functioneert ook als router.
 \label{latency}
 
 Netwerkvertraging of \textit{latency} definiëren we als de zogenaamde \textit{round-trip time},
-of de tijd die nodig is om een bericht te sturen naar een ander toestel en voor die computer om het antwoord terug naar jou te sturen\footnote{
+of de totale tijd die nodig is om een bericht te sturen naar een ander toestel en voor die computer om het antwoord terug naar jou te sturen\footnote{
 	Latency kan ook gedefiniëerd worden als enkel de tijd dat een bericht nodig heeft om in één richting reizen.
 	Dat is echter moeilijker om te meten. Meestal hanteert men de round-trip time omdat dat gemeten kan worden vanaf slechts een punt. \cite{latency-wiki}
 }.
 De latency tussen twee toestellen kan je gemakkelijk meten vanop een van de twee toestellen met behulp van het \textit{ping}-commando.
 
 Op een LAN-netwerk bedraagt de latency gewoonlijk minder dan 1 ms en valt dus te verwaarlozen.
-Vanaf dat netwerkverkeer over het internet moet gaan, gaat latency wel een grote rol spelen.
-Zolang de afstand niet te lang is (als we binnen West-Europa blijven) dan blijft de latency beperkt tot 10-50 ms.
-Als we daarentegen communiceren met bv. Amerika, dan spreken we al over 100-200 ms (afhankelijk of we spreken over de Oost- of Westkust).
+Zodra netwerkverkeer over het internet moet gaan, speelt latency wel een grote rol.
+Zolang de afstand niet te groot is (als we binnen West-Europa blijven), blijft de latency beperkt tot 10-50 ms.
+Als we daarentegen communiceren met bv. Amerika, dan spreken we al over 100-200 ms (respectievelijk voor de Oost- en Westkust).
 Voor sommige toepassingen (zoals bijvoorbeeld real-time spellen) is dit te hoog om nog bruikbaar te zijn.
 
 Het belang voor ons van de latency is voornamelijk bij het opvragen van veel gegevens met GET- en GETNEXT-requests.
-Zoals uitgelegd in \cref{snmp-operaties} wordt er slechts een gegeven in een request gestopt en
-moet je steeds wachten op het antwoord alvoren je de volgende request stuurt.
-Als je maken hebt met een latency van zeg maar 25 ms, wil dat zeggen dat je steeds 25 ms moet wachten alvorens je de volgende request kunt sturen.
+Zoals uitgelegd in \cref{snmp-operaties}, wordt er slechts een gegeven in een request gestopt en
+moet je steeds wachten op het antwoord ervan, alvorens je de volgende request stuurt.
+Als je te maken hebt met een latency van zeg maar 25 ms, wil dat zeggen dat je steeds 25 ms moet wachten alvorens je de volgende request kunt sturen.
 Stel dat je 200 gegevens wenst op te halen, dan doe je hier 5 seconden over (200 gegevens $*$ 25 ms wachten per gegeven).
 
 Was er een netwerkvertraging van slechts 1 ms, dan zou het ophalen van dezelfde 200 gegevens nog maar 200 ms duren.
 Natuurlijk houden we hier nog geen rekening met de tijd die het toestel zelf nodig heeft om het bericht te verwerken en te antwoorden.
 
 De originele versie van de SNMP Data Retriever maakte gebruik van GET- en GETNEXT-requests en ondervond dus een grote invloed op de uitvoeringstijd door de netwerkvertraging.
-Om na te gaan hoe groot de impact juist is hebben we tests gedaan met en zonder netwerkvertraging.
+Om na te gaan hoe groot de impact juist is, hebben we tests gedaan met en zonder netwerkvertraging.
 
 \subsubsection{Meetresultaten}
 
@@ -232,10 +231,10 @@ CPU-gebruik:          & 10\%            & 35\%               & 80-90\%         &
 \label{tabel-latency}
 \end{table}
 
-Jammer genoeg wordt er maar een meting van het CPU-gebruik gedaan per seconde waardoor
-de kortste test van minder dan drie seconden bij een toestel zonder vertraging niet zo nauwkeurig is.
+Jammer genoeg wordt er per seconde maar een meting van het CPU-gebruik gedaan, waardoor
+de kortste test van minder dan drie seconden, bij een toestel zonder vertraging, niet zo nauwkeurig is.
 Desondanks is het toch voldoende om te zien dat het CPU-gebruik een bottleneck vormt bij het bevragen van vier toestellen zonder vertraging.
-Het moet wel gezegd worden dat de retriever in een virtuele machine draaide met slechts een CPU-core toegewezen.\footnote{
+Het moet wel gezegd worden dat de retriever in een virtuele machine draaide waaraan slechts een CPU-core werd toegewezen.\footnote{
 	Dit was omdat er een VirtualBox-\textit{image} werd voorzien waarop alles reeds voorgeconfigureerd was om snel te kunnen beginnen met het testen van de retriever.
 	Bij latere tests draait de \nwmretriever{} niet meer in een virtuele machine en beschikt ze over meerdere cores.
 }.
@@ -244,16 +243,16 @@ Wanneer we een vertraging van 25 ms introduceren is het CPU-gebruik een stuk lag
 Hadden we 50 toestellen bevraagd --- het maximum aantal dat de retriever tegelijkertijd doet --- met een vertraging van 25 ms,
 dan hadden we evenwel weer in de problemen gezeten.
 
-Op het CPU-gebruik komen we later nog terug, maar de belangrijkste reden dat we deze test gedaan hebben is de impact op de uitvoeringstijd.
+Op het CPU-gebruik komen we later nog terug, maar de belangrijkste reden dat we deze test gedaan hebben, is om de impact op de uitvoeringstijd in te kunnen schatten.
 We vragen ongeveer 217 gegevens op per toestel.
 Voor een enkel toestel zonder vertraging duurde dit ongeveer 2.700 ms.
 Ter vergelijking, volgens onze eerdere rekenformule had dit ongeveer 200 ms moeten duren.
-We zaten er dus slechts een factor 10 naast.
+We zaten er dus een factor 10 naast.
 Er is natuurlijk flink wat meer aan de hand dan enkel het vervoeren van het pakket over de netwerkverbinding.
 De retriever doet namelijk ook een aantal databankinteracties zoals het aanmaken van tabellen en
 het wegschrijven van de resultaten in die databank (zie \cref{snmp-data-retriever-db}).
 
-Als we dan een vertraging van 25 ms invoeren neemt de uitvoeringstijd toe met bijna een factor 6 tot 15.650 ms.
+Als we een vertraging van 25 ms invoeren, neemt de uitvoeringstijd toe met bijna een factor 6 tot 15.650 ms.
 Onze duidelijk oververeenvoudigde rekensom van daarnet zou uitkomen op een kleine 6 seconden.
 
 Dezelfde vergelijking maken met vier toestellen is jammer genoeg nutteloos vanwege de CPU-bottleneck.
@@ -287,11 +286,11 @@ of kunnen we evengoed meteen alle gegevens opvragen die een \gls{snmp-agent} ons
 \subsubsection{Meetresultaten}
 
 Voor deze test stellen we een lijst op van de typisch meest interessante \glspl{oid} bij netwerkcomponenten.
-We bekijken hoeveel objecten dat die \glspl{oid} ons opleveren en vergelijken we dit met het totaal aantal objecten dat een \gls{snmp-agent} aanbiedt.
-Omdat de virtuele machines die als switch geconfigureerd zijn niet verbonden zijn met echte computers zullen ze minder gegevens bevatten dan een echte switch.
-Anderzijds bevatten de virtuele machines heel wat extra informatie die een gewone switch niet heeft omdat ze een gans besturingssysteem draaien.
+We bekijken hoeveel objecten die \glspl{oid} ons opleveren en vergelijken we dit met het totaal aantal objecten dat een \gls{snmp-agent} aanbiedt.
+Omdat de virtuele machines, die als switch geconfigureerd zijn, niet verbonden zijn met echte computers, zullen ze minder gegevens bevatten dan een echte switch.
+Anderzijds bevatten de virtuele machines heel wat extra informatie die een gewone switch niet heeft, omdat ze een compleet besturingssysteem draaien.
 Denk hierbij aan bijvoorbeeld een lijst van alle geïnstalleerde softwarepakketten.
-Omdat het belangrijk is dat deze test de realiteit zo goed mogelijk weergeeft werd deze test dan ook uitgevoerd op productieswitches.
+Omdat het belangrijk is dat deze test de realiteit zo goed mogelijk weergeeft, werd deze test dan ook uitgevoerd op productieswitches.
 
 Dit is de lijst van \glspl{oid} die we als interessant beschouwen:
 
@@ -307,7 +306,7 @@ Dit is de lijst van \glspl{oid} die we als interessant beschouwen:
 De twee \glspl{oid} die beginnen met \textit{dot1d} hebben betrekking op de switching functionaliteit.
 \textit{dot1dBase} bevat onder andere de tabel met alle switchpoorten terwijl \textit{dot1dStp} informatie bevat over het Spanning Tree Protocol (STP).
 
-Om te bepalen hoeveel objecten er in totaal aangeboden worden kun je een SNMP walk doen van \gls{oid} '.' of '.1'.
+Om te bepalen hoeveel objecten er in totaal aangeboden worden, kun je een SNMP walk doen van \gls{oid} '.' of '.1'.
 
 Een voorbeeld van de uitvoer die onze test oplevert is het volgende:
 
@@ -365,15 +364,15 @@ zeker als er meerdere kopieën van dezelfde gegevens bijgehouden worden over een
 \label{bulkrequests-benchmarks}
 
 In \cref{snmp-operaties,latency} besproken we dat het samenbundelen van meerdere objecten in een request, althans theoretisch, een zeer goed idee is.
-Alvorens we de code weggooien in de \nwmretriever{} die gebruik maakt van GETNEXT-requests om een SNMP walk te doen,
+Alvorens we de code vervangen in de \nwmretriever{} die gebruik maakt van GETNEXT-requests om een SNMP walk te doen,
 kunnen we beter eerst testen wat voor snelheidswinsten we mogen verwachten bij het gebruik van bulkrequests.
 Daarna kunnen we beslissen of het de moeite waard is om deze manier van werken te implementeren.
 
-Om dit te testen maken we gebruik van reeds bestaande implementaties:
+Om dit te testen, maken we gebruik van reeds bestaande implementaties:
 de \textit{snmpwalk} en \mbox{\textit{snmpbulkwalk}} tools van Net-SNMP maken gebruik van respectievelijk GETNEXT- en
 GETBULK-requests om een SNMP walk te doen van een gegeven \gls{oid}.
 Uitleg en voorbeelden over hoe je de Net-SNMP tools kunt gebruiken vind je terug in \cref{manieren-om-snmp-gegevens-op-te-vragen}.
-Herinner je dat we het aantal objecten per pakket kunnen bepalen door het aantal max-repetitions te wijzigen.
+Herinner je dat we het aantal objecten per pakket kunnen configureren door het aantal max-repetitions te wijzigen.
 Standaard stond die op 10.
 
 \subsubsection{Meetresultaten}
@@ -386,10 +385,10 @@ gevolgd door meerdere SNMP walk's met bulk-requests met een verschillende aantal
 
 We herhalen elke test meermaals en --- omdat het aantal objecten variabel kan zijn over tijd ---
 houden we van elke test het aantal ontvangen objecten bij alsook de tijd die nodig was.
-Als we op het einde alle objecten en alle tijden sommeren zijn er twee metrieken waar we van gebruik kunnen maken.
+Als we op het einde alle objecten en alle tijden sommeren, zijn er twee metrieken waarvan we gebruik kunnen maken.
 Als we het totaal aantal objecten delen door de totale uitvoeringstijd bekomen we het gemiddeld aantal objecten per tijdseenheid.
 Het inverse daarvan is de gemiddelde tijd die nodig is om een object op te vragen.
-Wij zullen gebruik maken van de eerste metriek die wat intuïtiever is.
+Wij zullen gebruik maken van de eerste metriek omdat die wat intuïtiever is.
 
 \begin{table}[h]
 \centering
@@ -412,19 +411,19 @@ SNMP Bulkwalk (1000)            & 7,225       & 9,857           & 19           \
 \todo[inline]{Percentage/winstfactor zou leuk zijn?}
 
 De resultaten zie je in \cref{tabel-bulkrequests}.
-De eerste kolom bevat de operatie met tussen haken het aantal objecten per request indien het om een SNMP bulkwalk gaat.
+De eerste kolom bevat de operatie, met tussen haken het aantal objecten per request indien het om een SNMP bulkwalk gaat.
 De tweede kolom bevat het gemiddeld aantal objecten per ms.
 De derde kolom bevat weer het gemiddeld aantal objecten per ms, maar zonder uitschieters.
+Hier spreken we van een uitschieter als een operatie er anderhalf keer zo lang over doet als de meeste anderen.
 De laatste kolom ten slotte bevat het aantal uitschieters.
 
 Bij de resultaten van SNMP bulkwalk's met een groot aantal objecten per request zagen we soms een klein aantal uitschieters (telkens op 100 iteraties).
-Hier spreken we van een uitschieter als een walk er anderhalf keer zo lang over doet als de meeste anderen.
 Bijvoorbeeld bij de SNMP bulkwalk's met 1000 objecten per request deden de meeste er ongeveer 0,44 ms over.
 Een klein aantal deed er echter 1,5 of zelfs 2 ms over.
 Omdat de andere tijdsmetingen zeer dicht bij elkaar liggen (minder dan 0,10 ms afwijking) vermoeden we
 dat de virtuele machine tijdelijk minder rekenkracht toegewezen krijgt door het gastheerbesturingssysteem.
 Wellicht zien we dit verschijnsel vooral bij hoge aantallen objecten per request omdat die meer rekenwerk vereisen.
-Latere tests waarbij de \gls{snmp-agent} niet op een virtuele machine draait vertonen dit gedrag niet.
+Latere tests, waarbij de \gls{snmp-agent} niet op een virtuele machine draait, vertonen dit gedrag niet.
 
 Uit de resultaten kunnen we alvast afleiden dat het samenbundelen van meerdere objecten per request zeer grote snelheidswinsten oplevert,
 zelfs al voor 10 objecten per request.
@@ -434,7 +433,7 @@ Als we geen rekening houden met de uitschieters loopt het snelheidsverschil wein
 gaat het gemiddeld 5,33 keer zo snel voor 50 tot 1000 objecten per request.
 
 We zien dat het weinig zin heeft om meer dan 100 objecten per request te bundelen.
-Om beter het ideaal aantal objecten per request te schatten testen we het bereik tussen 10 en 100 objecten per request en voegen we er telkens 10 objecten bij.
+Om beter het ideaal aantal objecten per request te schatten, testen we het bereik tussen 10 en 100 objecten per request en voegen we er telkens 10 objecten bij.
 De resultaten daarvan staan in \cref{tabel-bulkrequests-bulksizes}.
 
 \begin{table}[h]
@@ -499,18 +498,18 @@ Vanaf 50 objecten per request begint de winst af te vlakken.
 De testen met GETBULK-requests zien er veelbelovend uit, met SNMP walk's die tot vier keer sneller gaan dan hun variant met GETNEXT-requests.
 Het is overduidelijk dat het dan ook sterk de moeite loont om SNMP walk's te implementeren met behulp van GETBULK-requests.
 
-Voor wat betreft het ideaal aantal objecten dat we per request opvragen valt er te discussiëren.
-Gezien de resultaten bij de productieswitch uitwijzen dat de snelheidswinsten afvlakken vanaf 50 objecten per request lijkt ons dat een goed aantal
-om te gebruiken bij de implementatie voor de \nwmretriever.
+Voor wat betreft het ideaal aantal objecten dat we per request opvragen, valt er te discussiëren.{\todo{Herformuleren?}}
+Gezien de resultaten bij de productieswitch uitwijzen dat de snelheidswinsten afvlakken vanaf 50 objecten per request,
+lijkt ons dat een goed aantal om te gebruiken bij de implementatie voor de \nwmretriever.
 Alhoewel Net-SNMP een veilige 10 objecten per request aanhoudt,
-vinden we het toch de moeite om dit verder te verhogen gezien het toch nog een 25-tal procent sneller kan gaan ten opzichte van GETNEXT-requests.
+vinden we het toch de moeite om dit verder te verhogen, gezien het toch nog een 25-tal procent sneller kan gaan ten opzichte van GETNEXT-requests.
 
 Als we kijken naar het aantal op te vragen gegevens, dan zien we dat de interfacetabel van een van de kleinere productieswitches alleen al bijna 3000 objecten bevat.
 In \cref{fracties} zagen we dat het aantal interessante objecten bij een switch 3 à 5000 bedraagt, tot zelfs ruim 11000 voor een grotere switch.
 Daarom neigen we des te meer naar hogere aantallen objecten per request als het over netwerkapparatuur gaat.
 
 Natuurlijk kunnen we het aantal objecten per request laten aanpassen door de eindgebruiker,
-maar we voelen dat 50 objecten per request een goede standaardwaarde is.
+maar 50 objecten per request is een goede standaardwaarde.
 
 
 \todo[inline]{Nut van bulkrequest? Omzeilen van latency en overhead van pakketten...
@@ -522,14 +521,14 @@ Vooral het effect van latency op bulkrequests hadden we moeten testen.}
 \todo[inline]{\nwmretriever{} Gebruikt het .NET platform, Net-SNMP op C.}
 
 Bij deze test vergelijken we de performantie tussen de \nwmretriever{} en de Net-SNMP commandlinetools.
-Alvorens we beginnen moeten we opmerken dat het niet echt om een eerlijke vergelijking gaat,
+Alvorens we beginnen, moeten we opmerken dat het niet echt om een eerlijke vergelijking gaat,
 want de geschiedenis van Net-SNMP dateert al terug van 1992\cite{net-snmp-history}.
 De \nwmretriever{} is daarentegen een jong project dat nog volop ontwikkeld wordt.
 Gedurende de loop van de masterproef werden nog verschillende updates uitgebracht voor de \nwmretriever{}.
 Om een vast referentiepunt doorheen de masterproef aan te houden werd echter geen rekening gehouden met deze updates.
 Wel zullen we de updates vermelden als die relevant zijn voor een bepaalde test.
 
-Behalve het verschil in maturiteit van de software doet de \nwmretriever{} nog iets meer dan de Net-SNMP tools.
+Behalve het verschil in maturiteit van de software, doet de \nwmretriever{} nog iets meer dan de Net-SNMP tools.
 Met de Net-SNMP tools kun je maar een opdracht uitvoeren (een GET-request of een SNMP walk bijvoorbeeld) op een enkel toestel.
 Om verschillende opdrachten uit te voeren op verschillende toestellen moet je de verschillende tools meerdere malen uitvoeren.
 De resultaten worden bij Net-SNMP uiteindelijk simpelweg uitgeschreven op het scherm.
@@ -537,25 +536,25 @@ De resultaten worden bij Net-SNMP uiteindelijk simpelweg uitgeschreven op het sc
 Bij de \nwmretriever{} daarentegen wordt er gewerkt met een XML-bestand (zie \cref{snmp-data-retriever}) waarin je alle verschillende toestellen kunt opsommen,
 en voor elk soort toestel kun je een lijst van opdrachten configureren die moeten uitgevoerd worden voor dat type toestel.
 Op het einde som je dan alle toestellen op en geef je mee om wat voor soort toestel het gaat zodat de software weet welke opdrachten moeten uitgevoerd worden.
-Wanneer het programma wordt uitgevoerd worden alle nodige opdrachten voor alle opgegeven toestellen in parallel uitgevoerd.
+Wanneer het programma wordt uitgevoerd, worden alle nodige opdrachten voor alle opgegeven toestellen in parallel uitgevoerd.
 Bij deze test houden we het wel maar bij een toestel, waardoor dat voordeel wegvalt bij deze test.
 Na het ophalen van de gegevens worden de resultaten uiteindelijk weggeschreven in een databank (of een XML-bestand in een latere versie).
-Die gegevens worden dan later verwerkt door andere tools van NetworkMining voor verschillende doeleinden zoals bijvoorbeeld het visualiseren van inventarissen.
+Die gegevens worden dan later door andere tools van NetworkMining verwerkt voor verschillende doeleinden zoals bijvoorbeeld het visualiseren van inventarissen.
 
 \subsubsection{Meetresultaten}
 
 De test vindt opnieuw plaats tussen twee virtuele machines.
-Omdat er slechts een machine bevraagd wordt verliest de \nwmretriever{} zijn schaalvoordeel door meerdere toestellen tegelijkertijd te ondervragen.
+Omdat er slechts een machine bevraagd wordt, verliest de \nwmretriever{} zijn schaalvoordeel door meerdere toestellen tegelijkertijd te ondervragen.
 
-Liefst zouden we een walk doen van een ganse \gls{snmp-agent} om zoveel mogelijk gegevens op te vragen.
-Omdat de \nwmretriever{} de \textit{endOfMibView}-exceptie niet ondersteunt (zie \cref{probleem-endofmibview-exceptie}) is het dit echter niet mogelijk.
-Deze exceptie wordt opgegooid wanneer het einde van een \gls{mib}-bestand bereikt wordt en er dus geen verdere gegevens meer zijn.
+Liefst zouden we, om zoveel mogelijk gegevens op te vragen, een walk doen van een ganse \gls{snmp-agent}.
+Omdat de \nwmretriever{} de \textit{endOfMibView}-exceptie niet ondersteunt (zie \cref{probleem-endofmibview-exceptie}) is dit niet mogelijk.
+Deze exceptie wordt opgegooid wanneer het einde van een \gls{mib}-bestand bereikt wordt en er geen verdere gegevens meer zijn.
 De exceptie is een speciaal geval omdat ze geen gebruik maakt van het error-veld in het antwoordbericht.
 Het error-veld staat dus onterecht op 0, wat aangeeft dat er zich geen fout heeft voorgedaan.
 Daarom, en omdat het vrij ongewoon is om een ganse \gls{snmp-agent} te overlopen, is het begrijpelijk dat de \nwmretriever{} nog geen ondersteuning had voor deze exceptie.
 Dit probleem werd doorgegeven aan NetworkMining en zal in een latere versie opgelost worden.
 
-Omdat we dus geen ganse SNMP-agent kunnen overlopen kiezen we een \gls{oid} die voldoende gegevens bevat.
+Omdat we geen ganse SNMP-agent kunnen overlopen, kiezen we een \gls{oid} die voldoende gegevens bevat.
 We gaan uiteindelijk voor de \textit{mgmt}-tak (1.3.6.1.2), de ouder van de \textit{mib-2}-tak.
 Die \gls{oid} is goed voor ongeveer 1700 objecten.
 De resultaten staan in \cref{tabel-nwmretriever-vs-net-snmp}.
@@ -574,15 +573,15 @@ Net-SNMP Bulkwalk (50)          & 100                  & 17,740      \\ \bottomr
 \label{tabel-nwmretriever-vs-net-snmp}
 \end{table}
 
-Opnieuw zie je in de eerste kolom over welke operatie het gaat alsook hoeveel objecten per request opgevraagd werden.
+Opnieuw zie je in de eerste kolom over welke operatie het gaat, alsook hoeveel objecten per request opgevraagd werden.
 In de tweede kolom staat de gemiddelde uitvoeringstijd en in de laatste het gemiddeld aantal objecten er werden opgehaald per ms.
 
 Eerst en vooral zien we dat er een groot verschil is tussen de resultaten van de \nwmretriever{}
-en de Net-SNMP walkopdracht die ook GETNEXT-operaties gebruikt.
-Ook zien we weer het grote verschil dat GETBULK-requests veroorzaken bij de walk- en bulkwalkopdracht van Net-SNMP.
+en de Net-SNMP walkopdracht, alhoewel die beiden GETNEXT-operaties gebruiken.
+Ook zien we weer hetzelfde grote verschil die GETBULK-requests veroorzaken bij de walk- en bulkwalkopdracht van Net-SNMP.
 
-De resultaten geven aan dat er behalve door het gebruik van GETBULK-requests ook nog andere dingen te optimaliseren vallen.
-Het verschil tussen de \nwmretriever{} en de Net-SNMP walkopdracht valt echter ook deels te verklaren door de bijkomende databankinteracties van de eerste.
+Het verschil tussen de \nwmretriever{} en de Net-SNMP walkopdracht valt deels te verklaren door de bijkomende databankinteracties van de eerste.
+De resultaten geven aan dat er, behalve door het gebruik van GETBULK-requests, ook nog andere dingen te optimaliseren vallen.
 
 We zien ook dat het samenbundelen van 50 objecten per request inderdaad nog een stuk beter is dan slechts 10 objecten.
 Misschien is het je ook opgevallen dat de resultaten nog een stuk beter zijn hier dan bij de tests over bulkrequests (\cref{bulkrequests-benchmarks}).
@@ -599,7 +598,7 @@ maar we stootten hierbij opnieuw op problemen bij het genereren van veel verkeer
 \subsubsection{Conclusie}
 
 Er is nog flink wat ruimte over voor verbetering bij de \nwmretriever{} als we de uitvoeringstijden vergelijken met die van de Net-SNMP tools.
-Wat voor performantiewinsten en in welke componenten we die kunnen boeken zal blijken uit de profileranalyse in \cref{profiling}.
+Wat voor performantiewinsten, en in welke componenten we die kunnen boeken, zal blijken uit de profileranalyse in \cref{profiling}.
 Ook het verhogen van het aantal objecten per request van 10 naar 50 heeft duidelijk een extra positieve invloed op de uitvoeringstijd.
 
 \subsection{Profiling van de SNMP Data Retriever}
@@ -612,10 +611,10 @@ Een profiler zal ons enkele belangrijke inzichten verschaffen over wat er achter
 Specifiek:
 
 \begin{itemize}
-	\item Hoe lang bepaalde stukken code er over doen
-	\item Hoe vaak bepaalde stukken code uitgevoerd worden (zogenaamde hot code/paths)
-	\item Problematische stukken code detecteren die er veel langer over doet dan we verwachten
-	\item En bijgevolg welke stukken het meeste potentieel bieden om te optimaliseren
+	\item hoe lang bepaalde stukken code er over doen,
+	\item hoe vaak bepaalde stukken code uitgevoerd worden (zogenaamde hot code/paths),
+	\item problematische stukken code detecteren die er veel langer over doet dan we verwachten,
+	\item en bijgevolg welke stukken het meeste potentieel bieden om te optimaliseren.
 \end{itemize}
 
 Daar waar we problemen vinden of kansen zien om te optimaliseren zullen we de nodige aanpassingen doen en de resultaten daarvan testen.
@@ -629,11 +628,11 @@ Om te beginnen open je je project en klik je op \emph{Analyze} in de werkbalk en
 Als alternatief kun je ook van de ALT+F2 sneltoets gebruik maken. %TODO: Koppelteken
 Als \emph{Target} staat standaard het huidige project geselecteerd.
 Onder \emph{Available Tools} zou normaal ook de \emph{Performance Wizard} moeten geselecteerd zijn.
-Zoals de beschrijving al verklapt houdt dit onder andere het meten van CPU- en RAM-gebruik in.
+Zoals de beschrijving al verklapt, houdt dit onder andere het meten van CPU- en RAM-gebruik in.
 \Cref{performance-wizard} toont de \emph{Performance Wizard} die je te zien krijgt als je op \emph{Start} klikt.
-Hier moet je kiezen van welke profilingmethode je wenst gebruik te maken.
+Hier moet je de profilingmethode kiezen die je wenst te gebruiken.
 Wij kiezen voor de eerste: \emph{CPU Sampling}.
-De rest van de stappen staan standaard goed dus mag je meteen op \emph{Finish} klikken.
+De rest van de stappen staan standaard goed zodat je meteen op \emph{Finish} mag klikken.
 
 \begin{figure}[]
 	\centering
@@ -642,8 +641,8 @@ De rest van de stappen staan standaard goed dus mag je meteen op \emph{Finish} k
 	\label{performance-wizard}
 \end{figure}
 
-Wanner het programma klaar is met uitvoeren worden de resultaten geanalyseerd.
-Als dat klaar is krijg je een algemeen overzicht van de resultaten.
+Wanner het programma klaar is met uitvoeren, worden de resultaten geanalyseerd.
+Als dat klaar is, krijg je een algemeen overzicht van de resultaten.
 Eerst en vooral zie je een grafiek met het CPU-gebruik doorheen de uitvoeringstijd van de applicatie.
 Daaronder zie je de \emph{Hot Paths}, dat zijn de functies die verantwoordelijk zijn voor het grootste deel van de uitvoeringstijd.
 Waar wij in geïnteresseerd zijn is hieraan gerelateerd: de \emph{Call Tree View}.
@@ -660,15 +659,15 @@ In de call tree zie je naast de functienaam een aantal verschillende kolommen. H
 
 \begin{itemize}
 	\item \textbf{Number of calls:}
-		dit spreekt vrij voor zichzelf. Dit is het aantal keren dat een functie opgeroepen werd.
+		dit spreekt voor zichzelf. Dit is het aantal keren dat een functie opgeroepen werd.
 	\item \textbf{Elapsed Inclusive Time \%:}
-		dit is het percentage van de uitvoeringstijd dat werd gespendeerd in deze functie en zijn kinderen.
+		dit is het percentage van de uitvoeringstijd dat werd gespendeerd in deze functie en haar kinderen.
 	\item \textbf{Elapsed Exclusive Time \%:}
-		dit is het percentage van de uitvoeringstijd dat uitsluitend in deze functie werd gespendeerd, dus \emph{exclusief} zijn kinderen.
+		dit is het percentage van de uitvoeringstijd dat uitsluitend in deze functie werd gespendeerd, dus \emph{exclusief} haar kinderen.
 	\item \textbf{Avg Elapsed Inclusive Time:}
-		dit is de gemiddelde uitvoeringstijd in milliseconden van deze functie en zijn kinderen.
+		dit is de gemiddelde uitvoeringstijd in milliseconden van deze functie en haar kinderen.
 	\item \textbf{Avg Elapsed Exclusive Time:}
-		dit is de gemiddelde uitvoeringstijd in milliseconden van uitsluitend deze functie, dus weer \emph{exclusief} zijn kinderen.
+		dit is de gemiddelde uitvoeringstijd in milliseconden van uitsluitend deze functie, dus weer \emph{exclusief} haar kinderen.
 		\todo{Check of er geen pagebreak is op de individuele items.}
 \end{itemize}
 
@@ -724,29 +723,30 @@ Voor een globaal overzicht van de werking van de \nwmretriever{} verwijzen we na
 \subsubsection{RetrieveFromDevice-methode}
 
 We beginnen met de functie die het meeste tijd in beslag neemt: de \emph{RetrieveFromDevice}-functie.
-Zoals de naam al verklapt gaat het hier om de methode die de requests stuurt om de gevraagde gegevens op te halen van de verschillende toestellen.
+Zoals de naam al insinueert, gaat het hier om de methode die de requests stuurt om de gevraagde gegevens op te halen van de verschillende toestellen.
 
 \todo[inline]{Hoort de uitleg over de werking van de SNMP Data Retriever hier?}
 
-De methode werkt als volgt:
-voor elk toestel dat ondervraagd moet worden wordt er een aparte thread gestart, met een maximum van 50 threads.
-Elk van die threads zal alle gegevens opvragen die opgevraagd moeten worden voor dat toesteltype (zie de configuratie van de \nwmretriever, \cref{snmp-data-retriever-configuratie}).
-Wanneer een thread klaar is met gegevens opvragen wordt de thread verwijderd.
-Indien er nog toestellen zijn die nog moeten ondervraagd worden, zal er dan een nieuwe thread opgestart worden voor het volgende toestel. \todo{Volledige uitleg over thread management geven of later uitleggen bij verbeteringen? Dit zal aan bod komen bij grootschalige testen.}
+De methode werkt als volgt: voor elk toestel dat ondervraagd moet worden,
+wordt er een aparte thread gestart, met een maximum van 50 threads.
+Elk van die threads zal alle gegevens opvragen die opgevraagd moeten worden voor dat toesteltype
+(zie de configuratie van de \nwmretriever{} in \cref{snmp-data-retriever-configuratie}).
+Wanneer een thread klaar is met gegevens opvragen, wordt de thread verwijderd.
+Indien er nog toestellen zijn die moeten ondervraagd worden, zal er een nieuwe thread opgestart worden voor het volgende toestel.
 Dit gaat zo door tot alle toestellen zijn ondervraagd.
 
 In \cref{snmp-operaties} werden de verschillende SNMP operaties besproken waarmee men
-gegevens kan opvragen. De originele versie van de SNMP Data Retriever die we eerst testen maakt gebruik van
+gegevens kan opvragen. De originele versie van de SNMP Data Retriever die we eerst testen, maakt gebruik van
 GET-requests voor enkelvoudige gegevens en GETNEXT-requests om een SNMP walk te doen van 
 een ganse deelboom.
 
-De call tree van de RetrieveFromDevice functie zie je in \cref{call-tree-retrievefromdevice}. %TODO: Koppelteken
-De twee belangrijkste methoden hier zijn de \emph{SyncRequest} en de \emph{InsertResultRow} methoden. %TODO: Koppelteken
+De call tree van de RetrieveFromDevice-functie zie je in \cref{call-tree-retrievefromdevice}.
+De twee belangrijkste methoden hier zijn de \emph{SyncRequest} en de \emph{InsertResultRow}-methoden.
 SyncRequest maakt deel uit van de \emph{SnmpSource} bibliotheek. %TODO: Koppelteken
 Dit is de third party bibliotheek waarvan gebruik gemaakt wordt om alle SNMP interacties af te handelen. %TODO: Koppelteken
 De SyncRequest methode wordt gebruikt om synchroon een request te versturen.
 Het feit dat de request synchroon gebeurt wil zeggen dat de code wacht op het antwoord alvorens verder te gaan.
-We zien dat de methode 443 keer is opgeroepen dus dat wil zeggen dat er 443 requests verstuurd zijn geweest.
+We zien dat de methode 443 keer is opgeroepen: er zijn dus 443 requests verstuurd geweest.
 Gemiddeld deed een request er een kleine 10 milliseconden over, allen samen goed voor bijna 60\% (oftewel 4,28 seconden) van de totale uitvoeringstijd.
 
 \begin{table}[h]
@@ -771,7 +771,7 @@ Gemiddeld deed een request er een kleine 10 milliseconden over, allen samen goed
 
 Het versturen van de GETNEXT-requests en het wachten op de antwoorden voor de SNMP walkopdrachten zijn dus
 verantwoordelijk voor meer dan de helft van de totale uitvoeringstijd.
-Gezien de resultaten die we gezien hebben in \cref{bulkrequests-benchmarks} waarbij GETBULK-requests vier keer sneller gingen dan GETNEXT-requests,
+Rekening houdend met de resultaten uit \cref{bulkrequests-benchmarks} waarbij GETBULK-requests vier keer sneller gingen dan GETNEXT-requests,
 was de keuze dan ook snel gemaakt om de SNMP walkopdracht te implementeren met behulp van GETBULK-requests.
 
 Na het implementeren van de SNMP walkopdracht met behulp van GETBULK-requests doen we een test op basis van dezelfde twee \glspl{oid} als hierboven.
@@ -795,8 +795,8 @@ SNMP Walk met GETBULK-requests (50)                                             
 De eerste twee rijen geven de totale uitvoeringstijd weer van de \nwmretriever{},
 de laatste twee tonen de uitvoeringstijd van enkel de RetrieveFromDevice-methode gemeten met de profiler.
 
-We zien dat gemiddelde uitvoeringstijd met ruim vier seconden ingekort wordt, goed voor een ruime verdubbeling van de snelheid.
-Als we echter enkel kijken naar de RetrieveFromDevice-methode zien we dat de methode zelf zeven keer sneller is
+We zien dat de gemiddelde uitvoeringstijd met ruim vier seconden ingekort wordt, goed voor een ruime verdubbeling van de snelheid.
+Als we echter enkel kijken naar de RetrieveFromDevice-methode, zien we dat de methode zelf zeven keer sneller is
 geworden dankzij het gebruik van BULK-requests.
 
 \todo[inline]{Vergelijken met de theoretische resultaten? (Adhv. testen met VirtualBox \& iMinds Switchen)}
@@ -816,7 +816,7 @@ SnmpSource.SnmpPdu..ctor                                 & 1     & 0,11      & 3
 Microsoft.VisualBasic.CompilerServices.Conversions.ToBo… & 441   & 0,10      & 0,01      \\
 ComFunLogger.Log                                         & 1     & 0,05      & 1,64      \\
 System.Array.Exists                                      & 6     & 0,05      & 0,27      \\
-SnmpSource.SnmpVariable.CreateSnmpVariable               & 11    & 0,04      & 0,13     
+SnmpSource.SnmpVariable.CreateSnmpVariable               & 11    & 0,04      & 0,13      \\ \bottomrule
 \end{tabular}
 \caption{De call tree van de RetrieveFromDevice methode met GETBULK-requests}
 \label{call-tree-retrievefromdevice-bulk}
@@ -826,7 +826,7 @@ In \cref{call-tree-retrievefromdevice-bulk} zie je hoe de call tree van de Retri
 Nu doen de SyncRequest oproepen er drie keer zo lang over,
 maar er moeten maar 11 requests meer verstuurd worden in plaats van 443.
 Twee derde van de uitvoeringstijd van de RetrieveFromDevice-methode wordt besteed aan het ophalen van de gegevens en een derde aan het wegschrijven ervan.
-De requests zelf zijn nu nog maar voor 11\% i.p.v. 58\% verantwoordelijk van de totale uitvoeringstijd.
+De requests zelf zijn nu nog maar voor 11\% i.p.v. 58\% verantwoordelijk voor de totale uitvoeringstijd.
 
 \begin{table}[h]
 \centering
@@ -856,13 +856,13 @@ en is zoals eerder gezegd zeven keer sneller dan de vorige implementatie.
 
 De InsertResultRow-methode in de RetrieveFromDevice-methode hebben we nog niet bekeken.
 Die is verantwoordelijk voor het wegschrijven van een gegeven in de databank.
-Omdat er dus 441 gegevens zijn die binnen de SNMP walk vallen, werd de methode dus 441 keer opgeroepen.
+Omdat er 441 gegevens zijn die binnen de SNMP walk vallen, werd de methode 441 keer opgeroepen.
 
-Een gegeven per keer in de databank wegschrijven klinkt even inefficiënt als het ophalen van een gegeven per keer.
+Eén gegeven per keer in de databank wegschrijven klinkt even inefficiënt als het ophalen van een gegeven per keer.
 Ook het invoegen van gegevens in een databank kan in bulk gebeuren met behulp van een zogeheten \textit{bulk insert} in plaats van een gewone \textit{insert}.
-Maar als we kijken naar de tijd die nodig is om alle gegevens in de databank weg te schrijven zien we dat
+Als we kijken naar de tijd die nodig is om alle gegevens in de databank weg te schrijven, zien we dat
 dit slechts iets meer dan 200 ms of 6,5\% van de totale uitvoeringstijd vereist.
-We beslissen dan ook dat het niet de moeite is om dit te implementeren omdat er nog veel grotere winsten elders kunnen gehaald worden\footnote{
+We beslissen dan ook dat het niet de moeite is om dit te implementeren, omdat er elders nog veel grotere winsten kunnen gehaald worden\footnote{
 	Wat we echter over het hoofd hebben gezien is dat we de lokale databankinstallatie geïnstalleerd hebben op een SSD.
 	Een databank heeft enorm veel baat bij het gebruik van een SSD door de lage \textit{random access} tijd en heeft weinig moeite om een groot aantal inserts bij te houden zoals onze test.
 	Pas bij de grootschalige tests ontdekken we onze fout, en daar komen we er dan ook op terug.
@@ -871,13 +871,14 @@ We beslissen dan ook dat het niet de moeite is om dit te implementeren omdat er 
 
 \subsubsection{Initialize-methode}
 
-Als we de call tree van de Main-methode bekijken dan valt op dat naast de RetrieveFromDevice-methode,
+Als we de call tree van de Main-methode bekijken, dan valt het op dat er naast de RetrieveFromDevice-methode,
 die logischerwijs een belangrijke factor is in de uitvoeringstijd,
-er nog een methode is die voor een groot stuk medeverantwoordelijk is voor de uitvoeringstijd: de \textit{Initialize}-methode.
+nog een methode is die voor een groot stuk medeverantwoordelijk is voor de uitvoeringstijd: de \textit{Initialize}-methode.
 
-In de originele implementatie was ze verantwoordelijk voor 25\% van de uitvoeringstijd, in de nieuwe is dit opgelopen tot bijna 56\%!
-De Initialize-methode doet er bijna 2 seconden over, dus zijn we erg niewsgierig wat er juist in deze methode gebeurt waardoor deze zoveel tijd nodig heeft.
-Dus beginnen we met het analyseren van de call tree van de functie, te zien in \cref{call-tree-initialize}.
+In de originele implementatie was die verantwoordelijk voor 25\% van de uitvoeringstijd, in de nieuwe is dit opgelopen tot bijna 56\%!
+De Initialize-methode doet er bijna 2 seconden over.
+Bijgevolg zijn we erg niewsgierig wat er juist in deze methode gebeurt waardoor deze zoveel tijd nodig heeft.
+We beginnen met het analyseren van de call tree van de functie, te zien in \cref{call-tree-initialize}.
 Wat we zien zijn twee oproepen naar een \emph{Log}-methode die er gemiddeld bijna een seconde over doet \emph{per oproep}! %TODO: Koppelteken
 
 \begin{table}[h]
@@ -904,11 +905,11 @@ De \emph{ComFunLogger} is een stuk code die gebruikt wordt om te loggen naar een
 De naam komt van het feit dat ze een gemeenschappelijk stuk code is die over meerdere projecten kan
 gebruikt worden: \emph{common functions}, of \emph{ComFun} voor kort.
 Maar een functie die loggegevens wegschrijft naar een bestand hoort niet zo lang te duren.
-I/O-operaties zijn kostelijk, maar niet \emph{zo} kostelijk. %TODO: Koppelteken
-Als we de functie helemaal openklappen in \cref{call-tree-performancecounter} vinden we de echte dader:
+I/O-operaties zijn kostelijk, maar niet in die mate. %TODO: Koppelteken
+Als we de functie helemaal openklappen in \cref{call-tree-performancecounter}, vinden we de echte dader:
 een constructor van \emph{System.Diagnostics.PerformanceCounter}.
 Een performance counter wordt gebruikt voor het monitoren van systeemcomponenten zoals
-processoren, geheugen en netwerk-I/O. Als je ze gebruikt in je applicatie kunnen ze je %TODO: Koppelteken
+processoren, geheugen en netwerk-I/O. Als je counters gebruikt in je applicatie kunnen ze je %TODO: Koppelteken
 informatie geven over de performantie van je programma.\cite{performance-counters-intro}
 De ComFunLogger gebruikt ze om het geheugengebruik te meten en weg te schrijven in de logbestanden.
 
@@ -927,22 +928,23 @@ De noodzaak aan een tool om informatie te loggen is een algemeen probleem.
 Er zijn dan ook een heleboel gratis en open-source logging frameworks die reeds hun nut en kunnen bewezen hebben.
 Ontwikkelaars doen er goed aan om deze bestaande tools te hergebruiken in hun projecten.
 
-Financiëel is het een goede keuze want de software is al ontwikkeld en werd al grondig getesten door vele anderen.
+Financiëel is het een goede keuze want de software is al ontwikkeld en werd al grondig getest door vele anderen.
 Dit spaart tijd en geld uit voor de ontwikkeling van een eigen oplossing.
-De software is gratis in gebruik dus er zijn ook geen licentiekosten aan verbonden.
+De software is gratis in gebruik: er zijn geen licentiekosten aan verbonden.
 Er zijn ook geen of lage onderhoudskosten.
 
 Ook vanuit het technisch perspectief is het een goede keuze.
 Omdat de software reeds ingezet wordt in verschillende projecten werd ze zo flexibel mogelijk gemaakt en bevat ze reeds een resem aan extra functionaliteit.
 Zo kan je loggen naar meerdere outputs en zijn er meerdere mogelijke outputs beschikbaar.
 Je kunt bijvoorbeeld loggen naar tekstbestanden, consolevensters, databanken, enzovoort.
-Moest er toch iets toegevoegd dienen te worden, worden beschik je over de broncode om dit gemakkelijk zelf te kunnen doen.
+Mocht er toch iets toegevoegd dienen te worden, worden beschik je over de broncode om dit gemakkelijk zelf te kunnen doen.
 
 De twee belangrijkste redenen echter zijn het feit dat ze ontwikkeld zijn om een zo klein mogelijke performantieimpact te hebben en
 dat de integratie ervan in een project zeer eenvoudig is.
 Zo was het veel sneller om een ander logging framework te gebruiken dan om de bestaande loggingcode te doorspitten op zoek naar problemen en mogelijke optimalisaties.
 
-De keuze uit de verschillende logging frameworks is uiteindelijk gevallen op Apache log4net en is gebaseerd op waarschijnlijk het bekendste logging framework voor java: Apache log4j.
+De keuze uit de verschillende logging frameworks is uiteindelijk gevallen op Apache log4net.
+Deze is gebaseerd op het waarschijnlijk bekendste logging framework voor Java: Apache log4j.
 Bij de keuze werd rekening gehouden met de performantieimpact en de features van de verschillende logging frameworks.\footnote{
 	Een vergelijking tussen de bekendste logging frameworks voor .NET vind je 
 	terug in de bronnenlijst bij bron \cite{logging-frameworks-and-performance} en \cite{logging-frameworks}.
@@ -973,9 +975,9 @@ Net-SNMP Bulkwalk (50)                                                          
 Opnieuw zien we een grote verbetering: de uitvoeringstijd is nu 1,7 keer sneller ten opzichte van de vorige versie,
 en vier keer sneller dan de originele versie!
 Alhoewel we zeer grote performantiewinsten behaald hebben ten opzichte van de originel versie van de \nwmretriever{},
-als we enkel kijken naar naar het ophalen van de gegevens door de SyncRequest-methode,
+als we enkel kijken naar het ophalen van de gegevens door de SyncRequest-methode,
 dan is dit nog steeds 38\% trager dan bij Net-SNMP.
-Maar omdat deze methode onderdeel is van de third-party bibliotheek SnmpSource kunnen we daar verder geen verbeteringen meer aan brengen.
+Maar omdat deze methode onderdeel is van de third-party bibliotheek SnmpSource kunnen we daar verder geen verbeteringen meer aanbrengen.
 
 \begin{table}[h]
 \centering
@@ -1046,13 +1048,13 @@ Zoals uitgelegd in \cref{snmp-tabellen} worden tabellen kolom per kolom overlope
 Een meer natuurlijke manier van werken zou zijn om de tabel rij per rij op te vragen.
 En misschien valt die methode zelfs sneller uit.
 
-Een gewone SNMP walk wordt geïmplementeerd door GETNEXT-requests (of GETBULK-requests die meerdere GETNEXT-requests doen bij de \gls{snmp-agent})
+Een gewone SNMP walk wordt geïmplementeerd door GETNEXT-requests (of GETBULK-requests)
 en vraagt zo steeds de volgende \gls{oid} op.
-Om een tabel rij per rij op te vragen moeten we de sequentieel kolommen van de eerste rij opvragen, gevolgd door de kolommen van de tweede enzovoort.
+Om een tabel rij per rij op te vragen, moeten we de opeenvolgende kolommen van de eerste rij opvragen, gevolgd door de kolommen van de tweede enzovoort.
 Maar het kan nog sneller: we kunnen meteen alle kolommen van de eerste rij opvragen, gevolgd door alle kolommen van de tweede rij enzovoort.
 Om dat te doen kunnen we een GETNEXT-request opstellen met de \glspl{oid} van alle kolommen van een tabel.
-Een GETNEXT-request geeft ons dan de kolommen terug van de eerste rij en zo weten we meteen ook zijn index waarmee we de volgende request kunnen samenstellen.
-Dat geeft ons dan de kolommen van de tweede rij en zo gaan we verder tot we de ganse tabel hebben opgehaald.
+Een GETNEXT-request geeft ons dan de kolommen terug van de eerste rij en zo weten we meteen ook de index waarmee we de volgende request kunnen samenstellen.
+Dat geeft ons dan de kolommen van de tweede rij en zo gaan we verder tot we de volledige tabel hebben opgehaald.
 
 Jammer genoeg is het niet voldoende om met Net-SNMP een snmpbulkwalk te doen met de \glspl{oid} van alle kolommen want
 die doet simpelweg sequentieel een snmpbulkwalk van elke opgegeven \gls{oid}.
@@ -1061,14 +1063,14 @@ Dus moeten we het wiel heruitvinden en een snmpbulkwalk implementeren die wel al
 Daarvoor maken we gebruik van GETBULK-requests met de \glspl{oid} van alle kolommen.
 Door het aantal herhalingen in te stellen kunnen we meteen ook meerdere rijen tegelijkertijd opvragen.
 Het aantal max-repetitions is dan gelijk aan het aantal rijen dat in een request wordt opgevraagd.
-Om het aantal objecten in een request te weten te komen vermenigvuldig je simpelweg het aantal max-repetitions met het aantal kolommen.
+Om het aantal objecten in een request te weten te komen, vermenigvuldig je simpelweg het aantal max-repetitions met het aantal kolommen.
 
 Om op het juiste moment te stoppen moeten we ofwel op voorhand het aantal rijen kennen, ofwel moeten we de geretourneerde \glspl{oid}
-bekijken om te zien of ze nog steeds deel uitmaken van de tabel zoals een gewone SNMP walk doet.
+bekijken om te zien of ze nog steeds deel uitmaken van de tabel, zoals een gewone SNMP walk doet.
 
-De voorwaarde om dit alles te kunnen doen is dat we vooraf de \glspl{oid} van de kolommen van de tabel kennen.
+De voorwaarde om dit alles te kunnen doen, is dat we vooraf de \glspl{oid} van de kolommen van de tabel kennen.
 Om de snelheid te vergelijken tussen beiden manieren om een tabel te overlopen,
-bepalen we het maximum aantal rijen dat we tegelijkertijd kunnen opvragen zodat het aantal objecten in een request onder 50 blijft.
+bepalen we het maximum aantal rijen dat we tegelijkertijd kunnen opvragen, zodat het aantal objecten in een request onder 50 blijft.
 Dan overlopen we de tabel met een gewone SNMP walk op basis van GETBULK-requests met hetzelfde aantal objecten in een request.
 
 Een voorbeeld: de interfacetabel ifTabel heeft 22 kolommen, dus dan vragen we 2 rijen per request op (goed voor 44 objecten per request).
@@ -1078,8 +1080,8 @@ Bij de gewone snmpbulkwalk geven we dan als aantal max-repetitions 44 op zodat b
 
 Om te beginnen vragen we de dot1dBasePortTable (1.3.6.1.2.1.17.1.4) op van de productieswitches bij iMinds.
 Vanwege de problemen bij het genereren van grote hoeveelheden verkeer (\cref{probleem-dos-bescherming}) konden we slechts een iteratie per keer uitvoeren.
-We hebben de test wel meermaals herhaald om zeker te zijn dat er geen grote verschillen zijn in de metingen,
-maar het is toch belangrijk om in het achterhoofd te houden dat de resultaten niet erg nauwkeurig zijn.
+Alhoewel we de test meermaals hebben herhaald om zeker te zijn dat er geen grote verschillen zijn in de metingen,
+is het toch belangrijk om in het achterhoofd te houden dat de resultaten niet erg nauwkeurig zijn.
 
 \todo[inline]{Aantal objecten/ms? Niet echt interessant vermits we zo weinig metingen hebben...}
 
@@ -1102,17 +1104,17 @@ de tabel kolom per kolom ophalen is gemiddeld ongeveer de helft sneller dan ze r
 Deze trend zien we ook bij de andere productieswitches.
 Voor alle duidelijkheid: deze testen zijn gebaseerd op de Net-SNMP tools.
 
-Naar aanleiding van de grootschalige testen hebben we al een kleine opstelling klaar die gelijkaardig is aan de virtuele machines qua softwareconfiguratie,
+Naar aanleiding van de grootschalige testen hebben we al een kleine opstelling klaar, die gelijkaardig is aan de virtuele machines qua softwareconfiguratie,
 maar waarbij elke machine op een \textit{dedicated server}\footnote{
 	Bij een dedicated server worden de resources van een machine volledig toegewijd tot een of meer taken,
 	in tegenstelling tot een virtuele machine die slechts een deel van de resources van een toestel krijgt.
 } draait.
 Omdat deze servers in een apart netwerk zitten hebben we gelukkig geen problemen met het genereren van veel verkeer.
 Daar kunnen we zoveel verkeer versturen als de fysieke verbinding aankan.
-We kunnen daar dus dezelfde test doen maar met voldoende herhalingen om een nauwkeuriger resultaat te bekomen.
+We kunnen daar dezelfde test doen maar met voldoende herhalingen om een nauwkeuriger resultaat te bekomen.
 
 De ping tijd tussen de twee toestellen is gemiddeld 0,204 ms.
-Dat is nog lager dan tussen de virtuele die 0,468 ms bedroeg en ongeveer negen keer lager dan bij de productieswitches van hierboven.
+Dat is nog lager dan tussen de virtuele toestellen, die 0,468 ms bedroeg, en ongeveer negen keer lager dan bij de productieswitches van hierboven.
 Bij deze test vragen we de interfacetabel ifTable (1.3.6.1.2.1.2.2) op.
 De tabel heeft 22 kolommen en de server heeft zes interfaces, samen goed voor 154 objecten.
 Omdat 154 objecten wat aan de lage kant is,
@@ -1145,9 +1147,9 @@ In \cref{tabel-serieel-vs-parallel-vwall} zien we de resultaten.
 Opnieuw is het sneller om een tabel kolom per kolom op te vragen in plaats van rij per rij.
 Deze keer is het zelfs ruim drie keer sneller bij 154 objecten.
 2354 objecten zijn ongeveer 15 keer meer objecten, en de tabel rij per rij overlopen doet er ook 15 keer langer over.
-Bij het kolom per kolom overlopen echter is de uitvoeringstijd amper met factor drie toegenomen!
+Bij het kolom per kolom overlopen echter is de uitvoeringstijd amper met een factor drie toegenomen!
 We hebben de test (van 100 iteraties) meermaals uitgevoerd om  te bevestigen dat de resultaten kloppen,
-maar de metingen waren zeer consistent.
+maar de metingen bleken zeer consistent.
 
 \todo[inline]{Onderzoek de Wireshark trace.}
 
@@ -1160,8 +1162,10 @@ Maar behalve het snelheidsverschil zijn er nog andere redenen om tabellen op die
 		om op de kolommen van elke tabel te bepalen en om te weten welke \glspl{oid} overeenstemmen met een tabel.
 	\item Als de tabel deel uitmaakt van een SNMP walk van een hoger gelegen \gls{oid},
 		dan moet er tijdens de uitvoering van implementatie gewisseld worden bij de \gls{oid} van de tabel, wat extra complexiteit veroorzaakt.
-	\item Er moet rekening gehouden worden met randsituaties, zoals het ontbreken van celwaarden in de tabel\cite{net-snmp-table-holes}.
-		Bij het rij per rij overlopen kan een antwoordpakket dus al een kolomwaarde bevatten van de volgende rij!
+	\item Er moet rekening gehouden worden met randsituaties.
+		Zo zou het mogelijk zijn dat er celwaarden in een tabel ontbreken volgens \cite{net-snmp-table-holes}.
+		Wij hebben dit echter nooit kunnen vaststellen.
+		Bij het rij per rij overlopen zou een antwoordpakket dus al een kolomwaarde kunnen bevatten van de volgende rij!
 	\item Het aantal objecten per request is niet zo flexibel: ze moet een veelvoud zijn van het aantal kolommen.
 \end{itemize}
 
@@ -1183,11 +1187,11 @@ bijgevolg moet opgesplitst worden in meerdere pakketten alvorens ze verstuurd ka
 We trachten om de gemiddelde grootte te bepalen van objecten om een schatting te doen van het ideaal aantal objecten per request
 zodat we zo veel mogelijk objecten per request kunnen opvragen maar er toch zo weinig mogelijk fragmentatie voorkomt.
 Dit experiment wordt bemoeilijkt omdat de objecten en zelfs de headers van een SNMP-bericht geen vaste grootte hebben.
-Om de gemiddelde objectgrootte te bepalen moeten we een SNMP-bericht volledig ontleden en de grootte van alle headers bepalen.
+Om de gemiddelde objectgrootte te bepalen, moeten we een SNMP-bericht volledig ontleden en de grootte van alle headers bepalen.
 Eenmaal we de gemiddelde objectgrootte kennen, berekenen we hoeveel objecten er in een niet-gefragmenteerd bericht passen.
 Vervolgens meten we hoelang een gefragmenteerd bericht er over doet tegenover een niet-gefragmenteerd bericht,
-hoeveel gefragmenteerde berichten er werkelijk zijn in een SNMP walk en vergelijken we de uitvoeringstijd met
-een SNMP walk met een ''optimaal'' aantal objecten per request.
+hoeveel gefragmenteerde berichten er werkelijk zijn in een SNMP walk,
+en tenslotte vergelijken we de uitvoeringstijd met een SNMP walk met een ''optimaal'' aantal objecten per request.
 
 \todo[inline]{
 Eerst en vooral bekijken we in welke mate fragmentatie zich voordoet bij het aanhouden van 50 objecten per request.
@@ -1198,11 +1202,11 @@ Tenslotte bekijken we wat voor impact de fragmentatie van pakketten/beide aanpak
 
 \subsubsection{Gemiddelde objectgrootte en optimaal aantal objecten per request}
 
-Om de gemiddelde objectgrootte te berekenen doen we een SNMP walk van de mib-2-tak (1.3.6.1.2.1).
-We gebruiken de variant op basis van GETNEXT-requests zodat elk antwoordbericht juist een object bevat.
+Om de gemiddelde objectgrootte te berekenen, doen we een SNMP walk van de mib-2-tak (1.3.6.1.2.1).
+We gebruiken de variant op basis van GETNEXT-requests, zodat elk antwoordbericht juist een object bevat.
 Dat levert ons 3560 \emph{antwoord}berichten op.
 De gemiddelde lengte van een antwoordbericht bedraagt 102,26 bytes.
-Dus nemen we er willekeurig een antwoordbericht uit van 102 bytes om te ontleden.
+Dus nemen we willekeurig een antwoordbericht van 102 bytes om te ontleden.
 
 Om te beginnen hebben we de ethernetheader, goed voor 14 bytes\cite{ethernet-header}.
 Daarna volgt de IP-header, typisch van 20 bytes\cite{ipv4-header-wiki}.
@@ -1247,7 +1251,7 @@ In totaal heeft een SNMP-bericht dus 8 vaste \gls{tlv}-tripletten (tot en met de
 wat goed is voor 16 bytes.
 De values die een vaste lengte hebben zijn samen goed voor 10 bytes.
 Elk object wordt voorgesteld door een Varbind bestaande uit een \gls{oid} en een value, samen goed voor een overhead van 6 bytes per object.
-Uiteindelijk komen we uit op een headerlengte van het SNMP-bericht van 26 bytes, dus zonder objecten.
+Uiteindelijk komen we uit op een headerlengte van 26 bytes voor het SNMP-bericht zonder objecten.
 
 Als we de headerlengte van 26 bytes aftrekken van de 68 bytes van het SNMP-gedeelte van ons GETNEXT-response houden we nog 42 bytes over voor de varbind
 die het object en zijn \gls{oid} en value bevatten.
@@ -1305,7 +1309,7 @@ Objecten/request & Objecten & Uitvoeringstijd (s) & Tijdsverschil (s) \\ \midrul
 
 In \cref{tabel-fragmentatie-uitvoeringstijd} zien we dat de SNMP walk met 34 objecten per request er gemiddeld bijna een seconde (of 5\%) langer over doet
 dan de SNMP walk met 50 objecten per request.
-Het is duidelijk dat de tijdswinst van niet-gefragmenteerde pakketten dus niet opweegt tegen de tijdswinst bij het opvragen van meer objecten per request.
+Het is duidelijk dat de tijdswinst van niet-gefragmenteerde pakketten niet opweegt tegen de tijdswinst bij het opvragen van meer objecten per request.
 
 \subsubsection{Conclusie}
 
@@ -1345,11 +1349,11 @@ een grote netwerkvertraging ondervinden\cite{virtual-wall-uitleg, virtual-wall-s
 
 De bedoeling van de opstelling op de \vwall{}  is om een situatie na te bootsen waarbij een groot aantal toestellen ondervraagd moet worden.
 Omdat de \vwall{} gedeeld wordt door meerdere onderzoekers kunnen we natuurlijk niet zomaar de helft van de servers gebruiken voor ons experiment.
-Bovendien hadden onze virtuele machine in VirtualBox genoeg met een core en 256 MB geheugen voor een \gls{snmp-agent}.
+Bovendien hadden onze virtuele machines in VirtualBox genoeg met een core en 256 MB geheugen voor een \gls{snmp-agent}.
 Dan zou een machine met twaalf cores en 24 GB geheugen natuurlijk zware \textit{overkill} zijn.
 Wat we dus doen is een groot aantal virtuele machines opzetten op een paar van die servers.
 Er zijn verschillende virtualisatietechnologieën die we kunnen aanwenden waaronder OpenVZ en Xen.
-Maar vanwege problemen die verder besproken worden in \cref{probleem-virtualisatie-vwall} werd er geopteerd voor \gls{lxc}.
+Vanwege problemen die verder besproken worden in \cref{probleem-virtualisatie-vwall}, werd er geopteerd voor \gls{lxc}.
 Met \gls{lxc} kunnen we een 50-tal virtuele machines laten draaien op een enkele server.
 We hebben dan uiteindelijk maar drie servers nodig: twee waarop de virtuele machines draaien en een waarop de \nwmretriever{} draait.
 Elk van die 100 virtuele machines zal dan een eigen \gls{snmp-agent} draaien.
@@ -1358,7 +1362,7 @@ Elk van die 100 virtuele machines zal dan een eigen \gls{snmp-agent} draaien.
 \label{lxc}
 
 \gls{lxc} is een lichte virtualisatietechnologie voor Linux die werkt op het niveau van het besturingssysteem.
-Daarom gaat het niet om een volledige virtuele machine maar voorziet het een virtuele omgeving met een eigen procesruimte, bestandssysteem en netwerkinterfaces.
+Daarom gaat het niet om een volwaardige virtuele machine, maar voorziet het een virtuele omgeving met een eigen procesruimte, bestandssysteem en netwerkinterfaces.
 \gls{lxc} maakt hiervoor gebruik van de resourcemanagement- en resource-isolatiefeatures in de kernel zoals \textit{\gls{cgroups}}\footnote{
 	\gls{cgroups} zorgen voor de resource-isolatie van de CPU, het geheugen, I/O, netwerk enzovoort\cite{lxc-wiki}.
 } en \textit{namespace isolation}\footnote{
@@ -1409,8 +1413,8 @@ Schematisch ziet de combinatie van de fysieke netwerkopstelling en de netwerkcon
 \subsubsection{Softwareconfiguratie containers}
 
 Alle 100 nodes hebben een gelijkaardige softwareconfiguratie als van onze virtuele machines in VirtualBox van \cref{virtualbox}.
-De nodes zijn voorzien van hun eigen \gls{snmp-agent} en draaien het \gls{lldp}-protocol,
-maar waar ze verschillen van de kleinschalige opstelling is dat ze niet als bridge geconfigureerd zijn.
+De nodes zijn voorzien van hun eigen \gls{snmp-agent} en draaien het \gls{lldp}-protocol.
+Het verschil met de kleinschalige opstelling is dat ze niet als bridge geconfigureerd zijn.
 Het belangrijkste is dat elke node over voldoende gegevens beschikt die we kunnen opvragen,
 en met onze truc met het aanmaken van VLAN's (\cref{rij-per-rij}) kunnen we dat aantal makkelijk verhogen indien nodig.
 
@@ -1419,21 +1423,21 @@ en met onze truc met het aanmaken van VLAN's (\cref{rij-per-rij}) kunnen we dat 
 \label{impact-db}
 
 Als je de voetnoten gelezen hebt in onze tests met de profiler in \cref{profiling},
-dan weet je dat we daar een fout hebben gemaakt waarbij we de databank geïnstalleerd hadden op een SSD.
+dan weet je dat we daar een fout hebben gemaakt door te vergelijken met resultaten waarbij we de databank geïnstalleerd hadden op een SSD.
 Daardoor werd het probleem van het wegschrijven van de opgehaalde gegevens in de databank sterk geminimaliseerd.
-Omdat de \nwmretriever{} en de databank in de \vwall{}opstelling geïnstalleerd werden op een mechanische harde schijf,
+Omdat de \nwmretriever{} en de databank in de \vwall{}opstelling geïnstalleerd werden op een traditionele harde schijf,
 merkten we dan ook snel op dat we bijlange niet dezelfde performantiewinsten behaalden als bij onze kleinschalige tests.
 Ook NetworkMining ondervond dezelfde performantieproblemen bij het wegschrijven naar de databank en hadden daarop een nieuwe versie ontwikkeld die als alternatief
 de opgehaalde gegevens naar een XML-bestand kan wegschrijven.
 
-Wegens tijdsgebrek hebben we het gebruik van bulk inserts echter niet meer kunnen implementeren.
-Om toch de impact van het wegschrijven van de gegevens te kunnen meten hebben we wel vlug een optie ingebouwd
-die deze databankinteracties simpelweg achterwege laat.
+Wegens tijdsgebrek hebben we het gebruik van bulk inserts niet meer kunnen implementeren.
+Om toch de impact van het wegschrijven van de gegevens te kunnen meten,
+hebben we een optie ingebouwd die deze databankinteracties simpelweg achterwege laat.
 
 \subsubsection{Meetresultaten}
 
 We doen de test met 1, 10 en 100 nodes en dat zowel voor de originele versie als de nieuwe versie die gebruik maakt van bulkrequests en log4net als loggingframework.
-Om de tabelgrootte te beperken vermelden we echter niet elke combinatie.
+Om de tabelgrootte te beperken, vermelden we echter niet elke combinatie.
 We doen opnieuw een SNMP walk van de mib-2- en enterprises-\glspl{oid}, nog steeds goed voor 3558 objecten.
 
 \begin{table}[h]
@@ -1467,7 +1471,7 @@ Het is duidelijk dat het aanpakken van de inserts een zeer hoge prioriteit moet 
 
 We zien ook dat het verschil tussen de oude versie en de nieuwe versie verwaarloosbaar is bij een groot aantal nodes als men de databankinserts niet aanpakt:
 de nieuwe versie is daar slechts 5\% sneller.
-Maar als de retriever niet belemmerd wordt door de databaseinserts is de nieuwe versie ruim zeven keer sneller als er veel toestellen bevraagd moeten worden!
+Maar als de retriever niet tegengehouden wordt door de databaseinserts, is de nieuwe versie ruim zeven keer sneller als er veel toestellen bevraagd moeten worden!
 Het is dus belangrijk om de databankinteracties aan te pakken om de nieuwe versie van de \nwmretriever{} volledig tot zijn recht te laten komen.
 \todo[inline]{Bij de kleinschalige tests zagen we al dat de nieuwe versie bij slechts een toestel al vier keer sneller was.
 De snelheidswinst neemt dus sterk toe naarmate het aantal toestellen toeneemt dat bevraagd moet worden.}
@@ -1498,12 +1502,12 @@ doen we een schatting voor het opvragen van tot 10.000 toestellen.
 
 \subsubsection{Uitvoeringstijd op grote schaal}
 
-De uitvoeringstijd van de \nwmretriever{} op grote schaal hebben we al gemeten in de paragraaf over de impact van de databankinteracties,
-dus nemen we die resultaten er weer bij.
+De uitvoeringstijd van de \nwmretriever{} op grote schaal hebben we al gemeten in de paragraaf over de impact van de databankinteracties.
+We nemen die resultaten er bijgevolg weer bij.
 In die paragraaf hebben we al gezien dat het verschil tussen de oude versie en de nieuwe slechts 5\% bedraagt
 als de gegevens in de databank weggeschreven moeten worden.
 Wanneer dat niet het geval is, is de nieuwe versie ruim zever keer sneller dan de oude!
-Het is dus van absoluut belang dat dit probleem aangepakt wordt, of er gebruik gemaakt wordt van een SSD om de databank op te slaan.
+Het is dus van absoluut belang dat dit probleem aangepakt wordt, of dat er gebruik gemaakt wordt van een SSD om de databank op te slaan.
 Natuurlijk zal een alternatieve implementatie met bulk inserts niet exact 7,3 keer sneller zijn, maar het geeft wel een goed idee
 van hoeveel sneller de \nwmretriever{} zou kunnen gaan.
 
@@ -1538,7 +1542,7 @@ Uitvoeringstijd (s) & 2,669  & 4,013    & 8,590    & 17,351    \\ \bottomrule
 \end{table}
 
 Om te zien hoe sterk de uitvoeringstijd juist toeneemt met het aantal te bevragen toestellen,
-hebben we de resultaten in een grafiek gegooid in \cref{fig-uitvoeringstijd} en de trendlijn getekend.
+hebben we de resultaten in een grafiek voorgesteld en de trendlijn getekend.
 
 Het is duidelijk dat er een lineair verband is tussen het aantal toestellen dat moet bevraagd worden en de uitvoeringstijd.
 De trendlijn leert ons dat elk \textit{extra} toestel dat bevraagd moet worden ongeveer 0,15 seconden extra vraagt.
@@ -1579,7 +1583,7 @@ Toestellen & Uitvoeringstijd (s) \\ \midrule
 
 \subsubsection{Conclusie}
 
-Op voorwaarde dat het probleem met de databankinteracties aangepakt wordt kunnen we besluiten dat de gemaakte verbeteringen
+Op voorwaarde dat het probleem met de databankinteracties aangepakt wordt, kunnen we besluiten dat de gemaakte verbeteringen
 al een zeer positieve invloed hebben op de uitvoeringstijd van de \nwmretriever{} op grote schaal.
 
 Ook de impact van het aantal te bevragen toestellen op de uitvoeringstijd blijft zeer beperkt met ongeveer 0,15 seconden extra per bijkomend toestel.
@@ -1620,12 +1624,13 @@ en met Wireshark kunnen we zien hoeveel requests onderweg zijn.
 Een grafiek van het aantal retrieverthreads zie je in \cref{fig-retrieverthreads}.
 
 Het probleem dat zich voordoet is het volgende:
-er zijn op het einde minder dan 50 toestellen die nog moeten bevraagd worden, dus er zijn minder dan 50 threads actief.
-In de grafiek met het aantal threads zie je rond 13 seconden dat het aantal threads daalt omdat de laatste antwoorden binnenkomen van een aantal toestellen en die dus afgewerkt zijn.
+er zijn op het einde minder dan 50 toestellen die nog moeten bevraagd worden, waardoor er minder dan 50 threads actief zijn.
+In de grafiek met het aantal threads zie je rond 13 seconden dat het aantal threads daalt,
+omdat de laatste antwoorden binnenkomen van een aantal toestellen die dus afgewerkt zijn.
 Omdat er verder geen toestellen meer zijn worden er ook geen nieuwe threads meer gestart.
 De threads die wel nog actief zijn blijken uit Wireshark allemaal nog te wachten op een antwoord van de toestellen en hebben dus tijdelijk niks te doen.
 Wanneer de antwoorden kort daarna aankomen, krijg je opnieuw een piek in het CPU-gebruik door de gegevens die moeten verwerkt worden.
-Tegelijkertijd zie je dat het aantal threads verder afneemt naar mate de laatste toestellen afgewerkt worden.
+Tegelijkertijd zie je dat het aantal threads verder afneemt naarmate de laatste toestellen afgewerkt worden.
 
 \begin{figure}[h]
 	\centering
@@ -1646,14 +1651,14 @@ Zoals uitgelegd in \cref{werking} worden in de oude versie die wij gebruiken de 
 en wordt er gewacht op de eerste thread om te voltooien eer er nieuwe threads gestart worden.
 Het probleem daarbij is dat het niet noodzakelijk de eerst gestarte thread is die eerst klaar zal zijn.
 Terwijl er gewacht wordt op de eerste thread kunnen er gerust al andere threads klaar zijn en dat zien we ook in de grafiek rond 5 en 10 seconden.
-Het aantal threads daalt maar doordat er gewacht wordt op de eerste thread duurt het even eer er nieuwe threads aangemaakt worden.
+Het aantal threads daalt, maar doordat er gewacht wordt op de eerste thread, duurt het even eer er nieuwe threads aangemaakt worden.
 Dit probleem werd doorgegeven aan NetworkMining en werd vrij snel opgelost in een nieuwe versie.
 
 \subsubsection{Conclusie}
 
 Doordat er maximaal 50 toestellen tegelijkertijd bevraagd worden blijft het CPU-gebruik ook constant bij het bevragen van meer 50 toestellen.
 Door het constant houden van het aantal threads zien we echter dat niet alle rekenkracht benut wordt.
-Er zijn 16 cores beschikbaar, maar er is maar een CPU-belasting die overeenkomt met een volledige belasting van iets meer dan 9 cores.
+Alhoewel er 16 cores beschikbaar zijn, er is maar een CPU-belasting die overeenkomt met een volledige belasting van iets meer dan 9 cores.
 
 Het beheren van threads zou dus beter aangepakt kunnen worden:
 enerzijds bij het bepalen van het aantal threads dat moet gebruikt worden, afhankelijk van hoeveel rekenkracht er nog over is
@@ -1707,7 +1712,7 @@ Ook gaan we na wat de invloed is van het aantal te bevragen toestellen op het ba
 In \cref{tabel-bandbreedte-walk-vs-bulk} staan de netwerkstatistieken voor een SNMP walk op basis van GETNEXT- en GETBULK-requests.
 Weinig verrassend is dat er met bulkrequests een stuk minder pakketten verstuurd worden dan ontvangen.
 Vermits we 50 objecten per request opvragen, zijn erook ongeveer 50 keer minder pakketten die moeten verstuurd worden.
-Omdat er veel minder pakketten zijn verstuurd en ontvangen zijn er natuurlijk ook minder bytes verstuurd en ontvangen.
+Omdat er veel minder pakketten worden verstuurd en ontvangen, worden er natuurlijk ook minder bytes verstuurd en ontvangen.
 Minder pakketten wil ook zeggen minder overhead door de headers van de pakketten.
 En omdat er in totaal minder data is verstuurd en ontvangen, was er ook gemiddeld minder bandbreedte nodig.
 
@@ -1752,12 +1757,12 @@ We hebben hierbij wel de resultaten niet weggeschreven in de databank.
 \subsubsection{Invloed aantal ondervraagde nodes}
 
 In \cref{tabel-bandbreedte-aantalnodes} zien we de netwerkstatistieken voor 1, 10, 50 en 100 nodes.
-Omdat de toestellen quasi gelijk zijn aan elkaar zien we dat het aantal pakketten en de hoeveelheid data lineair stijgt met het aantal nodes.
+Omdat de toestellen quasi gelijk zijn aan elkaar, zien we dat het aantal pakketten en de hoeveelheid data lineair stijgt met het aantal nodes.
 Bij het gemiddelde bandbreedteverbruik is dat echter niet het geval doordat meer nodes opvragen langer duurt.
 Ondanks het feit dat de toestellen tegelijkertijd opgevraagd worden, duurt het toch iets langer om meerdere toestellen op te vragen.
 Laat ons als voorbeeld het verschil tussen een en tien nodes nemen.
 Er zijn wel tien keer meer toestellen op te vragen, maar er wordt er bijna twee keer langer over gedaan.
-Daardoor stijgt het bandbreedteverbruik dus ongeveer maar met factor vijf in plaats van tien.
+Daardoor stijgt het bandbreedteverbruik dus ongeveer maar met een factor vijf in plaats van met een factor tien.
 
 \begin{table}[h]
 \centering
@@ -1777,10 +1782,10 @@ Tijd\textsuperscript{*} (s)& 1,235  & 2,362    & 6,966    & 15,701    \\ \midrul
 \label{tabel-bandbreedte-aantalnodes}
 \end{table}
 
-Het bandbreedteverbruik zou ook niet verder mogen stijgen als er meer dan 50 toestellen bevraagd worden,
-maar we zien dat ze zelfs daalt.
+Het bandbreedteverbruik zou ook niet verder mogen stijgen als er meer dan 50 toestellen bevraagd worden.
+We zien zelfs dat ze daalt.
 Als we naar de grafiek van het bandbreedteverbruik bij 100 nodes kijken in \cref{fig-bandbreedte-100-nodes}
-zien we echter snel waarom.
+zien we snel waarom.
 Ook in het bandbreedteverbruik zien we hetzelfde fenomeen terug als bij het CPU-gebruik in \cref{cpu-gebruik}:
 een dip gevolgd door een piek in het verbruik naar het einde toe.
 Als er gelijktijdig gewacht wordt op antwoorden van de toestellen zal het bandbreedteverbruik op dat moment natuurlijk ook zakken.
@@ -1793,10 +1798,10 @@ Als er gelijktijdig gewacht wordt op antwoorden van de toestellen zal het bandbr
 \end{figure}
 
 Vandaar dus dat het gemiddelde bandbreedteverbruik lager uitvalt.
-De mediaan van het bandbreedteverbruik valt bij 100 nodes op bijna 6 Mbps wat wel overeenkomt met het verbruik van 50 nodes.
+De mediaan van het bandbreedteverbruik valt bij 100 nodes op bijna 6 Mbps, wat wel overeenkomt met het verbruik van 50 nodes.
 
-Het bandbreedteverbruik valt op zich ook zeer goed mee als je rekening houdt met het feit dat netwerkverbindingen meestal 100 Mbps of zelfs al 1 Gbps zijn.
-In geval van een verbinding van 100 Mbps gaat het om een belasting van 6\%, bij een verbinding van 1 Gbps zelfs maar van 0,6\%.
+Het bandbreedteverbruik valt op zich ook zeer goed mee, als je rekening houdt met het feit dat netwerkverbindingen meestal 100 Mbps of zelfs al 1 Gbps zijn.
+In geval van een verbinding van 100 Mbps gaat het om een belasting van 6\%, bij een verbinding van 1 Gbps zelfs maar om een belasting van 0,6\%.
 
 \subsubsection{Conclusie}
 
@@ -1805,4 +1810,4 @@ zowel het totale dataverkeer als de benodigde bandbreedte vallen een stuk lager 
 
 Net als bij het CPU- en geheugengebruik kunnen we opnieuw vaststellen dat het bandbreedteverbruik niet verder stijgt als er meer dan 50 toestellen bevraagd worden.
 Ook over het bandbreedteverbruik hoeven we ons dus weinig zorgen te maken.
-De bevragingen zelfs 's nachts ingepland worden zodat er helemaal geen impact is op het netwerkverkeer tijdens de werkuren.
+De bevragingen kunnen zelfs 's nachts ingepland worden, zodat er helemaal geen impact is op het netwerkverkeer tijdens de werkuren.
