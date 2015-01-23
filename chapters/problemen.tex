@@ -93,7 +93,7 @@ waarbij er op het einde natuurlijk geen gegevens meer zijn en de exceptie opgego
 
 Omdat de originele versie van de \nwmretriever{} enkel gebruik maakte van GET- en GETNEXT-requests was SNMPv1 voldoende.
 Bovendien is het overlopen van een ganse SNMP-agent vrij uitzonderlijk. Men kwam dus nooit in aanraking met deze (en de andere) excepties.
-Bijgevolg werd er voor het detecteren van fouten enkel gekeken naar het erroveld en werd er geen rekening gehouden met excepties.
+Bijgevolg werd er voor het detecteren van fouten enkel gekeken naar het errorveld en werd er geen rekening gehouden met excepties.
 
 In de originele versie had dit geen gevolgen omdat excepties zich toch niet voordoen in SNMPv1.
 Bij de nieuwe versie zal hier echter wel op moeten gecontroleerd worden vermits er voor bulkrequests gebruik gemaakt moet worden van SNMPv2c.

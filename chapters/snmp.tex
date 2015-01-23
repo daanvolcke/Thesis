@@ -66,7 +66,7 @@ In het client-server model wordt de serverrol verricht door de \gls{snmp-agent} 
 	% De GLS Reset zorgt ervoor dat de afkorting zeker languit wordt uitgeschreven
 	\item De SNMP-manager, vaak een \glsreset{nms} \gls{nms} genoemd, is de software die de SNMP-requests genereert, verstuurt naar de
 	\glspl{snmp-agent} en uiteindelijk de antwoorden verwerkt. Een \gls{nms} zal meestal niet één, maar meerdere \glspl{snmp-agent} van verschillende toestellen ondervragen.
-	Aan de hand van de verkregen informatie kan de \gls{nms} beslissen om verdere acties uitvoeren.
+	Aan de hand van de verkregen informatie kan de \gls{nms} beslissen om verdere acties uit te voeren.
 \end{itemize}
 
 
@@ -75,7 +75,7 @@ In het client-server model wordt de serverrol verricht door de \gls{snmp-agent} 
 
 Een van de grootste voordelen van SNMP is het feit dat ze je een uniforme manier aanbiedt om je netwerk te beheren. Fabrikanten van netwerkapparatuur
 bieden graag hun eigen oplossing aan om hun toestellen te beheren, maar het probleem is dat netwerken zelden uit apparatuur
-bestaan van slechts een fabrikant. De managementoplossingen van de ene fabrikant werken meestal niet om ook de toestellen van de andere
+bestaan van slechts één fabrikant. De managementoplossingen van de ene fabrikant werken meestal niet om ook de toestellen van de andere
 fabrikant te beheren. Met SNMP zit je niet vast aan een fabrikant en kun je op uniforme wijze gans je netwerk beheren.
 
 SNMP biedt maar weinig functionaliteit aan en dat speelt zowel in zijn voordeel als in zijn nadeel:
@@ -305,7 +305,7 @@ en zelfs als een tabel numeriek geïndexeerd is, zijn de indexen niet noodzakeli
 Met de GETNEXT-operatie hoef je je daar geen zorgen over te maken, ze geeft je meteen de volgende index met de bijhorende gegevens.
 De GETNEXT-operatie uitgevoerd op de \gls{oid} van een tabel geeft je zijn eerste index, waarmee je de volgende indexen kunt opvragen.
 
-Normaal gezien zal je niet rechtstreeks in contact komen GETNEXT-operaties, maar zul je gebruik maken van de SNMP walkopdracht.
+Normaal gezien zal je niet rechtstreeks in contact komen met GETNEXT-operaties, maar zul je gebruik maken van de SNMP walkopdracht.
 Je hoeft enkel de OID mee te geven met de SNMP walkopdracht waarop deze de nodige GETNEXT-requests zal sturen om de ganse boomtak te overlopen.
 \todo{Herhaalt eigenlijk wat er hierboven werd gezegd, maar ipv NMS -> SNMP Walk}
 
@@ -340,7 +340,7 @@ Wij maken gebruik van de Linux versie.
 
 \subsubsection{GET-operatie}
 
-Indien je maar geïnteresseerd bent in slechts een gegeven, dan ligt het voor de hand om gebruik te maken van de SNMP GET-operatie.
+Indien je maar geïnteresseerd bent in slechts één gegeven, dan ligt het voor de hand om gebruik te maken van de SNMP GET-operatie.
 Voorwaarde is wel dat je exact de \gls{oid} kent van het gegeven dat je wenst op te vragen.
 Een GET-request in Net-SNMP ziet er zo uit:
 
@@ -399,10 +399,10 @@ om dan de gegevens samen te bundelen in één antwoordbericht.
 Om van SNMP BULK-operaties gebruik te maken moet je ten eerste zorgen dat je gebruik maakt van SNMP versie 2c
 (zie ook \cref{snmp-versies} waarin we de verschillende SNMP versies bespreken).
 Ten tweede moet je ook twee extra parameters opgeven: \textit{non-repeaters} en \textit{max-repetitions}.
-Je kunt meerdere \glspl{oid} meegeven met de BULK-operatie en met die parameters kun je opgeven of er slechts een keer
+Je kunt meerdere \glspl{oid} meegeven met de BULK-operatie en met die parameters kun je opgeven of er slechts één keer
 een GETNEXT-operatie op een \gls{oid} moet uitgevoerd worden of meerdere.
-Non-repeaters geeft aan hoeveel \glspl{oid} er zijn meegegeven waarop slechts een keer een GETNEXT-operatie moet uitgevoerd worden.
-Deze \glspl{oid} zullen dus elk slechts een antwoord bevatten in het antwoordbericht.
+Non-repeaters geeft aan hoeveel \glspl{oid} er zijn meegegeven waarop slechts één keer een GETNEXT-operatie moet uitgevoerd worden.
+Deze \glspl{oid} zullen dus elk slechts één antwoord bevatten in het antwoordbericht.
 Met max-repetitions geef je aan hoeveel keer er een GETNEXT-operatie moet uitgevoerd worden op de overige \glspl{oid}.
 Als je max-repetitions op 10 zet, dan zal je voor elk van de overige \glspl{oid} 10 antwoorden krijgen in het antwoordbericht.
 Vermits je enkel opgeeft hoeveel \glspl{oid} niet herhalen (non-repeaters) moet je eerste de niet-herhalende \glspl{oid} opgeven en dan de herhalende.
@@ -476,7 +476,7 @@ IF-MIB::ifSpecific.6 = OID: SNMPv2-SMI::zeroDotZero
 \end{lstlisting}
 
 Merk op dat we hier geen instantie (de .0 bij scalaire gegevens) na de \gls{oid} hebben opgegeven.
-Mocht je hier toch een instantie opgeven (de index van een rij van de tabel) dan zou je slechts een kolomwaarde terugkrijgen,
+Mocht je hier toch een instantie opgeven (de index van een rij van de tabel) dan zou je slechts één kolomwaarde terugkrijgen,
 horende bij die rij en had je hetzelfde kunnen bereiken met een SNMP GET-opdracht.
 \todo[inline]{Verwarrend?}
 
