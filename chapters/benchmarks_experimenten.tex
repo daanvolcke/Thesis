@@ -908,7 +908,7 @@ ComFunLogger..ctor                                        & 1     & 0,03      & 
 De \emph{ComFunLogger} is een stuk code die gebruikt wordt om te loggen naar een tekstbestand.
 De naam komt van het feit dat ze een gemeenschappelijk stuk code is die over meerdere projecten kan
 gebruikt worden: \emph{common functions}, of \emph{ComFun} voor kort.
-Maar een functie die loggegevens wegschrijft naar een bestand hoort niet zo lang te duren.
+Maar een functie die loggegevens wegschrijft naar een bestand zou niet zo lang mogen duren.
 I/O-operaties zijn kostelijk, maar niet in die mate. %TODO: Koppelteken
 Als we de functie helemaal openklappen in \cref{call-tree-performancecounter}, vinden we de echte dader:
 een constructor van \emph{System.Diagnostics.PerformanceCounter}.
@@ -1176,7 +1176,7 @@ Maar behalve het snelheidsverschil zijn er nog andere redenen om tabellen op die
 \subsubsection{Conclusie}
 
 Het rij per rij overlopen van een tabel is niet alleen trager dan ze kolom per kolom te overlopen,
-ze brengt ook een heleboel problemen mee bij de implementatie.
+ze brengt ook een groot aantal problemen mee bij de implementatie.
 Indien je toch een tabel rij per rij wil \textit{lezen}, dan kan je beter gebruik maken van bijvoorbeeld de Net-SNMP \textit{snmptable} tool.
 Deze vraagt een tabel kolom per kolom op zoals gewoonlijk, maar beeldt ze rij per rij af en houdt ook rekening met speciale gevallen zoals gaten in de tabel.
 
@@ -1425,6 +1425,9 @@ en met onze truc met het aanmaken van VLAN's (\cref{rij-per-rij}) kunnen we dat 
 
 \subsection{Impact databankinteracties}
 \label{impact-db}
+
+% In een voetnoot bij de profilertests in \cref{profiling} hebben we geschreven dat we over het hoofd hebben gezien dat we de databank op een SSD hadden geïnstalleerd.
+% Daarbij hebben we de fout gemaakt door te vergelijken met resultaten
 
 Als je de voetnoten gelezen hebt in onze tests met de profiler in \cref{profiling},
 dan weet je dat we daar een fout hebben gemaakt door te vergelijken met resultaten waarbij we de databank geïnstalleerd hadden op een SSD.

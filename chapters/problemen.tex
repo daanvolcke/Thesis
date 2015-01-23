@@ -137,7 +137,7 @@ We zijn ook bij de netwerkbeheerders van iMinds ten rade gegaan, maar zij hadden
 Bij de kleinschalige tests die gebruik maakten van de productieswitches konden we wel nog resultaten bekomen als we zeer weinig iteraties uitvoerden.
 Op die manier konden we toch nog een idee krijgen of de tests op de virtuele machines een realistisch beeld gaven van de werkelijkheid.
 
-Bij de grootschalige tests was het probleem eenvoudig opgelost door simpelweg ook het toestel waarop de \nwmretriever{} draaide ook in de \vwall{} te plaatsen.
+Bij de grootschalige tests was het probleem eenvoudig opgelost door het toestel waarop de \nwmretriever{} draaide ook in de \vwall{} te plaatsen.
 Door een directe verbinding te leggen tussen de retriever en de toestellen ging het verkeer niet meer over het iMinds netwerk maar bleef het geïsoleerd in de \vwall{} waarop geen netwerkbeperkingen van toepassing zijn.
 
 
@@ -172,7 +172,9 @@ Als men de vlan-encapsulatiemethode gebruikt, kunnen de niet-gevirtualiseerde ma
 Het komt er dus op neer dat we alle virtuele machines wel met elkaar kunnen verbinden maar niet met fysieke machines,
 ondanks dat dit volgens de documentatie wel mogelijk zou moeten zijn, zelfs zonder de encapsulatiemethode te wijzigen\cite{vwall-openvz}.
 
-De oplossing die wij dan uiteindelijk hebben gebruikt, was om zelf de virtualisatie te configureren met behulp van \gls{lxc} (zie \cref{lxc}).
+De oplossing die wij dan uiteindelijk hebben gebruikt, was om,
+in plaats van de virtualisatie over te laten aan de \vwall{}, dit zelf te configureren.
+Sahel Sahhaf heeft ons hierbij op weg geholpen door ons te voorzien van een werkende opstelling die gebruik maakte van \gls{lxc} (zie \cref{lxc}).
 
 
 \todo[inline,caption={}]{
