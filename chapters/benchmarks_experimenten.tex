@@ -489,7 +489,7 @@ SNMP Bulkwalk (1000)           & 1,876       & 419,03\%             & 1,61\%    
 
 De test werd uitgevoerd vanaf dezelfde virtuele machine als de vorige tests, maar er waren deze keer geen uitschieters te zien in de resultaten.
 Hier zien we dat het op een productieswitch nog steeds sterk de moeite loont om over te stappen op bulk-requests.
-Het gaat hier geen vijf keer zo snel als bij de vorige test, maar als het nog steeds vier keer sneller gaat zijn we ook al tevreden.
+Met een verviervoudiging van de snelheid komen we goed in de buurt van het snelste resultaat uit de vorige test, waar het vijf keer zo snel ging.
 De grootste winst zit bij 10 objecten per request, maar er worden nog kleine winsten geboekt bij verdere verhoging.
 Vanaf 50 objecten per request begint de winst af te vlakken.
 
@@ -618,8 +618,8 @@ Specifiek:
 \end{itemize}
 
 Daar waar we problemen vinden of kansen zien om te optimaliseren zullen we de nodige aanpassingen doen en de resultaten daarvan testen.
-Een van de aanpassingen die we bekijken is het gebruik van GETBULK-requests, zoals we onderzocht hebben in \cref{bulkrequests-benchmarks}.
-Maar om te beginnen leggen we het gebruik van de profiler uit in Visual Studio 2013.
+Een van de aanpassingen die we bekijken is het gebruik van GETBULK-requests, zoals onderzocht in \cref{bulkrequests-benchmarks}.
+Om te beginnen leggen we het gebruik van de profiler uit in Visual Studio 2013.
 
 \subsubsection{Gebruik van de profiler in Visual Studio 2013}
 
@@ -858,8 +858,12 @@ De InsertResultRow-methode in de RetrieveFromDevice-methode hebben we nog niet b
 Die is verantwoordelijk voor het wegschrijven van een gegeven in de databank.
 Omdat er 441 gegevens zijn die binnen de SNMP walk vallen, werd de methode 441 keer opgeroepen.
 
-Eén gegeven per keer in de databank wegschrijven klinkt even inefficiënt als het ophalen van een gegeven per keer.
+Eén gegeven per keer in de databank wegschrijven klinkt even inefficiënt als het ophalen van één gegeven per keer.
 Ook het invoegen van gegevens in een databank kan in bulk gebeuren met behulp van een zogeheten \textit{bulk insert} in plaats van een gewone \textit{insert}.
+Hierbij worden de gegevens als één geheel in de databank ingevoerd.
+Het voordeel daarbij is dat er zoveel mogelijk gegevens samengebundeld worden in pakketten, waardoor er minder tijd nodig is om alle gegevens te versturen.
+De databank hoeft ook maar één query te verwerken in plaats van één voor elk gegeven.
+
 Als we kijken naar de tijd die nodig is om alle gegevens in de databank weg te schrijven, zien we dat
 dit slechts iets meer dan 200 ms of 6,5\% van de totale uitvoeringstijd vereist.
 We beslissen dan ook dat het niet de moeite is om dit te implementeren, omdat er elders nog veel grotere winsten kunnen gehaald worden\footnote{
@@ -1058,14 +1062,14 @@ Dat geeft ons dan de kolommen van de tweede rij en zo gaan we verder tot we de v
 
 Jammer genoeg is het niet voldoende om met Net-SNMP een snmpbulkwalk te doen met de \glspl{oid} van alle kolommen want
 die doet simpelweg sequentieel een snmpbulkwalk van elke opgegeven \gls{oid}.
-Dus moeten we het wiel heruitvinden en een snmpbulkwalk implementeren die wel alle \glspl{oid} in parallel overloopt en op het juiste moment stopt.
+Dus moeten we het wiel heruitvinden, en een snmpbulkwalk implementeren die wel alle \glspl{oid} in parallel overloopt en op het juiste moment stopt.
 
 Daarvoor maken we gebruik van GETBULK-requests met de \glspl{oid} van alle kolommen.
 Door het aantal herhalingen in te stellen kunnen we meteen ook meerdere rijen tegelijkertijd opvragen.
 Het aantal max-repetitions is dan gelijk aan het aantal rijen dat in een request wordt opgevraagd.
 Om het aantal objecten in een request te weten te komen, vermenigvuldig je simpelweg het aantal max-repetitions met het aantal kolommen.
 
-Om op het juiste moment te stoppen moeten we ofwel op voorhand het aantal rijen kennen, ofwel moeten we de geretourneerde \glspl{oid}
+Om op het juiste moment te stoppen moeten we ofwel op voorhand het aantal rijen kennen, ofwel moeten we de teruggegeven \glspl{oid}
 bekijken om te zien of ze nog steeds deel uitmaken van de tabel, zoals een gewone SNMP walk doet.
 
 De voorwaarde om dit alles te kunnen doen, is dat we vooraf de \glspl{oid} van de kolommen van de tabel kennen.
