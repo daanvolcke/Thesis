@@ -213,9 +213,12 @@ ifEntry OBJECT-TYPE
 	::= { ifTable 1 }
 \end{lstlisting}
 
+% Put this paragraph in a minipage so it doesn't get split up across a pagebreak.
+\begin{minipage}{\textwidth}
 Ook belangrijk is het \textit{INDEX}-attribuut. Deze geeft aan hoe de tabel geïndexeerd moet worden, dus hoe je aan individuele rijen kunt geraken.
 Dit kan een eenvoudige integer zijn of een samenstelling van kolommen die een rij uniek kan identificeren.
 Hier wordt de index (ifIndex) gedefiniëerd als een eenvoudige integer.
+\end{minipage}
 
 \begin{lstlisting}[language=asn.1, float=h, caption={Definitie van een index}, label=definitie-ifindex]
 ifIndex OBJECT-TYPE

@@ -1171,7 +1171,9 @@ Maar behalve het snelheidsverschil zijn er nog andere redenen om tabellen op die
 		Zo zou het mogelijk zijn dat er celwaarden in een tabel ontbreken volgens \cite{net-snmp-table-holes}.
 		Wij hebben dit echter nooit kunnen vaststellen.
 		Bij het rij per rij overlopen zou een antwoordpakket dus al een kolomwaarde kunnen bevatten van de volgende rij!
-	\item Het aantal objecten per request is niet zo flexibel: ze moet een veelvoud zijn van het aantal kolommen.
+	\item Het configureren van het aantal objecten dat per request opgehaald moet worden, is niet zo flexibel:
+		omdat je enkel het aantal rijen kunt opgeven,
+		is het aantal objecten per request automatisch een veelvoud van het aantal kolommen.
 \end{itemize}
 
 \subsubsection{Conclusie}
@@ -1421,7 +1423,7 @@ Alle 100 nodes hebben een gelijkaardige softwareconfiguratie als van onze virtue
 De nodes zijn voorzien van hun eigen \gls{snmp-agent} en draaien het \gls{lldp}-protocol.
 Het verschil met de kleinschalige opstelling is dat ze niet als bridge geconfigureerd zijn.
 Het belangrijkste is dat elke node over voldoende gegevens beschikt die we kunnen opvragen,
-en met onze truc met het aanmaken van VLAN's (\cref{rij-per-rij}) kunnen we dat aantal makkelijk verhogen indien nodig.
+en dat aantal kunnen we indien nodig makkelijk artificieel verhogen, door het creëren van VLAN's (zoals in \cref{rij-per-rij}).
 
 
 \subsection{Impact databankinteracties}
@@ -1654,6 +1656,8 @@ Tegelijkertijd zie je dat het aantal threads verder afneemt naarmate de laatste 
 	\label{fig-retrieverthreads}
 \end{figure}
 
+% Put this paragraph in a minipage so it doesn't get split up across a pagebreak.
+\begin{minipage}{\textwidth}
 In de grafiek met het aantal retrieverthreads zien we trouwens ook een probleem met hoe de threads beheerd worden.
 Zoals uitgelegd in \cref{werking} worden in de oude versie die wij gebruiken de threads in een lijst bijgehouden,
 en wordt er gewacht op de eerste thread om te voltooien eer er nieuwe threads gestart worden.
@@ -1661,6 +1665,7 @@ Het probleem daarbij is dat het niet noodzakelijk de eerst gestarte thread is di
 Terwijl er gewacht wordt op de eerste thread kunnen er gerust al andere threads klaar zijn en dat zien we ook in de grafiek rond 5 en 10 seconden.
 Het aantal threads daalt, maar doordat er gewacht wordt op de eerste thread, duurt het even eer er nieuwe threads aangemaakt worden.
 Dit probleem werd doorgegeven aan NetworkMining en werd vrij snel opgelost in een nieuwe versie.
+\end{minipage}
 
 \subsubsection{Conclusie}
 
