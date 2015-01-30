@@ -227,7 +227,7 @@ De eerste rij toont de gemiddelde uitvoeringstijd en de tweede het CPU-gebruik v
 Uitvoeringstijd (s):  & 15,650          & 15,987             & 2,693           & 6,105             \\
 CPU-gebruik:          & 10\%            & 35\%               & 80-90\%         & 100\%    		   \\ \bottomrule
 \end{tabular}
-\caption{De tijd nodig om 1-4 toestellen te ondervragen met en zonder vertraging}
+\caption{De tijd nodig om 1-4 toestellen te ondervragen, met en zonder vertraging}
 \label{tabel-latency}
 \end{table}
 
@@ -347,7 +347,7 @@ atlas3a1.intec.ugent.be & 3.256                 & 69.952                 & 4,65\
 atlas3a2.intec.ugent.be & 3.251                 & 69.509                 & 4,68\%     \\
 atlas3b1.intec.ugent.be & 3.247                 & 70.212                 & 4,62\%     \\ \bottomrule
 \end{tabular}
-\caption{Aantal interessante objecten t.o.v. totaal aantal objecten}
+\caption{Aantal interessante objecten t.o.v. het totaal aantal objecten}
 \label{tabel-fracties}
 \end{table}
 
@@ -546,8 +546,8 @@ Die gegevens worden dan later door andere tools van NetworkMining verwerkt voor 
 De test vindt opnieuw plaats tussen twee virtuele machines.
 Omdat er slechts één machine bevraagd wordt, verliest de \nwmretriever{} zijn schaalvoordeel door meerdere toestellen tegelijkertijd te ondervragen.
 
-Liefst zouden we, om zoveel mogelijk gegevens op te vragen, een walk doen van een ganse \gls{snmp-agent}.
-Omdat de \nwmretriever{} de \textit{endOfMibView}-exceptie niet ondersteunt (zie \cref{probleem-endofmibview-exceptie}) is dit niet mogelijk.
+Liefst zouden we, om zoveel mogelijk gegevens op te vragen, een walk doen van een volledige \gls{snmp-agent}.
+Omdat de \nwmretriever{} de \textit{endOfMibView}-exceptie niet ondersteunt (zie \cref{probleem-endofmibview-exceptie}) is dit echter niet mogelijk.
 Deze exceptie wordt opgegooid wanneer het einde van een \gls{mib}-bestand bereikt wordt en er geen verdere gegevens meer zijn.
 De exceptie is een speciaal geval omdat ze geen gebruik maakt van het error-veld in het antwoordbericht.
 Het error-veld staat dus onterecht op 0, wat aangeeft dat er zich geen fout heeft voorgedaan.
@@ -555,7 +555,7 @@ Daarom, en omdat het vrij ongewoon is om een volledige \gls{snmp-agent} te overl
 is het begrijpelijk dat de \nwmretriever{} nog geen ondersteuning had voor deze exceptie.
 Dit probleem werd doorgegeven aan NetworkMining en zal in een latere versie opgelost worden.
 
-Omdat we geen ganse SNMP-agent kunnen overlopen, kiezen we een \gls{oid} die voldoende gegevens bevat.
+Omdat we geen volledige SNMP-agent kunnen overlopen, kiezen we een \gls{oid} die voldoende gegevens bevat.
 We gaan uiteindelijk voor de \textit{mgmt}-tak (1.3.6.1.2), de ouder van de \textit{mib-2}-tak.
 Die \gls{oid} is goed voor ongeveer 1700 objecten.
 De resultaten staan in \cref{tabel-nwmretriever-vs-net-snmp}.
@@ -846,7 +846,7 @@ ComFunLogger.Close                                       & 1     & 0,22      & 7
 ComFunLogger.Log                                         & 3     & 0,20      & 2,23      \\
 ComFunSQLConnection.TableExists                          & 3     & 0,06      & 0,72      \\ \bottomrule
 \end{tabular}
-\caption{De call tree van de Main methode met GETBULK-requests}
+\caption{De call tree van de Main-methode met GETBULK-requests}
 \label{call-tree-main-bulk}
 \end{table}
 
@@ -884,7 +884,7 @@ In de originele implementatie was die verantwoordelijk voor 25\% van de uitvoeri
 De Initialize-methode doet er bijna 2 seconden over.
 Bijgevolg zijn we erg niewsgierig wat er juist in deze methode gebeurt waardoor deze zoveel tijd nodig heeft.
 We beginnen met het analyseren van de call tree van de functie, te zien in \cref{call-tree-initialize}.
-Wat we zien zijn twee oproepen naar een \emph{Log}-methode die er gemiddeld bijna een seconde over doet \emph{per oproep}! %TODO: Koppelteken
+Wat we zien zijn twee oproepen naar een \emph{Log}-methode die er gemiddeld bijna een seconde over doet \emph{per oproep}!
 
 \begin{table}[h]
 \centering
@@ -902,7 +902,7 @@ ComFunLogger.Log                                          & 2     & 0,10      & 
 ComFun.NetworkMiningCopyRightStatement                    & 1     & 0,06      & 2,14      \\
 ComFunLogger..ctor                                        & 1     & 0,03      & 1,07      \\ \bottomrule
 \end{tabular}
-\caption{De call tree van de Initialize methode} %TODO: Koppelteken
+\caption{De call tree van de Initialize-methode}
 \label{call-tree-initialize}
 \end{table}
 
@@ -910,7 +910,7 @@ De \emph{ComFunLogger} is een stuk code die gebruikt wordt om te loggen naar een
 De naam komt van het feit dat ze een gemeenschappelijk stuk code is die over meerdere projecten kan
 gebruikt worden: \emph{common functions}, of \emph{ComFun} voor kort.
 Maar een functie die loggegevens wegschrijft naar een bestand zou niet zo lang mogen duren.
-I/O-operaties zijn kostelijk, maar niet in die mate. %TODO: Koppelteken
+I/O-operaties zijn kostbaar, maar niet in die mate. %TODO: Koppelteken
 Als we de functie helemaal openklappen in \cref{call-tree-performancecounter}, vinden we de echte dader:
 een constructor van \emph{System.Diagnostics.PerformanceCounter}.
 Een performance counter wordt gebruikt voor het monitoren van systeemcomponenten zoals
@@ -921,7 +921,7 @@ De ComFunLogger gebruikt ze om het geheugengebruik te meten en weg te schrijven 
 \begin{figure}[h]
 	\centering
 	\includegraphics[scale=0.50]{figures/profiler/call-tree-performancecounter}
-	\caption{De call tree van de Log methode}
+	\caption{De call tree van de Log-methode}
 	\label{call-tree-performancecounter}
 \end{figure}
 
@@ -1260,7 +1260,7 @@ De values die een vaste lengte hebben zijn samen goed voor 10 bytes.
 Elk object wordt voorgesteld door een Varbind bestaande uit een \gls{oid} en een value, samen goed voor een overhead van 6 bytes per object.
 Uiteindelijk komen we uit op een headerlengte van 26 bytes voor het SNMP-bericht zonder objecten.
 
-Als we de headerlengte van 26 bytes aftrekken van de 68 bytes van het SNMP-gedeelte van ons GETNEXT-response houden we nog 42 bytes over voor de varbind
+Als we de headerlengte van 26 bytes aftrekken van de 68 bytes van het SNMP-gedeelte van ons GETNEXT-response, houden we nog 42 bytes over voor de varbind
 die het object en zijn \gls{oid} en value bevatten.
 Een gemiddeld object heeft dus een lengte van 42 bytes, inclusief zijn headers.
 
@@ -1699,7 +1699,7 @@ De hoeveelheid geheugen dat gebruikt wordt valt op zich ook zeer goed mee: bij 5
 \begin{figure}[h]
 	\centering
 	\includegraphics[scale=0.40]{figures/ram-100nodes}
-	\caption{Geheugenverbruik bij verschillend aantal nodes}
+	\caption{Geheugenverbruik bij een verschillend aantal nodes}
 	\label{fig-ram-aantalnodes}
 \end{figure}
 
@@ -1809,7 +1809,7 @@ Als er gelijktijdig gewacht wordt op antwoorden van de toestellen zal het bandbr
 \begin{figure}[h]
 	\centering
 	\includegraphics[scale=0.40]{figures/bandbreedte/bandbreedte-100nodes}
-	\caption{Bandbreedte bij bevragen 100 nodes}
+	\caption{Bandbreedte bij het bevragen van 100 nodes}
 	\label{fig-bandbreedte-100-nodes}
 \end{figure}
 

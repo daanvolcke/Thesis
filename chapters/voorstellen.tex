@@ -20,7 +20,7 @@ De nieuwe versie was bij 100 toestellen slechts 5\% sneller dan de oude, maar ru
 Het implementeren van bulk inserts is dus absoluut cruciaal om de \nwmretriever{} succesvol te kunnen inzetten op grote schaal.
 
 Het implementeren van bulkrequests hoeft zelfs niet eens zoveel tijd en werk te vereisen.{\todo{eisen?}}
-Een eenvoudige implementatie houdt een tabel bij in het geheugen die de resultaten tijdelijk bijhoudt.
+Een eenvoudige implementatie houdt een tabel bij in het geheugen die de resultaten tijdelijk opslaat.
 De InsertResultRow-methode moet dan aangepast worden om de gegevens in de tabel in het geheugen weg te schrijven in plaats van rechtstreeks naar de databank.
 Eenmaal een bepaalde hoeveelheid gegevens in de tabel in het geheugen zitten, kan de InsertResultRow-methode beslissen om al die data
 in een keer weg te schrijven naar de databank met een bulk insert.
@@ -84,7 +84,7 @@ Het is dan ook logisch dat het laatste niet zo vaak opgevraagd moet worden als h
 Zo zou een algoritme of heuristiek kunnen ontwikkeld worden die de veranderlijkheid van gegevens bepaalt en afhankelijk daarvan
 beslist hoe vaak die gegevens opgehaald moeten worden.
 Gegevens kunnen ook meer of minder belangrijk zijn dan andere.
-Afhankelijk van het belang dat een netwerkbeheerder aan gegevens hecht kan hij dan de frequentie waarmee bepaalde gegevens moeten opgevraagd worden verhogen of verlagen.
+Afhankelijk van het belang dat een netwerkbeheerder aan gegevens hecht, kan hij dan de frequentie waarmee bepaalde gegevens moeten opgevraagd worden verhogen of verlagen.
 
 
 
